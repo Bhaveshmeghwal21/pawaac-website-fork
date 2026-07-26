@@ -11,6 +11,11 @@
 // lives only on Contact_Page per task 14; duplicating it here would
 // reintroduce the old homepage-anchor `Contact.tsx` pattern the migration
 // explicitly removes. Reveal_On_Scroll entrance (P5).
+//
+// CTA rename (site-owner request, current session): eyebrow label and
+// button text renamed from "Request demo" / "Request a demo" to
+// "Contact us" — same /contact destination (Requirement 6.4 unaffected),
+// label only. Matches the header CTA's matching rename in Navigation.tsx.
 import Reveal from "@/components/ui/Reveal";
 import ReticleFrame from "@/components/ui/ReticleFrame";
 
@@ -22,7 +27,7 @@ export default function HomeContactBand() {
     <section className="relative overflow-hidden bg-bg/50 px-6 py-24 md:py-32">
       <div className="mx-auto max-w-4xl text-center">
         <Reveal>
-          <p className="label justify-center">Request demo</p>
+          <p className="label justify-center">Contact us</p>
           <h2 className="mt-3 text-heading font-display text-fg">
             Talk to the team
           </h2>
@@ -39,7 +44,7 @@ export default function HomeContactBand() {
               href="/contact"
               className="block bg-white px-10 py-4 font-mono text-sm font-semibold uppercase tracking-[0.1em] text-black transition-colors hover:bg-interactive"
             >
-              Request a demo →
+              Contact us →
             </a>
           </div>
         </Reveal>

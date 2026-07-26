@@ -23,6 +23,18 @@
 // identity. Rendered with the site's standard grayscale filter and
 // Reticle_Frame treatment (P4/P7), consistent with every other real photo
 // on the site.
+//
+// UX fix (homepage first-time-visitor audit, Requirements 4.1, 6.1): the
+// solid bg-white below is kept exactly as-is (see the comment on the
+// <section> below for why) — but on a fast scroll, the jump straight from
+// the dark SkyScenery-backed sections above into solid white read as a
+// rendering glitch rather than an intentional light "panel." Adds a short
+// decorative gradient across the section's own top padding, from
+// --color-bg (an opaque approximation of the dark backdrop above — not a
+// pixel-sampled match of the SkyScenery photo, kept simple per this being
+// a polish fix) fading to transparent, so the seam reads as a deliberate
+// transition. Purely decorative/aria-hidden; does not change the
+// bg-white section background itself.
 import Image from "next/image";
 import Reveal from "@/components/ui/Reveal";
 import ReticleFrame from "@/components/ui/ReticleFrame";
@@ -37,7 +49,27 @@ export default function HomeEnterpriseFraming() {
     // muddy this section's text contrast (Requirement 3.6-3.8). Solid white
     // here reads as an intentional light "panel" over the dark backdrop.
     <section className="relative overflow-hidden bg-white px-6 py-24 text-[#080808] md:py-32">
-      <div className="mx-auto grid max-w-7xl gap-12 md:grid-cols-2 md:items-center">
+      {/* Transition device (UX fix, see file header): dark-to-transparent
+          gradient sized to exactly match this section's own top padding
+          (h-24/md:h-32 <-> py-24/md:py-32), so it bridges the seam without
+          overlapping the heading content below it. */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-bg to-transparent md:h-32"
+      />
+
+      {/* Layout (homepage UX audit, current session): this was the third of
+          three CONSECUTIVE `md:grid-cols-2 md:items-center`
+          text-left/image-right blocks (HomeAutonomyTeaser, HomePlannerCTA,
+          this one), which read as the same block three times running. Those
+          two now stack and flip respectively; this one takes an asymmetric
+          5/7 split with top alignment instead of an even, vertically
+          centered two-column. That also serves the content: this section has
+          the shortest copy on the page (8 words of supporting text), so an
+          even 50/50 split left its text column conspicuously empty, while
+          the wider media column gives the one real photo here more presence.
+          Copy, CTA, destination, and imagery are unchanged. */}
+      <div className="mx-auto grid max-w-7xl gap-12 md:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] md:items-start md:gap-16">
         <Reveal>
           <p className="label text-[#6b6b6b]">Enterprise &amp; critical infrastructure</p>
           <h2 className="mt-3 text-heading font-display text-[#080808]">
@@ -58,7 +90,7 @@ export default function HomeEnterpriseFraming() {
 
         <Reveal delay={0.14} y={-20}>
           <div
-            className="relative mx-auto w-full max-w-xl border border-[#d6d6d6]"
+            className="relative mx-auto w-full max-w-2xl border border-[#d6d6d6]"
             style={{ aspectRatio: "16 / 9" }}
           >
             {/* Real, generic (non-identifying) urban/infrastructure scene —
@@ -67,12 +99,15 @@ export default function HomeEnterpriseFraming() {
                 no customer/partner identity (OCP-04 stays rejected/as-is).
                 Sized up from max-w-sm (384px) to max-w-xl (576px) per
                 site-owner request to make this image bigger/more
-                prominent. */}
+                prominent, then to max-w-2xl (672px) when this section moved
+                to the asymmetric 5/7 split above — the wider media column is
+                ~709px at the max-w-7xl ceiling, so max-w-xl would have left
+                a visible gutter inside its own column. */}
             <Image
               src="/images/rawimage3.jpg"
               alt="Generic urban street and traffic scene representing critical infrastructure"
               fill
-              sizes="(min-width: 768px) 576px, 90vw"
+              sizes="(min-width: 768px) 672px, 90vw"
               className="object-cover grayscale"
             />
             <ReticleFrame variant="light" />

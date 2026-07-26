@@ -1,1 +1,2 @@
 @AGENTS.md
+@PAWAAC_CONTEXT.md

@@ -1,7 +1,9 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { useRef } from "react";
+import { motion, useScroll, useTransform } from "framer-motion";
 import Logo from "@/components/ui/Logo";
+import usePrefersReducedMotion from "@/hooks/usePrefersReducedMotion";
 
 // Spec: pawaac-design-language-evolution, Task 18
 // Requirements: 1.3, 1.4, 2.1, 2.2, 2.3
@@ -75,10 +77,77 @@ const EXTERNAL_LINKS: { label: string; href: string }[] = [
 // previously tightened letter-spacing and became MORE visible on hover
 // (opacity 0.06 -> 0.1); it now fades toward fully invisible on hover
 // instead (opacity -> 0), which is the actual requested direction.
+//
+// Scroll-linked reveal (site-owner request, current session): ported the
+// "footer shifting" UX from a reference template
+// (D:\LionXdrones\website\resources\tutorial-01-footer-shifting.html).
+// That template's footer is `position: relative` in normal document flow
+// (not pinned/sticky) — the reveal comes entirely from tracking how far
+// the footer element itself has scrolled through the viewport and using
+// that progress to drive a translateY + a dark-overlay opacity fade on
+// its content. Ported faithfully here with the same mechanic, using
+// framer-motion's useScroll/useTransform (the same hook pair
+// PinnedSpecSheet.tsx already uses for its own scroll-linked effect)
+// instead of the template's third-party StringTune library. Progress 0 is
+// the footer's top edge touching the bottom of the viewport (about to
+// enter); progress 1 is its BOTTOM edge touching the bottom of the
+// viewport, i.e. `offset: ["start end", "end end"]`. That second endpoint
+// (rather than the top edge reaching the top of the viewport) is
+// deliberate: this footer is shorter than the viewport at most common
+// screen heights, so a "top reaches top" endpoint is literally
+// unreachable — there's no more page to scroll after the footer, so the
+// browser hits max-scroll first and the reveal gets stuck partway
+// (verified live: at 1440x900 the footer's top edge bottoms out at
+// ~81px, never 0). "end end" always lands exactly on the document's
+// natural max-scroll position for a last-in-document element, regardless
+// of whether the footer is shorter or taller than the viewport, so
+// progress reliably reaches a full 1 at the real end of scroll either
+// way.
+// contentY carries the slide (56px -> 0, applied to the whole content
+// block in one motion.div, not per-column) and overlayOpacity carries the
+// fade (1 -> 0, applied to an absolutely-positioned bg-bg layer). Both
+// derive from the same raw scrollYProgress (no independent spring on
+// either) so the slide and the fade stay in exact lockstep, matching the
+// template's single shared --progress variable.
+//
+// Color-contrast note: the overlay reuses --color-bg (#080808) fading
+// over the footer's own --color-bg-2 (#0f0f0f) rather than inventing a
+// new shade — both are near-black under this site's achromatic palette,
+// unlike the template's black-to-vivid-blue reveal, so the color fade
+// itself reads as subtle. The translateY slide is the dominant, clearly
+// visible motion and is what actually carries the "shifting" effect here.
+//
+// Reduced-motion fallback (matches Reveal.tsx/PinnedSpecSheet.tsx
+// convention): when usePrefersReducedMotion() is true, the content
+// renders at its final y:0 position and the overlay is not rendered at
+// all, rather than being computed and just left at a static value.
 export default function Footer() {
+  const footerRef = useRef<HTMLElement>(null);
+  const prefersReducedMotion = usePrefersReducedMotion();
+
+  const { scrollYProgress } = useScroll({
+    target: footerRef,
+    offset: ["start end", "end end"],
+  });
+  const contentY = useTransform(scrollYProgress, [0, 1], [56, 0]);
+  const overlayOpacity = useTransform(scrollYProgress, [0, 1], [1, 0]);
+
   return (
-    <footer className="relative z-10 border-t border-line bg-bg-2 px-6 pt-20 pb-12 md:pt-28">
-      <div className="mx-auto max-w-7xl">
+    <footer
+      ref={footerRef}
+      className="relative z-10 overflow-hidden border-t border-line bg-bg-2 px-6 pt-20 pb-12 md:pt-28"
+    >
+      {!prefersReducedMotion && (
+        <motion.div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 bg-bg"
+          style={{ opacity: overlayOpacity }}
+        />
+      )}
+      <motion.div
+        className="mx-auto max-w-7xl"
+        style={{ y: prefersReducedMotion ? 0 : contentY }}
+      >
         <div className="grid gap-12 lg:grid-cols-[1.2fr_0.8fr_0.8fr]">
           <div>
             <div className="flex items-center gap-2.5 text-fg">
@@ -162,7 +231,7 @@ export default function Footer() {
             <span className="border border-line px-2 py-1 font-mono text-[10px]">MeitY RECOGNIZED</span>
           </div>
         </div>
-      </div>
+      </motion.div>
     </footer>
   );
 }

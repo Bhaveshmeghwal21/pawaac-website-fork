@@ -49,6 +49,41 @@ yarn-error.log*
 # local planning notes
 /HOMEPAGE_MISSING_PARTS.md
 
+# Private company context — MUST NOT be published.
+#
+# This repository is PUBLIC (github.com/Bhaveshmeghwal21/pawaac-website), and
+# PAWAAC_CONTEXT.md is an internal reference file, not site content. It records
+# investor identity and contact, current fundraising status and the fund
+# utilisation plan, cloud credit balances and a rejected application, the
+# internal judgement that full L5 autonomy is not achievable in the current
+# runway, named self-identified engineering weaknesses, an unresolved strategic
+# question framed as shaping the investor narrative, and the framing chosen for
+# a specific prospective police client. None of that should be readable by
+# competitors, prospects or the press.
+#
+# It has never been committed, so ignoring it here is sufficient — no history
+# rewrite is needed. CLAUDE.md still references it with `@PAWAAC_CONTEXT.md`,
+# which is deliberate: the import simply no-ops in a clone that does not have
+# the file, and it documents the intended local setup.
+/PAWAAC_CONTEXT.md
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# design-sync (claude.ai/design import) — tooling scratch + generated output.
+#
+# Widened from three carve-outs to the whole directory. Nothing under src/
+# imports anything from it and `next build` succeeds with it untracked, so it is
+# not part of the app. The narrower rules left ~19 generated files staged for
+# commit: hashed next/font .woff2 subsets, compiled CSS, and duplicate copies of
+# components that already live in src/components/ui — the duplicates are the
+# real reason to exclude it, since they go stale silently.
+/.ds-sync/
+/ds-bundle/
+/.design-sync/
+
+# Claude Code — share launch.json and settings.json (project dev-server config
+# and permissions), keep per-developer overrides local.
+/.claude/settings.local.json
+/.claude/*.local.json

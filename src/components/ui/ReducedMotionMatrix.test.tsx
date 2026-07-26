@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { describe, expect, it, vi, afterEach } from "vitest";
 import { act, render, screen } from "@testing-library/react";
+import AirframeGhost from "./AirframeGhost";
 import PinnedSpecSheet from "./PinnedSpecSheet";
 import Reveal from "./Reveal";
 import { UplinkInput, FieldMessage } from "./UplinkField";
@@ -60,17 +61,23 @@ afterEach(() => {
 });
 
 describe("Reduced-Motion Fallback Matrix — Pinned_Spec_Sheet", () => {
+  // Scroll-jacking removed (homepage UX audit — see PinnedSpecSheet.tsx's
+  // header for why): the component no longer has a sticky-pinned,
+  // horizontally-translating filmstrip branch, so there is no longer a
+  // scroll-jacked mode for reduced motion to fall back FROM. The matrix row
+  // therefore inverts from "pinned by default, static under reduce" to
+  // "never pinned, identical under both settings" — which is what these two
+  // tests now assert. The only motion left in the component is the
+  // per-panel Reveal_On_Scroll entrance, whose own reduced-motion fallback
+  // is covered by the Reveal_On_Scroll block below.
   const panels = [
     { label: "Endurance", numeral: "80+", supportingSentence: "Minutes of flight time." },
     { label: "Range", numeral: "15", supportingSentence: "Kilometers of range." },
   ];
 
-  it("renders an un-pinned static vertical stack with no scroll-jacking under prefers-reduced-motion: reduce", () => {
-    mockMatchMedia(true);
-    const { container } = render(<PinnedSpecSheet panels={panels} />);
-
-    // StaticStack fallback: plain vertical flex column, no sticky-pin
-    // container and no scroll-jacked track height (`{n*100}vh`).
+  function expectUnpinnedRail(container: HTMLElement) {
+    // No sticky-pin wrapper, and no element whose height is expressed in
+    // viewport units (the old track used `{n*100}vh` to buy pin travel).
     expect(container.querySelector(".sticky")).toBeNull();
     const vhHeighted = Array.from(container.querySelectorAll<HTMLElement>("*")).some(
       (el) => el.style.height?.endsWith("vh"),
@@ -81,24 +88,39 @@ describe("Reduced-Motion Fallback Matrix — Pinned_Spec_Sheet", () => {
     const labels = screen.getAllByText(/Endurance|Range/);
     expect(labels[0]).toHaveTextContent("Endurance");
     expect(labels[1]).toHaveTextContent("Range");
+  }
+
+  it("renders an un-pinned spec rail with no scroll-jacking under prefers-reduced-motion: reduce", () => {
+    mockMatchMedia(true);
+    const { container } = render(<PinnedSpecSheet panels={panels} />);
+    expectUnpinnedRail(container);
   });
 
-  it("renders the sticky-pinned, scroll-jacked track by default (no motion preference)", () => {
+  it("renders the same un-pinned spec rail by default (no motion preference)", () => {
     mockMatchMedia(false);
     const { container } = render(<PinnedSpecSheet panels={panels} />);
+    expectUnpinnedRail(container);
+  });
 
-    // Default ScrollJackedTrack: sticky-pin wrapper present, and the outer
-    // container's height is set proportional to panel count (`{n*100}vh`).
-    expect(container.querySelector(".sticky")).not.toBeNull();
-    const vhHeighted = Array.from(container.querySelectorAll<HTMLElement>("*")).some(
-      (el) => el.style.height?.endsWith("vh"),
+  it("renders every panel at once rather than one panel per scroll segment", () => {
+    mockMatchMedia(false);
+    render(<PinnedSpecSheet panels={panels} />);
+
+    // Both numerals are in the document simultaneously — the filmstrip
+    // showed exactly one per pinned segment.
+    expect(screen.getByText("80+")).toBeInTheDocument();
+    expect(screen.getByText("15")).toBeInTheDocument();
+  });
+
+  it("renders the Pending confirmation placeholder instead of a fabricated numeral (Requirement 8.3)", () => {
+    mockMatchMedia(false);
+    render(
+      <PinnedSpecSheet
+        panels={[{ label: "Uptime", numeral: "", supportingSentence: "Not yet confirmed." }]}
+      />,
     );
-    expect(vhHeighted).toBe(true);
 
-    // Panel content and order are preserved regardless of motion setting.
-    const labels = screen.getAllByText(/Endurance|Range/);
-    expect(labels[0]).toHaveTextContent("Endurance");
-    expect(labels[1]).toHaveTextContent("Range");
+    expect(screen.getByText("Pending confirmation")).toBeInTheDocument();
   });
 });
 
@@ -206,6 +228,79 @@ describe("Reduced-Motion Fallback Matrix — background-type (Pattern 1) texture
       const texture = screen.getByText("PAWAAC", { selector: "span" });
       expect(texture).toHaveAttribute("aria-hidden", "true");
       expect(texture.style.transform).toBe("");
+      unmount();
+    }
+  });
+
+  // AirframeGhost (the airframe cutouts used as section backgrounds in
+  // HomeSpecSheet / HomeCompanyStrip / HomeClosingVision) is the same
+  // Pattern-1 row: a purely decorative oversized background layer. It is
+  // deliberately static, so — like the word-mark spans above — it must render
+  // identically under both motion settings and must never consume
+  // usePrefersReducedMotion.
+  //
+  // Unlike those spans its inline transform is NOT empty: the layer carries a
+  // translateX to hold part of its own width off-canvas past the bleed edge.
+  // That is static placement, not motion, so the invariant asserted here is
+  // that the transform is byte-identical either way rather than absent.
+  it("renders the airframe background layer identically under both motion settings", () => {
+    const transforms: string[] = [];
+    const opacities: string[] = [];
+
+    for (const reduced of [true, false]) {
+      mockMatchMedia(reduced);
+      const { container, unmount } = render(
+        <AirframeGhost
+          src="/images/airframe-hawkai-plan.webp"
+          width={826}
+          height={797}
+          side="right"
+          opacity={0.17}
+        />,
+      );
+
+      const layer = container.firstElementChild as HTMLElement;
+      expect(layer).toHaveAttribute("aria-hidden", "true");
+      expect(layer.className).toContain("pointer-events-none");
+
+      // The airframe itself is the element carrying the bleed offset.
+      const moved = Array.from(container.querySelectorAll<HTMLElement>("*")).find(
+        (el) => el.style.transform,
+      );
+      expect(moved).toBeDefined();
+      transforms.push(moved!.style.transform);
+      opacities.push(moved!.style.opacity);
+
+      // Decorative image is excluded from the accessibility tree.
+      expect(container.querySelector("img")).toHaveAttribute("alt", "");
+
+      unmount();
+    }
+
+    expect(transforms[0]).toBe(transforms[1]);
+    expect(opacities[0]).toBe(opacities[1]);
+  });
+
+  it("bleeds off the requested edge, and only that edge", () => {
+    mockMatchMedia(false);
+    for (const side of ["left", "right"] as const) {
+      const { container, unmount } = render(
+        <AirframeGhost
+          src="/images/airframe-hawkai-plan.webp"
+          width={826}
+          height={797}
+          side={side}
+          bleed={0.3}
+        />,
+      );
+      const moved = Array.from(container.querySelectorAll<HTMLElement>("*")).find(
+        (el) => el.style.transform,
+      )!;
+      // right bleeds positive (outward past the right edge), left negative.
+      expect(moved.style.transform).toBe(
+        side === "right" ? "translateX(30%)" : "translateX(-30%)",
+      );
+      expect(moved.className).toContain(side === "right" ? "right-0" : "left-0");
       unmount();
     }
   });

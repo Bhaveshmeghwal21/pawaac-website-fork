@@ -54,8 +54,12 @@ const PANELS: SpecPanel[] = [
 
 export default function SentrivionSpecs() {
   return (
-    <section className="relative bg-bg">
-      <div className="mx-auto max-w-7xl px-6 pt-24">
+    // `px-6` moved from the inner wrapper onto the section so the gutter is
+    // not nested inside max-w-7xl — see PinnedSpecSheet.tsx's note on the
+    // grid container. Keeps this page's spec rail on the same content grid
+    // as its intro copy and as every other section on the site.
+    <section className="relative bg-bg px-6">
+      <div className="mx-auto max-w-7xl pt-24">
         <p className="label">Capability specifications</p>
         <h2 className="mt-3 text-heading font-display text-fg">
           Autonomous, all-weather field coverage

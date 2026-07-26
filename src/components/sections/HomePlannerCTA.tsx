@@ -17,6 +17,25 @@
 // site (not a mockup of a future capability), this is a real screenshot,
 // not a Placeholder_Media/Simulated_Label case — no "concept" or
 // "illustrative" caption is needed here.
+//
+// Mobile stacking order (site-owner feedback: section-to-section rhythm on
+// mobile felt monotonous — every 2-column text/image section collapses to
+// the same "text block, then image" stack). This section sits directly
+// after HomeAutonomyTeaser, so on mobile the two stacked back-to-back read
+// as the same block repeated twice. `order-1`/`order-2` flips this
+// section's stack to image-first/text-second below md.
+//
+// Desktop layout (homepage UX audit, current session): the mobile-only fix
+// above is now carried up to desktop as well, because the same monotony was
+// confirmed on desktop — this section, HomeAutonomyTeaser above it, and
+// HomeEnterpriseFraming below it were three CONSECUTIVE text-left/
+// image-right two-column blocks. The media column now sits LEFT and the
+// copy RIGHT at md+ (`md:order-*` instead of the previous
+// `md:order-none`), which also means the mobile and desktop orders finally
+// agree with each other (image first in both) rather than inverting at the
+// breakpoint. HomeAutonomyTeaser stacks and HomeEnterpriseFraming goes
+// asymmetric, so the three now read as three different shapes. Copy, CTA,
+// destination, and imagery are unchanged.
 import Image from "next/image";
 import Reveal from "@/components/ui/Reveal";
 import ReticleFrame from "@/components/ui/ReticleFrame";
@@ -28,7 +47,7 @@ export default function HomePlannerCTA() {
     // loosened further to let more of it show through.
     <section className="relative overflow-hidden bg-bg/50 px-6 py-24 md:py-32">
       <div className="mx-auto grid max-w-7xl gap-12 md:grid-cols-2 md:items-center">
-        <Reveal>
+        <Reveal className="order-2 md:order-2">
           <p className="label">Planner</p>
           <h2 className="mt-3 text-heading font-display text-fg">
             Model your own coverage area
@@ -44,7 +63,7 @@ export default function HomePlannerCTA() {
           </a>
         </Reveal>
 
-        <Reveal delay={0.16}>
+        <Reveal delay={0.16} className="order-1 md:order-1">
           <div
             className="relative mx-auto w-full max-w-2xl grayscale"
             style={{ aspectRatio: "16 / 9" }}

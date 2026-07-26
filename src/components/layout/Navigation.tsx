@@ -17,6 +17,12 @@ import Logo from "@/components/ui/Logo";
 // "Product" carries a dropdown exposing the 4 product lines. The 4th line
 // is named "HawkAI" (site owner has finalized the name; previously
 // "Quadcopter (name pending)").
+//
+// CTA rename (site-owner request, current session): the header's primary
+// CTA button (still linking to /contact, Requirement 1.7) is now labeled
+// "Contact Us" rather than "Request Demo" — text change only, no route
+// change. See the matching HomeContactBand.tsx rename for the homepage's
+// closing CTA.
 const PRODUCT_SUBLINKS = [
   { label: "Software Stack", href: "/product/software-stack" },
   { label: "Docking System", href: "/product/docking-system" },
@@ -240,7 +246,7 @@ export default function Navigation() {
           href="/contact"
           className="hidden border border-fg px-4 py-2 font-mono text-[11px] font-semibold uppercase tracking-[0.1em] text-fg transition-colors hover:bg-fg hover:text-bg md:block"
         >
-          Request Demo
+          Contact Us
         </a>
 
         <button

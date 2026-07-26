@@ -39,6 +39,15 @@
 // designed for in-page scroll-triggered content) to HeroHeadline.tsx (GSAP
 // word-stagger, blur-to-focus + rise), since this is a mount-time hero
 // moment rather than a scroll-triggered reveal — see HeroHeadline.tsx.
+//
+// UX fix (homepage first-time-visitor audit, Requirements 4.1, 5.1, 5.4):
+// the hero previously rendered only the headline — no supporting sentence
+// and no CTA — so a first-time visitor had no way to tell drones were
+// involved, or what to do next, until several sections later. Adds one
+// supporting sentence under the headline naming what PAWAAC actually does,
+// plus a primary CTA link, into the hero itself. HeroHeadline and its GSAP
+// entrance above are untouched; the new content is added around it in the
+// same left-aligned content column.
 import HeroHeadline from "@/components/ui/HeroHeadline";
 
 export default function HomeHero() {
@@ -64,6 +73,22 @@ export default function HomeHero() {
           text="Autonomous systems that protect what matters"
           className="max-w-5xl font-display text-[clamp(2.25rem,4.8vw,4.75rem)] font-bold uppercase leading-[0.94] tracking-[-0.035em] text-fg [text-wrap:balance] [text-shadow:0_3px_18px_rgba(0,0,0,0.7)]"
         />
+
+        {/* Supporting sentence + CTA (UX fix, see file header). Section
+            background is bg-transparent (the raw SkyScenery photo shows
+            through directly, not a tinted panel), so both carry the same
+            drop-shadow treatment as the headline above for legibility
+            against the photo, rather than a new backdrop scrim. */}
+        <p className="mt-5 max-w-lg text-body font-body text-fg/90 [text-shadow:0_2px_12px_rgba(0,0,0,0.65)]">
+          Fully autonomous surveillance drones for defense, police, and
+          critical infrastructure.
+        </p>
+        <a
+          href="/product"
+          className="mt-6 inline-block border border-fg px-5 py-2.5 font-mono text-[11px] font-semibold uppercase tracking-[0.1em] text-fg drop-shadow-[0_3px_10px_rgba(0,0,0,0.55)] transition-colors hover:bg-fg hover:text-bg"
+        >
+          See the platform
+        </a>
       </div>
     </section>
   );

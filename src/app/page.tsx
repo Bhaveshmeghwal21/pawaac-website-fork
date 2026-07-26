@@ -63,6 +63,7 @@
 // (Enterprise_Persona); Sections 4, 5, 7, 8 (Both) sit in table order,
 // which is already consistent with that constraint.
 import HomeHero from "@/components/sections/HomeHero";
+import HomeOperatingLoop from "@/components/sections/HomeOperatingLoop";
 import HomeSpecSheet from "@/components/sections/HomeSpecSheet";
 import HomeDeploymentsPreview from "@/components/sections/HomeDeploymentsPreview";
 import HomeAutonomyTeaser from "@/components/sections/HomeAutonomyTeaser";
@@ -85,11 +86,44 @@ import SkyScenery from "@/components/ui/SkyScenery";
 //
 // HomeClosingVision (site-owner request, current session): a 9th section
 // re-added above Footer — see HomeClosingVision.tsx for full rationale.
+//
+// ── Homepage UX audit (current session): one section added ───────────────
+//
+// HomeOperatingLoop, before HomeSpecSheet. Net-new; nothing was removed
+// from the render tree.
+//
+// A HomeTrustStrip section (a credential strip carrying the DGCA COMPLIANT /
+// MeitY RECOGNIZED badges plus the operating entity and founding year, which
+// otherwise appear only in the Footer at ~97% scroll depth) was added here
+// and then REMOVED at the site owner's explicit request after reviewing it
+// live. Do not reintroduce it without asking. The underlying observation
+// still stands and is unaddressed: those two credentials are the fastest
+// available answers to "is this a real, cleared vendor" for the
+// Defense_Police_Persona, and they are currently buried in the Footer.
+//
+// Ordering rationale:
+//
+//   - HomeOperatingLoop sits BEFORE HomeSpecSheet, not after it. The
+//     previous order asked a first-time visitor to absorb six hardware
+//     numerals before anything had explained what the system does with
+//     them. Task 16's own note on HomeSpecSheet flagged a version of this
+//     ("spec numerals named before the platforms were"), which was patched
+//     with a bridging sentence; putting the operating cycle first fixes it
+//     at the root, and the specs then land as evidence for a claim the
+//     reader has already been given. HomeOperatingLoop is a "Both"-persona
+//     section and still renders well before the sole Enterprise_Persona
+//     section (HomeEnterpriseFraming), so Property 7 / Requirement 6.1,
+//     6.3's persona ordering constraint continues to hold.
+//
+// Net scroll effect: un-jacking Pinned_Spec_Sheet (see PinnedSpecSheet.tsx)
+// freed ~4,500px, and this section spends part of it on content that argues
+// rather than indexes. The page gets meaningfully shorter overall.
 export default function Home() {
   return (
     <>
       <SkyScenery />
       <HomeHero />
+      <HomeOperatingLoop />
       <HomeSpecSheet />
       <HomeDeploymentsPreview />
       <HomeAutonomyTeaser />

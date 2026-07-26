@@ -10,15 +10,27 @@ import Navigation from "@/components/layout/Navigation";
 // Typeface decision (resolved OCP-01, design.md -> Design Tokens -> Type tokens):
 // Display_Type/Heading use Space Grotesk (SIL OFL, variable-weight geometric grotesk).
 // Label_Caps/Technical_Data use JetBrains Mono (Apache 2.0), replacing IBM Plex Mono.
+//
+// Perf fix (console warning: "resource preloaded but not used"): both fonts
+// are variable Google Fonts, but were previously requested with a fixed
+// `weight` array, which makes next/font fetch separate static per-weight
+// files (5 for Space Grotesk, 3 for JetBrains Mono) instead of one variable
+// file per family. Next's own docs recommend omitting `weight` entirely for
+// variable fonts ("If loading a variable font, you don't need to specify
+// the font weight") — every requested static weight file gets a preload
+// link injected regardless of whether that exact weight renders above the
+// fold on a given route, and the ones that don't triggered the browser's
+// unused-preload warning. Dropping `weight` here keeps every existing
+// Tailwind font-weight utility (font-bold, font-semibold, etc.) working
+// exactly the same — variable fonts render any weight in their range via
+// standard CSS font-weight — while fetching 2 font files total instead of 8.
 const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
   variable: "--font-space-grotesk",
 });
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
-  weight: ["400", "500", "600"],
   variable: "--font-jetbrains-mono",
 });
 

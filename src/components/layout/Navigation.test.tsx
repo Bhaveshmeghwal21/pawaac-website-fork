@@ -2,7 +2,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import Navigation from "./Navigation";
 
 // Spec: pawaac-design-language-evolution — Task 36 (follow-up gap closure)
@@ -78,10 +78,17 @@ describe("Navigation", () => {
     expect(itemLabels).toEqual(["Product", "Autonomy", "Resources", "Company"]);
   });
 
-  it('activating "Request Demo" navigates to Contact_Page (/contact) (Requirement 1.7)', () => {
+  it('activating "Contact Us" navigates to Contact_Page (/contact) (Requirement 1.7)', () => {
     render(<Navigation />);
 
-    const requestDemo = screen.getByRole("link", { name: "Request Demo" });
+    // Renamed from "Request Demo" (site-owner request) — same /contact
+    // destination, label only. The Company dropdown also has its own
+    // "Contact Us" sub-link (see the "Navigation Company dropdown" describe
+    // block below) with the same accessible name, so this scopes to the
+    // one link NOT nested inside a dropdown <ul> — the header's primary CTA.
+    const requestDemo = screen
+      .getAllByRole("link", { name: "Contact Us" })
+      .find((el) => !el.closest("ul"));
     expect(requestDemo).toHaveAttribute("href", "/contact");
   });
 
@@ -254,8 +261,17 @@ describe("Navigation Company dropdown", () => {
   it("renders all 5 Company sub-links with the correct hrefs, in order", () => {
     render(<Navigation />);
 
+    // Scoped to the Company dropdown's own <ul> (found via the "Company"
+    // trigger's parent <li>): the header's primary CTA button is also
+    // labeled "Contact Us" (site-owner rename, current session) since it
+    // shares the same /contact destination as the "Contact Us" sub-link
+    // here, so an unscoped getByRole("link", { name: "Contact Us" }) would
+    // now match both.
+    const companyTrigger = screen.getByRole("link", { name: "Company" });
+    const companyDropdown =
+      companyTrigger.closest("li")!.querySelector("ul")!;
     const links = EXPECTED_COMPANY_SUBLINKS.map((item) =>
-      screen.getByRole("link", { name: item.label }),
+      within(companyDropdown).getByRole("link", { name: item.label }),
     );
     links.forEach((link, i) => {
       expect(link).toHaveAttribute("href", EXPECTED_COMPANY_SUBLINKS[i].href);
