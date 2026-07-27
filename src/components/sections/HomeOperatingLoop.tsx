@@ -31,9 +31,11 @@
 // Disclosure (following this codebase's convention — cf.
 // HomeAutonomyTeaser.tsx's "Concept interface (in development)" caption and
 // AutonomyDispatch.tsx's persistent illustrative label): the eyebrow reads
-// "Operating concept" and a visible, never-aria-hidden closing line states
-// outright that this describes intended operation rather than a fielded
-// deployment record, and that an operator stays in the loop for escalation.
+// "Operating concept". A second, explicit closing line ("Describes how the
+// system is designed to operate, not a record of fielded deployments.") also
+// carried this disclosure below the loop-closing row; removed at the site
+// owner's explicit request (current session) — the eyebrow alone now carries
+// this section's disclosure.
 //
 // Punctuation: no hyphens or dashes in on-page copy, per the standing
 // site-owner request applied across the Homepage.
@@ -622,10 +624,10 @@ export default function HomeOperatingLoop() {
         </div>
 
         {/* Loop-closing row: the point of the cycle is that step 05 returns
-            to step 01. Also carries the disclosure described in the file
-            header — a plain, always-visible, never-aria-hidden paragraph in
-            the normal reading order, not a tooltip or hover state. */}
-        <div className="mt-12 flex flex-col gap-4 border-t border-line pt-6 md:flex-row md:items-start md:justify-between md:gap-10">
+            to step 01. The second, explicit disclosure line that used to sit
+            here was removed at the site owner's explicit request (current
+            session) — see the file header's Content governance note. */}
+        <div className="mt-12 border-t border-line pt-6">
           <p className="flex items-start gap-3 text-body font-body text-fg/90">
             <span
               aria-hidden="true"
@@ -636,15 +638,6 @@ export default function HomeOperatingLoop() {
             </span>
             The cycle repeats without a pilot at the controls, and an operator
             stays in the loop for escalation by design.
-          </p>
-          {/* Deliberately NOT `.technical-data` (mono, uppercase, 0.12em
-              tracking). That class is for short spec units and metadata;
-              applied to a ~90-character sentence it rendered as a wall of
-              tracked-out capitals, which is the wrong treatment for the one
-              line here a reader actually has to understand. */}
-          <p className="max-w-xs font-mono text-[11px] leading-relaxed text-muted md:text-right">
-            Describes how the system is designed to operate, not a record of
-            fielded deployments.
           </p>
         </div>
 
