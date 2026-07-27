@@ -60,10 +60,15 @@ export default function HomeHero() {
     <section className="relative flex min-h-[100dvh] items-end overflow-hidden bg-transparent px-6 pb-[14vh] pt-28 md:pb-[16vh] md:pt-36">
       {/* Display_Type oversized word-mark texture behind hero media
           (Pattern 1), purely decorative — hidden from assistive
-          technology per Requirement 10.6 */}
+          technology per Requirement 10.6. Capped at 15vw below sm (mobile
+          audit, current session): same fix as HomeAutonomyTeaser's "STACK"
+          span — at a flat 20vw, six bold uppercase characters ran close to
+          the section's own edges on narrow phones; opacity is already low
+          (0.04) so the size difference is headroom against clipping, not a
+          visual identity change. */}
       <span
         aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 top-6 select-none text-center font-display text-[20vw] font-bold uppercase leading-none text-fg/[0.04] md:top-10"
+        className="pointer-events-none absolute inset-x-0 top-6 select-none text-center font-display text-[15vw] font-bold uppercase leading-none text-fg/[0.04] sm:text-[20vw] md:top-10"
       >
         PAWAAC
       </span>

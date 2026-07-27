@@ -62,6 +62,36 @@
 // left a vague light patch. Showing most of the span and compensating with a
 // much lower opacity keeps the silhouette legible as an aircraft while
 // carrying less brightness overall than the tighter crop did.
+//
+// Mobile audit (current session): checked whether this layer needed the same
+// measured mobile-vs-desktop split HomeCompanyStrip's instance has. It does
+// not. HomeCompanyStrip's mobile fix existed because a fixed PX bottom offset
+// (`md:bottom-[-208px]`) meant most of a much-shorter mobile layer fell below
+// the section entirely; this layer already uses a flat PERCENTAGE offset
+// (`bottom-[-16%]`) at every breakpoint, which scales with the layer's own
+// rendered height and does not have that failure mode. Verified against the
+// live DOM at 390 and 1265px: ~74% of the layer's own height stays inside the
+// section at both, and the composited WCAG contrast the airframe itself
+// contributes is within 0.1-0.2 of the no-airframe baseline at both widths —
+// negligible, consistent with 0.06 being a very low opacity.
+//
+// That baseline check surfaced something else, unrelated to this layer or to
+// mobile specifically: the SECTION'S OWN base tint (`bg-bg/70` over the raw
+// SkyScenery photo, with no airframe involved at all) drops the "Vision"
+// label and the supporting sentence -- both --color-muted -- as low as
+// ~2.6-2.8:1 against WCAG AA's 4.5:1 floor, across roughly HALF of this
+// section's natural scroll transit (measured by sweeping which row of the
+// fixed SkyScenery photo aligns with this section's text as it scrolls
+// through the viewport, same method as HomeCompanyStrip's header describes;
+// script in the working session's scratchpad). It clears comfortably (5:1+)
+// only where a darker part of the photo happens to sit behind the text. This
+// reproduces near-identically with the airframe layer removed entirely, so it
+// is not this component's doing -- it is a pre-existing property of pairing
+// --color-muted text with a 70%-only tint over a bright sunset photo, present
+// equally at every breakpoint. Left unchanged here rather than fixed
+// unilaterally: raising the tint or moving this section's text off
+// --color-muted is a visual-design call for the site owner, not something to
+// decide as a side effect of a mobile-specific pass.
 import AirframeGhost from "@/components/ui/AirframeGhost";
 import Reveal from "@/components/ui/Reveal";
 

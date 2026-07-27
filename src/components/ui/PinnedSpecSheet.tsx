@@ -12,6 +12,11 @@
 // a Technical_Data unit/label above it, and at most one supporting sentence
 // (<=140 chars) below.
 //
+// Where a page shows specs for more than one airframe, render one instance per
+// airframe and pass `eyebrow` — see its doc comment below for why mixing both
+// platforms into a single ungrouped rail is a correctness problem and not just
+// an ordering preference.
+//
 // Numeral slot: real numerals are only populated once a linked
 // Change_Proposal is recorded `approved` (Requirement 7.2); until then,
 // callers should leave `numeral` empty/undefined and this component renders
@@ -114,6 +119,28 @@ export type SpecPanel = {
   numeral: string;
   supportingSentence: string;
 };
+
+/**
+ * Optional caption naming which platform a group of panels belongs to.
+ *
+ * Added because the Homepage rail mixes both airframes. Six panels in one
+ * undifferentiated grid, with a HawkAI Plus plan view filling the section
+ * background, read as six HawkAI Plus specs — but three of them are
+ * Sentrivion's. That is the same class of problem as publishing an
+ * unconfirmed figure (Requirement 8.3 / OCP-02): the numerals are all real,
+ * yet the layout attributes half of them to the wrong airframe. Attribution
+ * lived only in each panel's supporting sentence at 13px, which does not
+ * out-argue a large image of a quadcopter.
+ *
+ * Rendered brighter than the panels' own `technical-data` labels (text-fg vs
+ * text-muted) so it reads as a heading OVER them rather than a seventh label
+ * among them. That also keeps it clear of the contrast constraint documented
+ * in HomeSpecSheet.tsx, where the 12px muted labels are the binding case
+ * against the airframe layer.
+ *
+ * Single-platform call sites (/product/hawkai, /product/sentrivion) omit it —
+ * their page already names the airframe, so a caption would be noise.
+ */
 
 const MAX_SUPPORTING_SENTENCE_LENGTH = 140;
 const COLUMNS = 3;
@@ -250,6 +277,7 @@ export default function PinnedSpecSheet({
   panels,
   className = "",
   compact = false,
+  eyebrow,
 }: {
   panels: SpecPanel[];
   className?: string;
@@ -263,6 +291,8 @@ export default function PinnedSpecSheet({
    * /product/sentrivion rails own their scroll and keep the larger scale.
    */
   compact?: boolean;
+  /** Platform caption for this group of panels. See SpecPanel above. */
+  eyebrow?: string;
 }) {
   const rootRef = useRef<HTMLDivElement>(null);
 
@@ -281,6 +311,23 @@ export default function PinnedSpecSheet({
       const q = gsap.utils.selector(root);
       const panelEls = q("[data-panel]") as HTMLElement[];
       const configs: LerpTrackConfig[] = [];
+
+      // Same window and damping as column 0 below, so the caption leads its own
+      // row rather than arriving with it.
+      const eyebrowEl = q("[data-group-eyebrow]")[0] as HTMLElement | undefined;
+      if (eyebrowEl) {
+        eyebrowEl.style.willChange = "transform, opacity";
+        configs.push({
+          el: eyebrowEl,
+          ease: 0.15,
+          from: 1.02,
+          to: 0.78,
+          apply(p) {
+            eyebrowEl.style.transform = `translate3d(0, ${((1 - p) * 110).toFixed(2)}%, 0)`;
+            eyebrowEl.style.opacity = String(clamp01(p * 1.9));
+          },
+        });
+      }
 
       panelEls.forEach((panelEl, i) => {
         // Row position is already encoded in the element's own offset, so
@@ -397,12 +444,40 @@ export default function PinnedSpecSheet({
     });
 
     return () => mm.revert();
-  }, [panels]);
+  }, [panels, eyebrow]);
 
   if (panels.length === 0) return null;
 
   return (
-    <div className={className}>
+    <div ref={rootRef} className={className}>
+      {eyebrow && (
+        // Aligned to the same max-w-7xl grid as the panels below it, and
+        // clip-masked like the panel labels so it rises out of the rule rather
+        // than fading in place.
+        <div className="mx-auto max-w-7xl overflow-hidden">
+          {/* Spells out the Technical_Data utilities rather than using the
+              `.technical-data` class: that class hard-codes
+              `color: var(--color-muted)` as a plain (unlayered) rule, so it wins
+              over Tailwind's `text-fg` utility and the caption rendered at the
+              same #8a8a8a as the panel labels underneath it — verified live.
+              Everything else here matches `.technical-data` except size.
+              Site-owner request (current session): "increase the font size of
+              Sentrivion · VTOL platform / HawkAI Plus · tactical quadcopter" —
+              bumped from the 12px `.technical-data` scale to 16px/20px so it
+              reads as a section heading rather than a seventh panel label, which
+              is the role it plays now that each platform owns its own
+              full-size <section> (see HomeSpecSheet.tsx). text-fg keeps its own
+              contrast margin regardless of size (13:1+ measured throughout,
+              nowhere near the 4.5:1 floor), so this is a type-scale change only,
+              nothing to re-verify for contrast. */}
+          <p
+            data-group-eyebrow
+            className="font-mono text-[16px] uppercase tracking-[0.1em] text-fg md:text-[20px]"
+          >
+            {eyebrow}
+          </p>
+        </div>
+      )}
       {/* Horizontal gutter is intentionally NOT set here — it comes from the
           calling <section>'s own `px-6`, which is the convention every other
           section on the site follows (`<section ... px-6>` wrapping
@@ -414,10 +489,9 @@ export default function PinnedSpecSheet({
           (HomeSpecSheet, HawkAISpecs, SentrivionSpecs) carry `px-6` on their
           section. */}
       <div
-        ref={rootRef}
         className={`mx-auto grid max-w-7xl grid-cols-2 gap-x-8 md:grid-cols-3 md:gap-x-10 ${
           compact ? "gap-y-8 md:gap-y-8" : "gap-y-10 md:gap-y-12"
-        }`}
+        } ${eyebrow ? "mt-3" : ""}`}
       >
         {panels.map((panel, i) => (
           <Panel key={`${panel.label}-${i}`} panel={panel} compact={compact} />

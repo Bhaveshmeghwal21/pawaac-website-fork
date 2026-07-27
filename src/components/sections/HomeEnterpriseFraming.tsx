@@ -89,28 +89,43 @@ export default function HomeEnterpriseFraming() {
         </Reveal>
 
         <Reveal delay={0.14} y={-20}>
-          <div
-            className="relative mx-auto w-full max-w-2xl border border-[#d6d6d6]"
-            style={{ aspectRatio: "16 / 9" }}
-          >
-            {/* Real, generic (non-identifying) urban/infrastructure scene —
-                grayscale resting-state filter matching every other real
-                photo on the site (Requirement 3.1-3.2). No case reference,
-                no customer/partner identity (OCP-04 stays rejected/as-is).
-                Sized up from max-w-sm (384px) to max-w-xl (576px) per
-                site-owner request to make this image bigger/more
-                prominent, then to max-w-2xl (672px) when this section moved
-                to the asymmetric 5/7 split above — the wider media column is
-                ~709px at the max-w-7xl ceiling, so max-w-xl would have left
-                a visible gutter inside its own column. */}
-            <Image
-              src="/images/rawimage3.jpg"
-              alt="Generic urban street and traffic scene representing critical infrastructure"
-              fill
-              sizes="(min-width: 768px) 672px, 90vw"
-              className="object-cover grayscale"
-            />
-            <ReticleFrame variant="light" />
+          {/* -mx-6 sm:mx-0 (mobile audit, current session): the grid was
+              only ever given a plain "collapse to 1 column" treatment below
+              md, with no further mobile-specific adaptation. Reading order
+              already works as-is (text card then photo, no CSS order needed
+              — unlike HomePlannerCTA's flipped desktop layout, this one is
+              already text-left/image-right, so DOM order matches a sensible
+              mobile reading order without changes). What mobile WAS missing
+              is the same free width gain used on HomeAutonomyTeaser's media
+              box: cancels the section's own px-6 so this section's one real
+              photo (the file header above already calls out wanting it to
+              have "more presence") uses the full viewport width instead of
+              viewport minus 48px, rather than sitting inset like every other
+              piece of body copy on the page. */}
+          <div className="-mx-6 sm:mx-0">
+            <div
+              className="relative mx-auto w-full max-w-2xl border border-[#d6d6d6]"
+              style={{ aspectRatio: "16 / 9" }}
+            >
+              {/* Real, generic (non-identifying) urban/infrastructure scene —
+                  grayscale resting-state filter matching every other real
+                  photo on the site (Requirement 3.1-3.2). No case reference,
+                  no customer/partner identity (OCP-04 stays rejected/as-is).
+                  Sized up from max-w-sm (384px) to max-w-xl (576px) per
+                  site-owner request to make this image bigger/more
+                  prominent, then to max-w-2xl (672px) when this section moved
+                  to the asymmetric 5/7 split above — the wider media column is
+                  ~709px at the max-w-7xl ceiling, so max-w-xl would have left
+                  a visible gutter inside its own column. */}
+              <Image
+                src="/images/rawimage3.jpg"
+                alt="Generic urban street and traffic scene representing critical infrastructure"
+                fill
+                sizes="(min-width: 768px) 672px, 100vw"
+                className="object-cover grayscale"
+              />
+              <ReticleFrame variant="light" />
+            </div>
           </div>
         </Reveal>
       </div>

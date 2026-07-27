@@ -252,6 +252,14 @@ export default function HomeOperatingLoop() {
 
         const configs: LerpTrackConfig[] = [];
 
+        // True for the single shared row (`lg:grid-cols-5`, 1024px+),
+        // false for the stacked base/sm layouts where each step is its own
+        // full width block scrolled past individually. Recomputed on every
+        // rebuild (queueRebuild fires on resize via SplitText's autoSplit,
+        // see above) so a live resize across `lg` re-derives it rather than
+        // freezing whatever was true on first paint.
+        const isRow = window.innerWidth >= 1024;
+
         // Heading and lead lines. Each line gets slightly heavier damping
         // than the one before, so later lines trail — the stagger emerges
         // from the damping constants rather than from authored delays.
@@ -281,11 +289,28 @@ export default function HomeOperatingLoop() {
           const nodeStride =
             nodes.length > 1 ? (1 - NODE_WINDOW) / (nodes.length - 1) : 0;
 
+          // Retimed alongside the per-step text schedule below (see that
+          // comment for the measured root cause). Left at the old 0.34, the
+          // rail would now complete at scrollY~978 while the retimed text
+          // finishes at scrollY~850 — a 128px gap where step 5's copy reads
+          // sharp while its node is still visibly dim/small, inverting "a node
+          // can never light before the line reaches it" into the reverse.
+          //
+          // `to` is set to match step 5's OWN `to` (0.50) exactly, so the rail
+          // finishes its sweep and the last node fully acquires at the same
+          // scroll position the last step's copy does — measured at
+          // scrollY=850, heading top=107px, clear of the 64px nav. An earlier
+          // pass shifted this by the same flat +0.12 used below (giving
+          // `to=0.46`), which measured out to just 11px of heading clearance —
+          // technically inside the safe zone but thin enough that scroll
+          // jitter or a slightly taller heading (a copy edit, a font swap)
+          // could tip it under the nav. Matching step 5 exactly removes that
+          // margin risk instead of trusting an arbitrary buffer.
           configs.push({
             el: rail,
             ease: 0.14,
-            from: 0.9,
-            to: 0.34,
+            from: 1.02,
+            to: 0.5,
             apply(p) {
               rail.style.transform = `scaleX(${p.toFixed(4)})`;
               for (let i = 0; i < nodeStates.length; i++) {
@@ -325,8 +350,64 @@ export default function HomeOperatingLoop() {
 
           // Progress windows shift later per step, and damping gets heavier
           // per step, so the row resolves left to right behind the line.
-          const from = 0.93 - i * 0.055;
-          const to = 0.6 - i * 0.055;
+          //
+          // Site-owner report (live, 1265px layout): "the text is not
+          // appearing for that to appear i have to scroll more but that will
+          // remove the heading and upper text." Confirmed by measuring the
+          // real DOM rather than guessing: the heading (absTop 957) sits only
+          // 293px above the step row (absTop 1250), and the ORIGINAL last-step
+          // window (`to = 0.38`) only reached progress 1 once the row's own
+          // top had scrolled up to 38% of a 800px viewport (304px) — which
+          // requires scrollY=946, by which point the heading's top has
+          // scrolled to just 11px, underneath the persistent 64px nav. So the
+          // step 5 copy could only ever fully resolve once the heading it
+          // depends on for context was already gone.
+          //
+          // Both `from` and `to` are raised by a flat +0.12 (0.93->1.05,
+          // 0.6->0.72), keeping the existing 0.33 window width and the
+          // existing per-step stride (`i * 0.055`) that gives the row its
+          // left-to-right cascade — only WHEN the whole schedule sits within
+          // the scroll timeline moves. With `to` at 0.50 for the last step
+          // (i=4), full reveal now completes at scrollY=850, where the
+          // heading's top is still at 107px — comfortably clear of the nav,
+          // with room to spare. This is the same fix already applied to
+          // PinnedSpecSheet.tsx for the identical symptom on the spec rail.
+          //
+          // Below `lg` this row-based stagger does not apply (see `isRow`
+          // above): the site owner reported "we have to work a lot on
+          // mobile...may have to redesign positions," and measuring the
+          // live 390x844 layout (hard reload) showed why the row formula
+          // was actively wrong there rather than just imprecise. Below
+          // `lg` the grid has no column count at base width, so all five
+          // steps stack full width, one per row, roughly 200px apart
+          // (measured stepAbsTop deltas: 203, 202, 202, 181px) — nothing
+          // like a shared row. Reusing `i * 0.055` there made LATER steps
+          // need MORE additional scroll past their OWN natural entry
+          // (smaller `to` -> later completion), compounding on top of them
+          // already sitting much further down the page: step 4 (Respond)
+          // needed scrollY=1649 to fully resolve while its own top only
+          // reached absTop=2071 — two thirds of a screen height of scroll
+          // AFTER the block had already appeared before its text read
+          // clearly.
+          //
+          // Every step below `lg` instead shares one window, sized to a
+          // block's own natural entry rather than to a row position that
+          // does not exist at this layout: `to=0.55` completes the reveal
+          // once a block's own top has scrolled to a little past half the
+          // viewport height, i.e. shortly after it is comfortably on
+          // screen. That yields the same ~380px of post-entry scroll for
+          // EVERY step regardless of index (verified against the measured
+          // absTop values above), instead of a gap that grows with each
+          // step.
+          let from: number;
+          let to: number;
+          if (isRow) {
+            from = 1.05 - i * 0.055;
+            to = 0.72 - i * 0.055;
+          } else {
+            from = 0.9;
+            to = 0.55;
+          }
           const stepEase = 0.16 - i * 0.012;
 
           if (idx) {
@@ -457,8 +538,16 @@ export default function HomeOperatingLoop() {
         {/* Numbered instrument rail. The dim base rule lives on this
             container at lg (where the five steps sit in one row); below lg
             each step carries its own top rule, so the two never double up on
-            the first cell. */}
-        <div className="relative mt-14 grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:mt-16 lg:grid-cols-5 lg:border-t lg:border-line">
+            the first cell.
+
+            gap-y is tightened below lg (7 -> 40px at lg, matching the
+            original) as part of the mobile compaction pass below: with five
+            steps stacked full width instead of sharing one row, the vertical
+            gap multiplies by up to four gaps in a row, so trimming it here
+            is the single biggest lever on the stack's total height. See the
+            per-step block and the isRow reveal-schedule branch below for the
+            rest of that pass. */}
+        <div className="relative mt-14 grid gap-x-6 gap-y-7 sm:grid-cols-2 lg:mt-16 lg:grid-cols-5 lg:gap-y-10 lg:border-t lg:border-line">
           {/* The sweep. Sits on the dim base rule and scales on x, so it
               reads as the rule lighting up from the left. Purely decorative,
               and only rendered at lg where the continuous rail exists. */}
@@ -472,7 +561,7 @@ export default function HomeOperatingLoop() {
             <div
               key={step.index}
               data-step
-              className="relative h-full border-t border-line pt-6 lg:border-t-0"
+              className="relative h-full border-t border-line pt-5 lg:border-t-0 lg:pt-6"
             >
               {/* Node straddling the rail. Centred on the rule with a `top`
                   offset rather than `-translate-y-1/2` on purpose: the motion
@@ -490,26 +579,37 @@ export default function HomeOperatingLoop() {
                 className="absolute left-0 top-[-3px] hidden h-[5px] w-[5px] bg-fg lg:block"
               />
 
-              {/* The overflow-hidden wrappers are what make the name and body
-                  RISE OUT of the rule rather than fade in place. They are
-                  inert under reduced motion: the inner element's transform is
-                  only ever written by the matchMedia branch. */}
-              <p
-                data-index
-                data-value={step.index}
-                className="technical-data text-muted"
-              >
-                {step.index}
-              </p>
-              <div className="mt-3 overflow-hidden">
-                <h3
-                  data-name
-                  className="font-display text-2xl font-bold tracking-[-0.01em] text-fg"
+              {/* Index and name share a row below lg, where every step is
+                  its own full width block: pairing "01" beside "Dock" reads
+                  as a numbered list marker and removes a whole text line's
+                  worth of height per step (part of the same mobile
+                  compaction pass as the gap-y trim above and the isRow
+                  reveal-schedule branch below). At lg they revert to the
+                  original stacked treatment, matching the shared row's
+                  established rhythm.
+
+                  The overflow-hidden wrapper is what makes the name RISE OUT
+                  of the rule rather than fade in place; it is inert under
+                  reduced motion since the inner element's transform is only
+                  ever written by the matchMedia branch. */}
+              <div className="flex items-center gap-3 lg:block">
+                <p
+                  data-index
+                  data-value={step.index}
+                  className="technical-data text-muted"
                 >
-                  {step.name}
-                </h3>
+                  {step.index}
+                </p>
+                <div className="overflow-hidden lg:mt-3">
+                  <h3
+                    data-name
+                    className="font-display text-2xl font-bold tracking-[-0.01em] text-fg"
+                  >
+                    {step.name}
+                  </h3>
+                </div>
               </div>
-              <div className="mt-3 overflow-hidden">
+              <div className="mt-2 overflow-hidden lg:mt-3">
                 <p
                   data-body
                   className="text-[13px] font-body leading-relaxed text-fg/85 md:text-sm"
