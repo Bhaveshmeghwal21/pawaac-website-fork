@@ -33,6 +33,36 @@
 // detection-box color-coding and red status indicators are meaningful UI
 // semantics, not incidental photo color — the same kind of deliberate,
 // reasoned exception already used for SkyScenery.tsx's real sky photo.
+// ── Repositioned + reworded (homepage narrative-arc review, current
+// session) ──────────────────────────────────────────────────────────────
+//
+// Moved from between HomeDeploymentsPreview and HomePlannerCTA to directly
+// after HomeOperatingLoop (see page.tsx's header for the full diagnosis).
+// This section's previous copy ("One stack: sense, decide, act" / "The same
+// autonomy engine powers detection, planning, and dispatch") re-explained
+// the same mechanism HomeOperatingLoop already covers concretely
+// (dock/patrol/detect/alert/respond), three sections earlier — a reader who
+// absorbed that section got nothing new here, just a more abstract
+// restatement next to a concept mockup.
+//
+// Reworded to do a different job: illustrate, rather than re-explain, the
+// specific claim HomeOperatingLoop's own closing line just made ("an
+// operator stays in the loop for escalation by design") and its step 04
+// ("Alert") already states ("An operator gets a located alert and taps in
+// for live video only when there is something worth looking at"). This
+// section is now the visual zoom-in on THAT moment specifically, using the
+// same gcs.png concept mockup and the same Simulated_Label disclosure
+// ("Concept interface (in development)") — no new claim, no new asset, just
+// a headline/body that points at one beat instead of restating the whole
+// loop. The oversized background word-mark changes from "STACK" (tied to
+// the old "one stack" framing) to "ALERT" (tied to the new one) for the
+// same reason.
+//
+// The CTA link to /autonomy is dropped: HomeOperatingLoop, immediately
+// above this section in the new order, already ends with its own "See the
+// autonomy stack" link to the same destination — a second consecutive link
+// to the identical page read as redundant rather than as a second, distinct
+// invitation.
 import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useState } from "react";
@@ -40,21 +70,22 @@ import Reveal from "@/components/ui/Reveal";
 import ReticleFrame from "@/components/ui/ReticleFrame";
 
 export default function HomeAutonomyTeaser() {
-  // Tap-to-zoom lightbox (mobile audit, current session): the inline media
-  // box is capped at max-w-4xl (896px, see the comment on that block below)
-  // for desktop legibility reasons, but on a ~390px phone the box can only
-  // ever render as wide as the viewport itself minus the section's own
-  // padding — no CSS max-width/breakpoint trick raises that ceiling, since
-  // the viewport width IS the ceiling. Measured: at 390px the box rendered
-  // at ~342px, i.e. a 0.286x scale of the source's real 1198px width, small
-  // enough that the embedded readout text (target IDs, ARMED status, flight
-  // commands) — the entire point of this image per the file header above —
-  // is not reliably legible. A modal that renders the image at its native
-  // 1198x684 resolution inside a scrollable overlay sidesteps the ceiling
-  // entirely: it doesn't need to fit the whole image on screen at once, the
-  // reader pans/scrolls to read whichever part they want at full source
-  // detail, same interaction shape as tapping a photo full-size in a chat
-  // app.
+  // Tap-to-zoom lightbox: the inline media box was originally sized for
+  // desktop legibility on its own (max-w-4xl, 896px), but the site owner
+  // then asked (current session) for this section to match
+  // HomeEnterpriseFraming's compact side-by-side layout instead of
+  // stacking full width -- see the Layout comment below. Once the inline
+  // box shrinks to fit a column alongside the text, NEITHER breakpoint can
+  // render the embedded readout text (target IDs, ARMED status, flight
+  // commands -- the entire point of this image per the file header above)
+  // at a reliably legible size on its own. This modal, which renders the
+  // image at its native 1198x684 resolution inside a scrollable overlay,
+  // is what makes shrinking the inline box safe: it doesn't need to fit the
+  // whole image on screen at once, the reader taps in and pans/scrolls to
+  // read whichever part they want at full source detail, same interaction
+  // shape as tapping a photo full-size in a chat app. Originally added for
+  // the ~390px mobile case specifically; now load-bearing at every
+  // breakpoint since the inline box is compact everywhere.
   const [zoomed, setZoomed] = useState(false);
 
   useEffect(() => {
@@ -88,60 +119,61 @@ export default function HomeAutonomyTeaser() {
         aria-hidden="true"
         className="pointer-events-none absolute inset-x-0 top-4 select-none text-center font-display text-[15vw] font-bold uppercase leading-none text-fg/[0.04] sm:text-[18vw] md:top-8"
       >
-        STACK
+        ALERT
       </span>
 
-      {/* Layout (homepage UX audit, current session): this section,
-          HomePlannerCTA, and HomeEnterpriseFraming were three CONSECUTIVE
-          `md:grid-cols-2` text-left/image-right blocks, so on both desktop
-          and mobile they read as the same block repeated three times. The
-          three are now given three distinct silhouettes: this one stacks
-          (copy above, wide media below), HomePlannerCTA flips to
-          image-left/text-right, and HomeEnterpriseFraming uses an
-          asymmetric split. Content is unchanged in all three.
+      {/* Layout (site-owner request, current session, superseding the prior
+          "distinct silhouettes" pass described below): the stacked
+          treatment made this section run tall enough that the heading and
+          the whole interface image could not both fit in one screen — the
+          site owner pointed at HomeEnterpriseFraming's compact
+          text-left/image-right split as the model to match instead, so this
+          now uses that section's exact grid shape (same 5fr/7fr split, same
+          gap scale) rather than stacking.
 
-          Stacking (rather than flipping) is the right variant for THIS
-          section specifically: gcs.png is a wide 1198x684 ground-control
-          interface whose small on-screen readouts were being rendered into
-          a 576px half-column. Given the whole point of the image is that a
-          viewer can see what the interface shows, it belongs at full
-          content width. */}
-      <div className="relative z-10 mx-auto max-w-7xl">
-        <Reveal className="max-w-2xl">
-          <p className="label">Autonomy</p>
+          The "three consecutive similar blocks" concern noted here
+          previously (this section, HomePlannerCTA, HomeEnterpriseFraming
+          all sharing a two-column shape back to back) no longer applies:
+          the narrative-arc re-sequencing above (see page.tsx's header)
+          moved this section to sit between HomeOperatingLoop (a single
+          full-width instrument rail, not a two-column grid) and
+          HomeSpecSheet (two full-bleed dark panels, not a two-column grid
+          either), so this is no longer adjacent to either HomePlannerCTA or
+          HomeEnterpriseFraming at all.
+
+          The original full-width justification (gcs.png's on-screen
+          readouts need to be legible inline) no longer applies now that the
+          tap-to-zoom modal above exists -- that modal is what makes this
+          resize safe rather than a legibility regression. See the state
+          comment above. */}
+      <div className="relative z-10 mx-auto grid max-w-7xl gap-12 md:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] md:items-start md:gap-16">
+        <Reveal>
+          <p className="label">Escalation</p>
           <h2 className="mt-3 text-heading font-display text-fg">
-            One stack: sense, decide, act
+            One tap from alert to oversight
           </h2>
           <p className="mt-4 max-w-md text-body font-body text-muted">
-            The same autonomy engine powers detection, planning, and
-            dispatch.
+            The system flags what is worth a look, not a live feed to sit
+            and watch. An operator taps in for video and status only when
+            it counts, then decides what happens next.
           </p>
-          <a
-            href="/autonomy"
-            className="group mt-6 inline-flex items-center gap-2 font-mono text-sm text-fg"
-          >
-            See how it works
-            <span className="transition-transform group-hover:translate-x-1">→</span>
-          </a>
         </Reveal>
 
-        {/* max-w-4xl (896px), not max-w-5xl: at 1198/684 a 1024px-wide
-            render is 585px tall, which pushed this section to ~1200px and
-            made it impossible to see the heading and the whole interface in
-            one 900px viewport. 896px is still +55% on the 576px half-column
-            this replaced, and keeps the section close to a single screen. */}
-        <Reveal delay={0.12} y={-24} className="mt-12">
+        {/* max-w-2xl (672px), matching HomeEnterpriseFraming's image cap
+            exactly (see that file's own comment on why 672px fills its 7fr
+            column at the max-w-7xl ceiling without a gutter). At gcs.png's
+            1198/684 aspect ratio that renders ~384px tall, comparable to
+            Enterprise's 16:9 image at the same width. */}
+        <Reveal delay={0.12} y={-20}>
           {/* -mx-6 sm:mx-0 (mobile audit, current session): cancels the
               section's own px-6 padding below sm so the inline box uses the
-              full viewport width rather than viewport minus 48px — a modest
-              ~14% width gain that's free to take, on top of the tap-to-zoom
-              fix below which is the actual fix for legibility (see the state
-              comment above; no amount of width within the viewport reaches
-              native resolution on a phone). Applied on its own wrapper, not
-              merged onto the max-w-4xl/mx-auto div below, so the negative
-              and auto margins never fight over the same element. */}
+              full viewport width rather than viewport minus 48px on the
+              single-column mobile layout, before the grid above takes over
+              at md. Applied on its own wrapper, not merged onto the
+              max-w-2xl/mx-auto div below, so the negative and auto margins
+              never fight over the same element. */}
           <div className="-mx-6 sm:mx-0">
-            <div className="mx-auto w-full max-w-4xl">
+            <div className="mx-auto w-full max-w-2xl md:mx-0">
               <button
                 type="button"
                 onClick={() => setZoomed(true)}
@@ -153,7 +185,7 @@ export default function HomeAutonomyTeaser() {
                   src="/images/gcs.png"
                   alt="Concept ground-control-station interface showing target tracking and flight commands"
                   fill
-                  sizes="(min-width: 896px) 896px, 100vw"
+                  sizes="(min-width: 768px) 672px, 100vw"
                   className="object-contain"
                 />
                 <ReticleFrame variant="dark" />
@@ -171,7 +203,7 @@ export default function HomeAutonomyTeaser() {
               the box above so the caption text itself still respects the
               section's normal reading margin instead of touching the
               viewport edge. */}
-          <p className="technical-data mx-auto mt-2 max-w-4xl px-6 text-center text-muted sm:px-0">
+          <p className="technical-data mx-auto mt-2 max-w-2xl px-6 text-center text-muted sm:px-0 md:mx-0 md:text-left">
             Concept interface (in development)
           </p>
         </Reveal>

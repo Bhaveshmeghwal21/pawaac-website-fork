@@ -46,10 +46,29 @@
 // looked viable until the no-worsening rule was added: it passed at 1441px
 // while quietly pushing the "Company" label from 4.45 to 3.96 at 1265px.
 //
-// So "brighter than the sky background" is satisfiable in HomeSpecSheet but not
-// here, and this layer is set to the brightest configuration that holds instead.
-// Going brighter means either giving up AA on those muted runs or lifting them
-// off --color-muted, which is a palette decision and not taken unilaterally.
+// Opacity 0.22 -> 0.26, section tint bg-bg/50 -> bg-bg/55 (site-owner
+// request, current session: "make the drone image slightly brighter... you
+// may decrease the brightness of sky image"). The prior search varied the
+// AIRFRAME's own knobs (width/bleed/opacity/fade/offset) against a FIXED
+// section tint; it never tried raising the section's own tint jointly with
+// opacity, which is what actually reopens the brightness budget here: a
+// darker base sky gives the same 0.26-opacity airframe more headroom before
+// the muted runs behind it fail, rather than fighting the airframe's
+// opacity in isolation. Re-verified against the real composite the same
+// way as before (worst case across many simulated SkyScenery scroll
+// alignments, since it is `position: fixed`), at THREE breakpoints this
+// time (1265px, 1878px, and 390px mobile, which keeps its own separate
+// opacity below but shares this tint) -- every one of the 7 text runs
+// improved at every breakpoint versus the previously-shipped tint=0.50/
+// opacity=0.22, none regressed. Script in the working session's
+// scratchpad (company_strip_sweep.py) if this needs revisiting.
+//
+// Mobile's own opacity (0.28, set via the base `opacity` prop below) is
+// intentionally left unchanged: the site owner's request was scoped to the
+// desktop screenshot they shared, and mobile already improved as a side
+// effect of the shared tint increase alone (its airframe opacity is
+// untouched, so darkening the sky behind it is a strict improvement with
+// nothing to trade off).
 "use client";
 
 import AirframeGhost from "@/components/ui/AirframeGhost";
@@ -60,7 +79,12 @@ export default function HomeCompanyStrip() {
     // bg-bg/80 -> bg-bg/50: SkyScenery's contrast fix (see SkyScenery.tsx)
     // now makes the sky genuinely visible, so this section's tint is
     // loosened further to let more of it show through.
-    <section className="relative bg-bg/50 px-6 py-20 md:py-24">
+    //
+    // bg-bg/50 -> bg-bg/55 (site-owner request, current session): a modest
+    // darkening of the sky background, done jointly with the airframe
+    // opacity bump below -- see the AirframeGhost comment for the verified
+    // contrast rationale.
+    <section className="relative bg-bg/55 px-6 py-20 md:py-24">
       {/* Decorative only (Requirement 10.6). Pulled below the section's
           bottom edge so the crop keeps the body/arms/gimbal in frame and
           drops the landing legs, which are the least legible part of the
@@ -81,7 +105,7 @@ export default function HomeCompanyStrip() {
         // offset pushed all but its top 75px below the section, and once it sits
         // in frame properly it clears the muted runs with more headroom than the
         // desktop layout does.
-        className="bottom-[-3%] w-[165vw] max-w-[1260px] md:bottom-[-208px] md:w-[98vw] md:[--airframe-opacity:0.22]"
+        className="bottom-[-3%] w-[165vw] max-w-[1260px] md:bottom-[-208px] md:w-[98vw] md:[--airframe-opacity:0.26]"
       />
       <div className="relative z-10 mx-auto max-w-7xl">
         <Reveal>

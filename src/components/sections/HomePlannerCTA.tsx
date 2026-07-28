@@ -20,22 +20,29 @@
 //
 // Mobile stacking order (site-owner feedback: section-to-section rhythm on
 // mobile felt monotonous — every 2-column text/image section collapses to
-// the same "text block, then image" stack). This section sits directly
-// after HomeAutonomyTeaser, so on mobile the two stacked back-to-back read
-// as the same block repeated twice. `order-1`/`order-2` flips this
-// section's stack to image-first/text-second below md.
+// the same "text block, then image" stack). This section originally sat
+// directly after HomeAutonomyTeaser, so on mobile the two stacked
+// back-to-back read as the same block repeated twice. `order-1`/`order-2`
+// flips this section's stack to image-first/text-second below md.
 //
 // Desktop layout (homepage UX audit, current session): the mobile-only fix
-// above is now carried up to desktop as well, because the same monotony was
+// above was carried up to desktop as well, because the same monotony was
 // confirmed on desktop — this section, HomeAutonomyTeaser above it, and
 // HomeEnterpriseFraming below it were three CONSECUTIVE text-left/
-// image-right two-column blocks. The media column now sits LEFT and the
-// copy RIGHT at md+ (`md:order-*` instead of the previous
-// `md:order-none`), which also means the mobile and desktop orders finally
-// agree with each other (image first in both) rather than inverting at the
-// breakpoint. HomeAutonomyTeaser stacks and HomeEnterpriseFraming goes
-// asymmetric, so the three now read as three different shapes. Copy, CTA,
-// destination, and imagery are unchanged.
+// image-right two-column blocks. The media column sits LEFT and the copy
+// RIGHT at md+ (`md:order-*` instead of the previous `md:order-none`),
+// which also means the mobile and desktop orders agree with each other
+// (image first in both) rather than inverting at the breakpoint.
+//
+// Position (narrative-arc re-sequencing, current session, see page.tsx's
+// header): this section moves DOWN to close out the proof arc (Specs ->
+// Sectors -> Enterprise -> Planner), now following HomeEnterpriseFraming
+// directly and preceding HomeCompanyStrip (a trust/metadata strip with no
+// image column at all, so no repeated-shape concern there). The
+// image-left/text-right order kept here still alternates against
+// HomeEnterpriseFraming's image-right/text-left order immediately above it,
+// so the two remaining adjacent two-column blocks read as different shapes
+// rather than a repeat. Copy, CTA, destination, and imagery are unchanged.
 import Image from "next/image";
 import Reveal from "@/components/ui/Reveal";
 import ReticleFrame from "@/components/ui/ReticleFrame";

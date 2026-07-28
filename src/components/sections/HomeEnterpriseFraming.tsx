@@ -58,17 +58,29 @@ export default function HomeEnterpriseFraming() {
         className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-bg to-transparent md:h-32"
       />
 
-      {/* Layout (homepage UX audit, current session): this was the third of
-          three CONSECUTIVE `md:grid-cols-2 md:items-center`
+      {/* Layout (homepage UX audit, current session): this was originally the
+          third of three CONSECUTIVE `md:grid-cols-2 md:items-center`
           text-left/image-right blocks (HomeAutonomyTeaser, HomePlannerCTA,
           this one), which read as the same block three times running. Those
-          two now stack and flip respectively; this one takes an asymmetric
+          two stacked and flipped respectively; this one takes an asymmetric
           5/7 split with top alignment instead of an even, vertically
           centered two-column. That also serves the content: this section has
           the shortest copy on the page (8 words of supporting text), so an
           even 50/50 split left its text column conspicuously empty, while
           the wider media column gives the one real photo here more presence.
-          Copy, CTA, destination, and imagery are unchanged. */}
+          Copy, CTA, destination, and imagery are unchanged.
+
+          Position (narrative-arc re-sequencing, current session, see
+          page.tsx's header): moved up to sit directly after
+          HomeDeploymentsPreview (a 4-tile image grid, not a two-column
+          layout) instead of after HomeAutonomyTeaser, so the persona
+          widening this section represents follows immediately after the
+          Sectors tiles that already hint at it (industrial, disaster
+          response), rather than being separated from them by two sections.
+          It is now followed by HomePlannerCTA, which keeps its own
+          image-left/text-right order — so the two remaining adjacent
+          two-column blocks still alternate (image-right here, image-left
+          next) rather than repeating. */}
       <div className="mx-auto grid max-w-7xl gap-12 md:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] md:items-start md:gap-16">
         <Reveal>
           <p className="label text-[#6b6b6b]">Enterprise &amp; critical infrastructure</p>

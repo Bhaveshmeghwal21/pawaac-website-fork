@@ -40,6 +40,12 @@
 // Punctuation: no hyphens or dashes in on-page copy, per the standing
 // site-owner request applied across the Homepage.
 //
+// Position (homepage narrative-arc review, current session): HomeAutonomyTeaser
+// now renders directly after this section (see page.tsx's header) and was
+// reworded to zoom into the escalation claim made in this section's own
+// closing line and step 04, rather than re-explaining this whole loop in
+// the abstract as it did before.
+//
 // ── Motion: continuous lerp field (second approach) ─────────────────────
 //
 // The FIRST implementation of this section used an event-based choreography:

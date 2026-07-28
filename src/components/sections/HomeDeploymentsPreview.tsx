@@ -14,9 +14,10 @@
 // abstract line-art icon. Defense and police tiles use aerial photography
 // specifically per site-owner request (an aerial view fits the
 // "sense from above" framing better than a ground-level shot):
-//   - defense: "Bangalore cantonment (44254283060).jpg" by Kevin Prince,
-//     an aerial view of an Indian Army cantonment area, CC BY-SA 2.0
-//     (https://creativecommons.org/licenses/by-sa/2.0/).
+//   - defense: "Aerial View Of Hindon Airbase IMG_9896_04.jpg" by Sumita
+//     Roy Dutta, an aerial view of Hindon Air Force Station (Ghaziabad,
+//     Uttar Pradesh), CC BY-SA 4.0
+//     (https://creativecommons.org/licenses/by-sa/4.0/).
 //   - police: "Downtown hyderabad drone.png" by Shredpave, a drone aerial
 //     view of a major Indian city (Hyderabad), CC0 1.0 Universal Public
 //     Domain Dedication (no attribution required) — paired with "police"
@@ -24,17 +25,56 @@
 //     facility (no real facility exists to source responsibly).
 //   - industrial: "India industry.jpg" by Abhisek Sarda, CC BY 2.0
 //     (https://creativecommons.org/licenses/by/2.0/).
-//   - infrastructure: "Howrah Bridge view 01.jpg" by Indrajit Das,
-//     CC BY-SA 3.0 (https://creativecommons.org/licenses/by-sa/3.0/).
+//   - disaster response: "An aerial view of flood-ravaged Rudraprayag, in
+//     Uttarakhand.jpg", published by the Ministry of Defence / Press
+//     Information Bureau, Government of India (PIB ID 47848), Government
+//     Open Data License - India (GODL)
+//     (https://www.data.gov.in/government-open-data-license-india). Like
+//     every other tile here, this depicts a real, specific, named place
+//     (a documented 2013 Uttarakhand flood site) but is used purely as a
+//     generic "this is the kind of scene disaster response operations
+//     happen in" sector illustration, exactly like the police tile uses
+//     an identifiable Hyderabad skyline and the industrial tile an
+//     identifiable Mumbai-area facility — none of the four claim Pawaac
+//     was involved at that specific location (still compliant with the
+//     "no customer/partner identity disclosed" constraint that motivated
+//     the original OCP-03 gating).
 // All four sourced from Wikimedia Commons (upload.wikimedia.org), verified
-// license terms permit commercial use; CC BY / CC BY-SA credit given here
-// in code comments per license terms (no on-page attribution UI exists in
-// this component). None of the four depict any Pawaac-specific facility,
-// customer, or deployment location — they are generic, non-identifying
-// sector-representative photos only (still compliant with the "no
-// customer/partner identity disclosed" constraint that motivated the
-// original OCP-03 gating). Grayscale filter applied to match every other
-// real photo on the site (Requirement 3.1-3.2).
+// license terms permit commercial use; credit given here in code comments
+// per license terms (no on-page attribution UI exists in this component).
+// Grayscale filter applied to match every other real photo on the site
+// (Requirement 3.1-3.2).
+//
+// Defense/infrastructure re-sourcing (site-owner request, current
+// session): the site owner flagged the original defense and
+// infrastructure tiles as "technically wrong" (approving police and,
+// with reservations, industrial). Investigating turned up a real sourcing
+// bug in the ORIGINAL defense tile: the prior session's own code comment
+// claimed "sector-defense.jpg" was an aerial view of an Indian Army
+// cantonment, but the actual file is a ground-level photo of a passenger
+// train — "Bangalore Cantonment" is also a railway station name in
+// Bangalore, and the earlier sourcing pass evidently picked up the
+// station photo rather than a military-cantonment photo despite the
+// matching-sounding title. Re-verified this time by downloading and
+// visually inspecting every candidate before use, not just reading its
+// Commons title/caption.
+//
+// Infrastructure -> disaster response (site-owner request, same session,
+// follow-up): the site owner asked what actually distinguishes
+// "industrial" from "infrastructure" and noted the two read as visually
+// similar generic-aerial-industrial-complex shots even though they are
+// conceptually distinct (industrial = commercial manufacturing;
+// infrastructure = critical public utility systems). Rather than just
+// finding a more visually distinct infrastructure photo, the site owner
+// asked to replace that fourth tile with "disaster response" instead — a
+// genuinely different, non-overlapping category that PAWAAC's own
+// long-endurance/thermal-imaging surveillance capability plausibly
+// extends to (search, damage assessment, monitoring), and one this site
+// has not claimed anywhere before, so it was confirmed explicitly rather
+// than assumed. The Howrah Bridge tile it replaced (before that, the
+// power-plant tile) is left unused on disk (sector-infrastructure.jpg,
+// sector-infrastructure-v2.jpg), per this codebase's established
+// "don't delete, don't break things" convention.
 //
 // Task 65 update: Deployments_Page (/deployments) has been removed
 // entirely. Per task 65's decision point, this section keeps its default
@@ -42,14 +82,29 @@
 // link. The "View all deployments" CTA that previously linked to
 // /deployments has been removed; headline, supporting sentence, and
 // visual treatment are otherwise unchanged.
+//
+// Eyebrow relabel + reposition (homepage narrative-arc review, current
+// session): the eyebrow read "Defense & police" — the same persona tag this
+// codebase uses to decide section order (Property 7 / Requirement 6.1,
+// 6.3) — but the four tiles it labels are defense, police, INDUSTRIAL and
+// DISASTER RESPONSE (the latter two added in this session's earlier sector
+// re-sourcing work), which are Enterprise-persona territory. The label
+// contradicted its own content. Changed to the persona-neutral "Sectors",
+// matching this codebase's convention for Both-persona sections (compare
+// "Planner", "Company", "Contact us"); the heading and supporting sentence
+// already named all four sectors accurately, so nothing else needed
+// rewording. This section also moves in page.tsx to sit immediately before
+// HomeEnterpriseFraming, so the persona widening its own tiles already
+// implied reads as a deliberate turn instead of a mismatched label two
+// sections away from the content it actually described.
 import Image from "next/image";
 import Reveal from "@/components/ui/Reveal";
 
 const SECTORS = [
   {
     tag: "defense",
-    src: "/images/sector-defense.jpg",
-    alt: "Aerial view of an Indian Army cantonment area",
+    src: "/images/sector-defense-v2.jpg",
+    alt: "Aerial view of an Indian Air Force base",
   },
   {
     tag: "police",
@@ -62,9 +117,9 @@ const SECTORS = [
     alt: "Aerial view of an industrial area near Mumbai, India",
   },
   {
-    tag: "infrastructure",
-    src: "/images/sector-infrastructure.jpg",
-    alt: "Howrah Bridge, a major infrastructure landmark in Kolkata, India",
+    tag: "disaster response",
+    src: "/images/sector-disaster-response.jpg",
+    alt: "Aerial view of flood damage in Rudraprayag, Uttarakhand",
   },
 ];
 
@@ -76,13 +131,13 @@ export default function HomeDeploymentsPreview() {
     <section className="relative overflow-hidden bg-bg/50 px-6 py-24 md:py-32">
       <div className="mx-auto max-w-7xl">
         <Reveal className="max-w-2xl">
-          <p className="label">Defense &amp; police</p>
+          <p className="label">Sectors</p>
           <h2 className="mt-3 text-heading font-display text-fg">
             Where Pawaac is built to operate
           </h2>
           <p className="mt-4 text-body font-body text-muted">
             Borders, facilities, and critical sites across defense, police,
-            and industrial deployments.
+            industrial, and disaster response deployments.
           </p>
         </Reveal>
 

@@ -1,8 +1,18 @@
 "use client";
 
 // HomeClosingVision — closing cinematic mission-statement section, added
-// per explicit site-owner request (current session) as a 9th Homepage
-// section, rendered after HomeContactBand and directly above Footer.
+// per explicit site-owner request (a prior session) as a 9th Homepage
+// section.
+//
+// Position (homepage narrative-arc review, current session, see page.tsx's
+// header): moved from after HomeContactBand to BEFORE it. This section's
+// mission paragraph is effectively HomeHero's opening claim ("protect what
+// matters") restated with full weight, and is the most emotionally
+// resonant copy on the page — it belongs right before the CTA it should be
+// building toward, not after it. Rendering it after HomeContactBand buried
+// that peak behind an ask the reader had already been given, instead of
+// letting it lead into that ask. This section now renders directly above
+// HomeContactBand, which in turn is now the last section before Footer.
 //
 // This reintroduces the "closing vision section" role originally
 // specified in WEBSITE_PLAN.md's SECTION 11 ("THE VISION") and flagged as

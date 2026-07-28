@@ -12,10 +12,17 @@
 // reintroduce the old homepage-anchor `Contact.tsx` pattern the migration
 // explicitly removes. Reveal_On_Scroll entrance (P5).
 //
-// CTA rename (site-owner request, current session): eyebrow label and
+// CTA rename (site-owner request, a prior session): eyebrow label and
 // button text renamed from "Request demo" / "Request a demo" to
 // "Contact us" — same /contact destination (Requirement 6.4 unaffected),
 // label only. Matches the header CTA's matching rename in Navigation.tsx.
+//
+// Position (homepage narrative-arc review, current session, see page.tsx's
+// header): this section moves down to be the LAST section before Footer,
+// following HomeClosingVision instead of preceding it. The CTA now lands
+// after the page's strongest emotional beat (Vision's mission paragraph)
+// rather than before it, so the page peaks and then asks, instead of
+// asking and then philosophizing. No content, styling, or link changes.
 import Reveal from "@/components/ui/Reveal";
 import ReticleFrame from "@/components/ui/ReticleFrame";
 
