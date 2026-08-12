@@ -106,7 +106,7 @@ export default function HomeAutonomyTeaser() {
     // bg-bg/80 -> bg-bg/50: SkyScenery's contrast fix (see SkyScenery.tsx)
     // now makes the sky genuinely visible, so this section's tint is
     // loosened further to let more of it show through.
-    <section className="relative overflow-hidden bg-bg/50 px-6 py-28 md:py-36">
+    <section className="section-glow-line relative overflow-hidden bg-bg/50 px-6 py-28 md:py-36">
       {/* Oversized word-fragment background texture (Pattern 1), purely
           decorative — hidden from assistive technology per Requirement 10.6.
           Capped at 15vw below sm (mobile audit, current session): at 18vw

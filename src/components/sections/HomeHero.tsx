@@ -48,24 +48,13 @@
 // plus a primary CTA link, into the hero itself. HeroHeadline and its GSAP
 // entrance above are untouched; the new content is added around it in the
 // same left-aligned content column.
+import { motion } from "framer-motion";
 import HeroHeadline from "@/components/ui/HeroHeadline";
 
 export default function HomeHero() {
   return (
-    // bg-bg/80 -> bg-transparent: Hero is the first, most prominent
-    // section and now shows the (fixed) SkyScenery backdrop completely
-    // unobstructed, rather than through a near-opaque dark tint. See
-    // SkyScenery.tsx for the corresponding contrast fix that makes the
-    // sky itself actually visible.
-    <section className="relative flex min-h-[100dvh] items-end overflow-hidden bg-transparent px-6 pb-[14vh] pt-28 md:pb-[16vh] md:pt-36">
-      {/* Display_Type oversized word-mark texture behind hero media
-          (Pattern 1), purely decorative — hidden from assistive
-          technology per Requirement 10.6. Capped at 15vw below sm (mobile
-          audit, current session): same fix as HomeAutonomyTeaser's "STACK"
-          span — at a flat 20vw, six bold uppercase characters ran close to
-          the section's own edges on narrow phones; opacity is already low
-          (0.04) so the size difference is headroom against clipping, not a
-          visual identity change. */}
+    <section className="relative flex min-h-[100dvh] items-end overflow-hidden bg-transparent px-6 pb-[12vh] pt-28 md:pb-[14vh] md:pt-36">
+      {/* Oversized decorative wordmark */}
       <span
         aria-hidden="true"
         className="pointer-events-none absolute inset-x-0 top-6 select-none text-center font-display text-[15vw] font-bold uppercase leading-none text-fg/[0.04] sm:text-[20vw] md:top-10"
@@ -73,28 +62,88 @@ export default function HomeHero() {
         PAWAAC
       </span>
 
+      {/* Ambient top glow for depth */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 top-0 h-[40vh]"
+        style={{
+          background: "radial-gradient(ellipse at 50% 0%, rgba(255,255,255,0.025) 0%, transparent 70%)"
+        }}
+      />
+
+      {/* Bottom gradient for text legibility over sky photo */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-[55vh]"
+        style={{
+          background: "linear-gradient(to top, rgba(8,8,8,0.55) 0%, transparent 100%)"
+        }}
+      />
+
       <div className="relative z-10 mx-auto w-full max-w-7xl text-left">
+        {/* Eyebrow with pulse dot */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+          className="mb-5"
+        >
+          <span className="label inline-flex items-center gap-2.5">
+            <span className="inline-block h-1.5 w-1.5 rounded-full bg-fg animate-pulse-dot" />
+            Autonomous aerial systems
+          </span>
+        </motion.div>
+
         <HeroHeadline
-          text="Autonomous systems that protect what matters"
-          className="max-w-5xl font-display text-[clamp(2.25rem,4.8vw,4.75rem)] font-bold uppercase leading-[0.94] tracking-[-0.035em] text-fg [text-wrap:balance] [text-shadow:0_3px_18px_rgba(0,0,0,0.7)]"
+          text="Autonomous|Systems that|Protect what|Matters"
+          className="max-w-5xl font-display text-[clamp(2.5rem,5.5vw,5.25rem)] font-bold uppercase leading-[1.1] tracking-[-0.04em] text-white [text-shadow:0_3px_18px_rgba(0,0,0,0.7)]"
         />
 
-        {/* Supporting sentence + CTA (UX fix, see file header). Section
-            background is bg-transparent (the raw SkyScenery photo shows
-            through directly, not a tinted panel), so both carry the same
-            drop-shadow treatment as the headline above for legibility
-            against the photo, rather than a new backdrop scrim. */}
-        <p className="mt-5 max-w-lg text-body font-body text-fg/90 [text-shadow:0_2px_12px_rgba(0,0,0,0.65)]">
+        <motion.p
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.2, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+          className="mt-6 max-w-lg text-[1.05rem] font-body leading-relaxed text-fg/85 [text-shadow:0_2px_12px_rgba(0,0,0,0.65)]"
+        >
           Fully autonomous surveillance drones for defense, police, and
           critical infrastructure.
-        </p>
-        <a
-          href="/product"
-          className="mt-6 inline-block border border-fg px-5 py-2.5 font-mono text-[11px] font-semibold uppercase tracking-[0.1em] text-fg drop-shadow-[0_3px_10px_rgba(0,0,0,0.55)] transition-colors hover:bg-fg hover:text-bg"
+        </motion.p>
+
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.5, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+          className="mt-8 flex flex-wrap items-center gap-5"
         >
-          See the platform
-        </a>
+          <a href="/product" className="btn-primary">
+            See the platform
+            <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+            </svg>
+          </a>
+          <a
+            href="/contact"
+            className="group inline-flex items-center gap-2 font-mono text-[11px] font-semibold uppercase tracking-[0.1em] text-fg/70 underline underline-offset-4 decoration-fg/40 transition-all duration-300 hover:text-fg hover:decoration-fg"
+          >
+            Talk to us
+            <span className="inline-block transition-transform duration-300 group-hover:translate-x-1">→</span>
+          </a>
+        </motion.div>
       </div>
+
+      {/* Scroll indicator */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 2.5, duration: 1.2 }}
+        className="absolute bottom-8 left-1/2 -translate-x-1/2"
+        aria-hidden="true"
+      >
+        <div className="flex flex-col items-center gap-2">
+          <span className="font-mono text-[9px] uppercase tracking-[0.25em] text-fg/30">Scroll</span>
+          <div className="h-8 w-px animate-bounce-down bg-fg/40" />
+        </div>
+      </motion.div>
     </section>
   );
 }

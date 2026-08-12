@@ -1,142 +1,130 @@
 "use client";
 
-// Spec: pawaac-design-language-evolution — Task 16 (Homepage Section 6)
-// Requirements: 4.1, 4.3, 6.1, 6.3, 6.4
-// Design: design.md -> Page Specifications -> Homepage, Section 6
-//         (Enterprise & critical-infrastructure framing)
-//
-// Persona: Enterprise_Persona. Grayscale imagery Placeholder_Media (P7),
-// Label_Caps eyebrow (P2). This is the ONLY Enterprise_Persona-only
-// section on the Homepage (Property 7 / Requirement 6.1, 6.3): it renders
-// after every Defense_Police_Persona section (1-3) in scroll order. OCP-04
-// (enterprise case reference) stays open — no case reference is added
-// here (Requirement 8.2); this section renders only the fixed
-// headline/supporting sentence.
-//
-// Resolved via site-owner-delegated judgment (no new Change_Proposal
-// approval fabricated, OCP-04 itself stays rejected/as-is — no case
-// reference is added): the abstract geometric facility placeholder is
-// replaced with the real, generic `public/images/rawimage3.jpg`
-// (city/traffic scene) — a non-identifying urban/infrastructure image
-// that fits this section's industrial/critical-infrastructure persona far
-// better than an abstract icon, while disclosing no customer/partner
-// identity. Rendered with the site's standard grayscale filter and
-// Reticle_Frame treatment (P4/P7), consistent with every other real photo
-// on the site.
-//
-// UX fix (homepage first-time-visitor audit, Requirements 4.1, 6.1): the
-// solid bg-white below is kept exactly as-is (see the comment on the
-// <section> below for why) — but on a fast scroll, the jump straight from
-// the dark SkyScenery-backed sections above into solid white read as a
-// rendering glitch rather than an intentional light "panel." Adds a short
-// decorative gradient across the section's own top padding, from
-// --color-bg (an opaque approximation of the dark backdrop above — not a
-// pixel-sampled match of the SkyScenery photo, kept simple per this being
-// a polish fix) fading to transparent, so the seam reads as a deliberate
-// transition. Purely decorative/aria-hidden; does not change the
-// bg-white section background itself.
 import Image from "next/image";
 import Reveal from "@/components/ui/Reveal";
-import ReticleFrame from "@/components/ui/ReticleFrame";
 
 export default function HomeEnterpriseFraming() {
   return (
-    // Kept solid `bg-white` (NOT made semi-transparent like the dark
-    // sections) despite the site-owner-requested full-bleed SkyScenery
-    // backdrop in page.tsx: this is the one light/white section on the
-    // Homepage, and letting a dark sky gradient bleed through a
-    // semi-transparent white background would either wash out the sky or
-    // muddy this section's text contrast (Requirement 3.6-3.8). Solid white
-    // here reads as an intentional light "panel" over the dark backdrop.
-    <section className="relative overflow-hidden bg-white px-6 py-24 text-[#080808] md:py-32">
-      {/* Transition device (UX fix, see file header): dark-to-transparent
-          gradient sized to exactly match this section's own top padding
-          (h-24/md:h-32 <-> py-24/md:py-32), so it bridges the seam without
-          overlapping the heading content below it. */}
+    <section className="relative overflow-hidden bg-white px-6 py-28 text-[#080808] md:py-40">
+      {/* Clean black-to-white transition at top */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-bg to-transparent md:h-32"
+        className="pointer-events-none absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-[#080808] to-transparent md:h-28"
       />
 
-      {/* Layout (homepage UX audit, current session): this was originally the
-          third of three CONSECUTIVE `md:grid-cols-2 md:items-center`
-          text-left/image-right blocks (HomeAutonomyTeaser, HomePlannerCTA,
-          this one), which read as the same block three times running. Those
-          two stacked and flipped respectively; this one takes an asymmetric
-          5/7 split with top alignment instead of an even, vertically
-          centered two-column. That also serves the content: this section has
-          the shortest copy on the page (8 words of supporting text), so an
-          even 50/50 split left its text column conspicuously empty, while
-          the wider media column gives the one real photo here more presence.
-          Copy, CTA, destination, and imagery are unchanged.
+      {/* Subtle technical vertical grid lines */}
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
+        {[18, 33, 50, 67, 82].map((pos) => (
+          <span
+            key={pos}
+            className="absolute top-0 h-full w-px bg-[#080808]/[0.03]"
+            style={{ left: `${pos}%` }}
+          />
+        ))}
+      </div>
 
-          Position (narrative-arc re-sequencing, current session, see
-          page.tsx's header): moved up to sit directly after
-          HomeDeploymentsPreview (a 4-tile image grid, not a two-column
-          layout) instead of after HomeAutonomyTeaser, so the persona
-          widening this section represents follows immediately after the
-          Sectors tiles that already hint at it (industrial, disaster
-          response), rather than being separated from them by two sections.
-          It is now followed by HomePlannerCTA, which keeps its own
-          image-left/text-right order — so the two remaining adjacent
-          two-column blocks still alternate (image-right here, image-left
-          next) rather than repeating. */}
-      <div className="mx-auto grid max-w-7xl gap-12 md:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] md:items-start md:gap-16">
-        <Reveal>
-          <p className="label text-[#6b6b6b]">Enterprise &amp; critical infrastructure</p>
-          <h2 className="mt-3 text-heading font-display text-[#080808]">
-            Security autonomy for critical sites
-          </h2>
-          <p className="mt-4 max-w-md text-body font-body text-[#454545]">
-            The same platform secures industrial and infrastructure
-            perimeters.
-          </p>
-          <a
-            href="/product"
-            className="group mt-6 inline-flex items-center gap-2 font-mono text-sm text-[#080808]"
-          >
-            Explore the platform
-            <span className="transition-transform group-hover:translate-x-1">→</span>
-          </a>
-        </Reveal>
+      {/* Giant background number */}
+      <span
+        aria-hidden="true"
+        className="pointer-events-none absolute right-[-5%] top-[15%] select-none font-display text-[40vw] font-bold leading-none text-[#080808]/[0.025] md:text-[28vw]"
+      >
+        04
+      </span>
 
-        <Reveal delay={0.14} y={-20}>
-          {/* -mx-6 sm:mx-0 (mobile audit, current session): the grid was
-              only ever given a plain "collapse to 1 column" treatment below
-              md, with no further mobile-specific adaptation. Reading order
-              already works as-is (text card then photo, no CSS order needed
-              — unlike HomePlannerCTA's flipped desktop layout, this one is
-              already text-left/image-right, so DOM order matches a sensible
-              mobile reading order without changes). What mobile WAS missing
-              is the same free width gain used on HomeAutonomyTeaser's media
-              box: cancels the section's own px-6 so this section's one real
-              photo (the file header above already calls out wanting it to
-              have "more presence") uses the full viewport width instead of
-              viewport minus 48px, rather than sitting inset like every other
-              piece of body copy on the page. */}
-          <div className="-mx-6 sm:mx-0">
-            <div
-              className="relative mx-auto w-full max-w-2xl border border-[#d6d6d6]"
-              style={{ aspectRatio: "16 / 9" }}
-            >
-              {/* Real, generic (non-identifying) urban/infrastructure scene —
-                  grayscale resting-state filter matching every other real
-                  photo on the site (Requirement 3.1-3.2). No case reference,
-                  no customer/partner identity (OCP-04 stays rejected/as-is).
-                  Sized up from max-w-sm (384px) to max-w-xl (576px) per
-                  site-owner request to make this image bigger/more
-                  prominent, then to max-w-2xl (672px) when this section moved
-                  to the asymmetric 5/7 split above — the wider media column is
-                  ~709px at the max-w-7xl ceiling, so max-w-xl would have left
-                  a visible gutter inside its own column. */}
-              <Image
-                src="/images/rawimage3.jpg"
-                alt="Generic urban street and traffic scene representing critical infrastructure"
-                fill
-                sizes="(min-width: 768px) 672px, 100vw"
-                className="object-cover grayscale"
-              />
-              <ReticleFrame variant="light" />
+      <div className="relative z-10 mx-auto max-w-7xl">
+        {/* ─── MAIN LAYOUT ────────────────────────────────────────── */}
+        <div className="grid gap-12 md:grid-cols-[0.45fr_0.55fr] md:items-start md:gap-20">
+          {/* Left — Text */}
+          <div>
+            <Reveal>
+              <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-[#6b6b6b]">
+                Enterprise &amp; critical infrastructure
+              </p>
+
+              <h2 className="mt-5 font-display text-[clamp(2.25rem,5vw,4.5rem)] font-bold uppercase leading-[0.9] tracking-[-0.04em] text-[#080808]">
+                Autonomy for<br />
+                critical sites.
+              </h2>
+
+              <p className="mt-6 max-w-[480px] text-[15px] font-body leading-relaxed text-[#454545]">
+                The same platform secures industrial and infrastructure
+                perimeters.
+              </p>
+            </Reveal>
+
+            {/* CTA — editorial link style with underline */}
+            <Reveal delay={0.1}>
+              <a
+                href="/product"
+                className="group mt-8 inline-flex items-center gap-2.5 border-b border-[#080808]/30 pb-1.5 font-mono text-[12px] uppercase tracking-[0.12em] text-[#080808] transition-all duration-300 hover:border-[#080808] hover:gap-3.5"
+              >
+                Explore the platform
+                <span className="inline-block transition-transform duration-300 group-hover:translate-x-1">→</span>
+              </a>
+            </Reveal>
+          </div>
+
+          {/* Right — Image with technical treatment */}
+          <Reveal delay={0.12}>
+            <div className="relative mt-6 md:mt-10">
+              {/* Image container with frame */}
+              <div
+                className="relative w-full border border-[#d6d6d6] bg-[#f5f5f5]"
+                style={{ aspectRatio: "16 / 9" }}
+              >
+                <Image
+                  src="/images/rawimage3.jpg"
+                  alt="Aerial reconnaissance view representing critical infrastructure monitoring"
+                  fill
+                  sizes="(min-width: 768px) 55vw, 100vw"
+                  className="object-cover"
+                  style={{ filter: "grayscale(1) contrast(1.05)" }}
+                />
+
+                {/* Corner brackets */}
+                <span aria-hidden="true" className="absolute left-2 top-2 h-5 w-5 border-l border-t border-[#080808]/30" />
+                <span aria-hidden="true" className="absolute right-2 top-2 h-5 w-5 border-r border-t border-[#080808]/30" />
+                <span aria-hidden="true" className="absolute bottom-2 left-2 h-5 w-5 border-b border-l border-[#080808]/30" />
+                <span aria-hidden="true" className="absolute bottom-2 right-2 h-5 w-5 border-b border-r border-[#080808]/30" />
+
+                {/* Technical labels */}
+                <div aria-hidden="true" className="absolute right-3 top-3 flex flex-col items-end gap-1">
+                  <span className="font-mono text-[9px] uppercase tracking-[0.12em] text-white/70 [text-shadow:0_1px_4px_rgba(0,0,0,0.8)]">
+                    Site // 04
+                  </span>
+                  <span className="font-mono text-[9px] uppercase tracking-[0.12em] text-white/70 [text-shadow:0_1px_4px_rgba(0,0,0,0.8)]">
+                    Mode // Autonomous
+                  </span>
+                  <span className="font-mono text-[9px] uppercase tracking-[0.12em] text-white/70 [text-shadow:0_1px_4px_rgba(0,0,0,0.8)]">
+                    Status // Active
+                  </span>
+                </div>
+
+                {/* Small status indicator dot */}
+                <span aria-hidden="true" className="absolute left-3 top-3 flex items-center gap-1.5">
+                  <span className="h-1.5 w-1.5 rounded-full bg-white/80 [box-shadow:0_0_4px_rgba(255,255,255,0.5)]" />
+                  <span className="font-mono text-[8px] uppercase tracking-[0.15em] text-white/60 [text-shadow:0_1px_4px_rgba(0,0,0,0.8)]">
+                    Live
+                  </span>
+                </span>
+              </div>
+            </div>
+          </Reveal>
+        </div>
+
+        {/* ─── BOTTOM DATA STRIP ──────────────────────────────────── */}
+        <Reveal delay={0.15}>
+          <div className="mt-16 border-t border-[#080808]/[0.08] pt-6 md:mt-24">
+            <div className="flex flex-wrap gap-x-10 gap-y-2">
+              <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-[#080808]/30">
+                01 / Perimeter
+              </span>
+              <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-[#080808]/30">
+                02 / Infrastructure
+              </span>
+              <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-[#080808]/30">
+                03 / Critical sites
+              </span>
             </div>
           </div>
         </Reveal>

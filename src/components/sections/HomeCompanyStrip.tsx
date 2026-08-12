@@ -124,7 +124,7 @@ export default function HomeCompanyStrip() {
             <div className="md:text-right">
               <a
                 href="/company"
-                className="inline-block border border-fg px-5 py-2.5 font-mono text-[11px] font-semibold uppercase tracking-[0.1em] text-fg transition-colors hover:bg-fg hover:text-bg"
+                className="btn-primary"
               >
                 About the company
               </a>

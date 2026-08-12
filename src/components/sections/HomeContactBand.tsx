@@ -31,8 +31,17 @@ export default function HomeContactBand() {
     // bg-bg/80 -> bg-bg/50: SkyScenery's contrast fix (see SkyScenery.tsx)
     // now makes the sky genuinely visible, so this section's tint is
     // loosened further to let more of it show through.
-    <section className="relative overflow-hidden bg-bg/50 px-6 py-24 md:py-32">
-      <div className="mx-auto max-w-4xl text-center">
+    <section className="relative overflow-hidden bg-bg/50 px-6 py-28 md:py-36">
+      {/* Ambient glow behind CTA */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background: "radial-gradient(ellipse at 50% 50%, rgba(255,255,255,0.02) 0%, transparent 50%)"
+        }}
+      />
+
+      <div className="relative mx-auto max-w-4xl text-center">
         <Reveal>
           <p className="label justify-center">Contact us</p>
           <h2 className="mt-3 text-heading font-display text-fg">
@@ -45,11 +54,11 @@ export default function HomeContactBand() {
         </Reveal>
 
         <Reveal delay={0.18} className="mt-10">
-          <div className="relative mx-auto w-fit border border-grey-800 px-1 py-1">
+          <div className="relative mx-auto w-fit border border-grey-800 px-1 py-1 transition-all duration-500 hover:border-grey-600 hover:shadow-[0_0_40px_-8px_rgba(255,255,255,0.06)]">
             <ReticleFrame variant="dark" />
             <a
               href="/contact"
-              className="block bg-white px-10 py-4 font-mono text-sm font-semibold uppercase tracking-[0.1em] text-black transition-colors hover:bg-interactive"
+              className="block bg-white px-10 py-4 font-mono text-sm font-semibold uppercase tracking-[0.1em] text-black transition-all duration-400 hover:bg-grey-100"
             >
               Contact us →
             </a>

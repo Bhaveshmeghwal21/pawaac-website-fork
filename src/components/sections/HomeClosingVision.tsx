@@ -107,7 +107,7 @@ import Reveal from "@/components/ui/Reveal";
 
 export default function HomeClosingVision() {
   return (
-    <section className="relative overflow-hidden bg-bg/70 px-6 py-32 md:py-44">
+    <section className="section-glow-line relative overflow-hidden bg-bg/70 px-6 py-36 md:py-48">
       {/* Decorative only (Requirement 10.6). */}
       <AirframeGhost
         src="/images/airframe-sentrivion.webp"

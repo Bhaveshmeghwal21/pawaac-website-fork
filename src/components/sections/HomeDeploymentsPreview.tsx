@@ -1,167 +1,208 @@
 "use client";
 
-// Spec: pawaac-design-language-evolution — Task 16 (Homepage Section 3)
-// Requirements: 4.1, 4.3, 5.1, 5.4, 6.1, 6.3
-// Design: design.md -> Page Specifications -> Homepage, Section 3
-//         (Deployment sectors preview)
-//
-// Persona: Defense_Police_Persona. Real photography sector thumbnails with
-// Label_Caps sector tags (P2), Reveal_On_Scroll entrance (P5).
-//
-// OCP-03 RESOLVED (site-owner decision, current session): the prior
-// abstract-icon-only restriction is explicitly lifted by the site owner.
-// Each sector tile shows a real, commercially-licensed photo instead of an
-// abstract line-art icon. Defense and police tiles use aerial photography
-// specifically per site-owner request (an aerial view fits the
-// "sense from above" framing better than a ground-level shot):
-//   - defense: "Aerial View Of Hindon Airbase IMG_9896_04.jpg" by Sumita
-//     Roy Dutta, an aerial view of Hindon Air Force Station (Ghaziabad,
-//     Uttar Pradesh), CC BY-SA 4.0
-//     (https://creativecommons.org/licenses/by-sa/4.0/).
-//   - police: "Downtown hyderabad drone.png" by Shredpave, a drone aerial
-//     view of a major Indian city (Hyderabad), CC0 1.0 Universal Public
-//     Domain Dedication (no attribution required) — paired with "police"
-//     as a city/urban-patrol framing rather than a specific police
-//     facility (no real facility exists to source responsibly).
-//   - industrial: "India industry.jpg" by Abhisek Sarda, CC BY 2.0
-//     (https://creativecommons.org/licenses/by/2.0/).
-//   - disaster response: "An aerial view of flood-ravaged Rudraprayag, in
-//     Uttarakhand.jpg", published by the Ministry of Defence / Press
-//     Information Bureau, Government of India (PIB ID 47848), Government
-//     Open Data License - India (GODL)
-//     (https://www.data.gov.in/government-open-data-license-india). Like
-//     every other tile here, this depicts a real, specific, named place
-//     (a documented 2013 Uttarakhand flood site) but is used purely as a
-//     generic "this is the kind of scene disaster response operations
-//     happen in" sector illustration, exactly like the police tile uses
-//     an identifiable Hyderabad skyline and the industrial tile an
-//     identifiable Mumbai-area facility — none of the four claim Pawaac
-//     was involved at that specific location (still compliant with the
-//     "no customer/partner identity disclosed" constraint that motivated
-//     the original OCP-03 gating).
-// All four sourced from Wikimedia Commons (upload.wikimedia.org), verified
-// license terms permit commercial use; credit given here in code comments
-// per license terms (no on-page attribution UI exists in this component).
-// Grayscale filter applied to match every other real photo on the site
-// (Requirement 3.1-3.2).
-//
-// Defense/infrastructure re-sourcing (site-owner request, current
-// session): the site owner flagged the original defense and
-// infrastructure tiles as "technically wrong" (approving police and,
-// with reservations, industrial). Investigating turned up a real sourcing
-// bug in the ORIGINAL defense tile: the prior session's own code comment
-// claimed "sector-defense.jpg" was an aerial view of an Indian Army
-// cantonment, but the actual file is a ground-level photo of a passenger
-// train — "Bangalore Cantonment" is also a railway station name in
-// Bangalore, and the earlier sourcing pass evidently picked up the
-// station photo rather than a military-cantonment photo despite the
-// matching-sounding title. Re-verified this time by downloading and
-// visually inspecting every candidate before use, not just reading its
-// Commons title/caption.
-//
-// Infrastructure -> disaster response (site-owner request, same session,
-// follow-up): the site owner asked what actually distinguishes
-// "industrial" from "infrastructure" and noted the two read as visually
-// similar generic-aerial-industrial-complex shots even though they are
-// conceptually distinct (industrial = commercial manufacturing;
-// infrastructure = critical public utility systems). Rather than just
-// finding a more visually distinct infrastructure photo, the site owner
-// asked to replace that fourth tile with "disaster response" instead — a
-// genuinely different, non-overlapping category that PAWAAC's own
-// long-endurance/thermal-imaging surveillance capability plausibly
-// extends to (search, damage assessment, monitoring), and one this site
-// has not claimed anywhere before, so it was confirmed explicitly rather
-// than assumed. The Howrah Bridge tile it replaced (before that, the
-// power-plant tile) is left unused on disk (sector-infrastructure.jpg,
-// sector-infrastructure-v2.jpg), per this codebase's established
-// "don't delete, don't break things" convention.
-//
-// Task 65 update: Deployments_Page (/deployments) has been removed
-// entirely. Per task 65's decision point, this section keeps its default
-// option (c) treatment — a purely illustrative teaser with no outbound
-// link. The "View all deployments" CTA that previously linked to
-// /deployments has been removed; headline, supporting sentence, and
-// visual treatment are otherwise unchanged.
-//
-// Eyebrow relabel + reposition (homepage narrative-arc review, current
-// session): the eyebrow read "Defense & police" — the same persona tag this
-// codebase uses to decide section order (Property 7 / Requirement 6.1,
-// 6.3) — but the four tiles it labels are defense, police, INDUSTRIAL and
-// DISASTER RESPONSE (the latter two added in this session's earlier sector
-// re-sourcing work), which are Enterprise-persona territory. The label
-// contradicted its own content. Changed to the persona-neutral "Sectors",
-// matching this codebase's convention for Both-persona sections (compare
-// "Planner", "Company", "Contact us"); the heading and supporting sentence
-// already named all four sectors accurately, so nothing else needed
-// rewording. This section also moves in page.tsx to sit immediately before
-// HomeEnterpriseFraming, so the persona widening its own tiles already
-// implied reads as a deliberate turn instead of a mismatched label two
-// sections away from the content it actually described.
+import { useState } from "react";
 import Image from "next/image";
+import { motion, AnimatePresence } from "framer-motion";
 import Reveal from "@/components/ui/Reveal";
 
 const SECTORS = [
   {
-    tag: "defense",
+    index: "01",
+    tag: "DEFENSE",
+    title: "PROTECTING\nBORDERS &\nCRITICAL ASSETS.",
+    subtitle: "Border surveillance & force protection",
     src: "/images/sector-defense-v2.jpg",
     alt: "Aerial view of an Indian Air Force base",
   },
   {
-    tag: "police",
+    index: "02",
+    tag: "POLICE",
+    title: "URBAN\nSURVEILLANCE &\nSITUATIONAL\nAWARENESS.",
+    subtitle: "City patrol & crowd monitoring",
     src: "/images/sector-police.jpg",
     alt: "Drone aerial view of a major Indian city",
   },
   {
-    tag: "industrial",
+    index: "03",
+    tag: "INDUSTRIAL",
+    title: "INFRASTRUCTURE\nPERIMETER\nMONITORING.",
+    subtitle: "Facility security & asset protection",
     src: "/images/sector-industrial.jpg",
     alt: "Aerial view of an industrial area near Mumbai, India",
   },
   {
-    tag: "disaster response",
+    index: "04",
+    tag: "DISASTER RESPONSE",
+    title: "RAPID\nASSESSMENT\nSEARCH &\nRESPONSE.",
+    subtitle: "Damage assessment & search operations",
     src: "/images/sector-disaster-response.jpg",
     alt: "Aerial view of flood damage in Rudraprayag, Uttarakhand",
   },
 ];
 
 export default function HomeDeploymentsPreview() {
+  const [active, setActive] = useState(0);
+
   return (
-    // bg-bg/80 -> bg-bg/50: SkyScenery's contrast fix (see SkyScenery.tsx)
-    // now makes the sky genuinely visible, so this section's tint is
-    // loosened further to let more of it show through.
-    <section className="relative overflow-hidden bg-bg/50 px-6 py-24 md:py-32">
-      <div className="mx-auto max-w-7xl">
-        <Reveal className="max-w-2xl">
-          <p className="label">Sectors</p>
-          <h2 className="mt-3 text-heading font-display text-fg">
-            Where Pawaac is built to operate
-          </h2>
-          <p className="mt-4 text-body font-body text-muted">
-            Borders, facilities, and critical sites across defense, police,
-            industrial, and disaster response deployments.
-          </p>
+    <section className="relative overflow-hidden bg-black px-6 py-28 md:py-36">
+      {/* Giant background number */}
+      <span
+        aria-hidden="true"
+        className="pointer-events-none absolute right-[-8%] top-[5%] select-none font-display text-[50vw] font-bold leading-none text-white/[0.025] md:text-[30vw]"
+      >
+        {SECTORS[active].index}
+      </span>
+
+      <div className="relative z-10 mx-auto max-w-7xl">
+        {/* ─── HEADLINE ───────────────────────────────────────────── */}
+        <Reveal>
+          <div className="mb-12 md:mb-16">
+            <p className="label">Sectors</p>
+            <h2 className="mt-4 font-display text-[clamp(2.25rem,5vw,4.5rem)] font-bold uppercase leading-[0.9] tracking-[-0.04em] text-white">
+              Where Pawaac<br />operates
+            </h2>
+            <p className="mt-4 max-w-[550px] text-[15px] font-body leading-relaxed text-white/50">
+              Autonomous systems for defense, public safety, critical
+              infrastructure, and rapid-response operations.
+            </p>
+          </div>
         </Reveal>
 
-        <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {SECTORS.map((s, i) => (
-            <Reveal key={s.tag} delay={0.05 + i * 0.08}>
-              <div
-                className="relative w-full grayscale"
+        {/* ─── SECTOR NAV ─────────────────────────────────────────── */}
+        <div className="mb-8 border-b border-white/[0.08]">
+          <div className="flex gap-0 overflow-x-auto">
+            {SECTORS.map((sector, i) => (
+              <button
+                key={sector.index}
+                onClick={() => setActive(i)}
+                className={`group relative shrink-0 px-5 pb-4 pt-2 font-mono text-[11px] uppercase tracking-[0.15em] transition-colors duration-300 ${
+                  active === i ? "text-white" : "text-white/30 hover:text-white/60"
+                }`}
+              >
+                <span className="mr-1.5 text-white/20">{sector.index}</span>
+                {sector.tag}
+                {/* Active indicator line */}
+                <span
+                  className={`absolute bottom-0 left-0 right-0 h-px transition-all duration-500 ${
+                    active === i ? "bg-white" : "bg-transparent"
+                  }`}
+                />
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* ─── SHOWCASE ───────────────────────────────────────────── */}
+        <div className="grid gap-4 md:grid-cols-[1fr_0.4fr] md:gap-3">
+          {/* Active sector — large */}
+          <div className="relative">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={active}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                className="relative w-full overflow-hidden"
                 style={{ aspectRatio: "16 / 9" }}
               >
                 <Image
-                  src={s.src}
-                  alt={s.alt}
+                  src={SECTORS[active].src}
+                  alt={SECTORS[active].alt}
                   fill
-                  sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
+                  sizes="(min-width: 768px) 65vw, 100vw"
                   className="object-cover"
+                  style={{ filter: "grayscale(1) brightness(0.7) contrast(1.1)" }}
                 />
-                <span className="label absolute left-4 top-4 text-white/90 [text-shadow:0_1px_6px_rgba(0,0,0,0.8)]">
-                  {s.tag}
-                </span>
-              </div>
-            </Reveal>
-          ))}
+                {/* Dark overlay for text */}
+                <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+
+                {/* Content over image */}
+                <div className="absolute inset-0 flex flex-col justify-end p-6 md:p-10">
+                  <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/40">
+                    {SECTORS[active].index} / {SECTORS[active].tag}
+                  </p>
+                  <h3 className="mt-3 max-w-md whitespace-pre-line font-display text-[clamp(1.5rem,3.5vw,2.75rem)] font-bold uppercase leading-[0.95] tracking-[-0.03em] text-white">
+                    {SECTORS[active].title}
+                  </h3>
+                  <p className="mt-3 font-mono text-[11px] uppercase tracking-[0.1em] text-white/50">
+                    {SECTORS[active].subtitle}
+                  </p>
+                </div>
+
+                {/* Corner marks */}
+                <span aria-hidden="true" className="absolute left-3 top-3 h-4 w-4 border-l border-t border-white/20" />
+                <span aria-hidden="true" className="absolute bottom-3 right-3 h-4 w-4 border-b border-r border-white/20" />
+              </motion.div>
+            </AnimatePresence>
+          </div>
+
+          {/* Inactive sectors — stacked vertically */}
+          <div className="flex gap-2 md:flex-col md:gap-3">
+            {SECTORS.filter((_, i) => i !== active).map((sector, i) => {
+              const realIndex = SECTORS.indexOf(sector);
+              return (
+                <button
+                  key={sector.index}
+                  onClick={() => setActive(realIndex)}
+                  className="group relative flex-1 overflow-hidden text-left transition-all duration-500 hover:flex-[1.15]"
+                  style={{ aspectRatio: "16/9" }}
+                >
+                  <Image
+                    src={sector.src}
+                    alt={sector.alt}
+                    fill
+                    sizes="(min-width: 768px) 20vw, 33vw"
+                    className="object-cover transition-transform duration-700 group-hover:scale-[1.03]"
+                    style={{ filter: "grayscale(1) brightness(0.35) contrast(1.05)" }}
+                  />
+                  {/* Hover brighten */}
+                  <div className="absolute inset-0 bg-black/30 transition-colors duration-500 group-hover:bg-black/10" />
+
+                  {/* Label */}
+                  <div className="absolute inset-0 flex flex-col justify-end p-3 md:p-4">
+                    <p className="font-mono text-[9px] uppercase tracking-[0.15em] text-white/30 transition-colors duration-300 group-hover:text-white/50">
+                      {sector.index}
+                    </p>
+                    <p className="mt-0.5 font-display text-[13px] font-bold uppercase leading-tight tracking-[-0.01em] text-white/50 transition-colors duration-300 group-hover:text-white/80 md:text-[14px]">
+                      {sector.tag}
+                    </p>
+                  </div>
+
+                  {/* Hover border */}
+                  <span
+                    aria-hidden="true"
+                    className="absolute inset-0 border border-white/0 transition-all duration-500 group-hover:border-white/15"
+                  />
+
+                  {/* Arrow on hover */}
+                  <span
+                    aria-hidden="true"
+                    className="absolute right-3 top-3 font-mono text-[10px] text-white/0 transition-all duration-300 group-hover:text-white/40"
+                  >
+                    →
+                  </span>
+                </button>
+              );
+            })}
+          </div>
         </div>
+
+        {/* ─── BOTTOM TECHNICAL STRIP ─────────────────────────────── */}
+        <Reveal delay={0.1}>
+          <div className="mt-10 flex flex-wrap gap-x-10 gap-y-2 border-t border-white/[0.06] pt-6">
+            <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-white/20">
+              Autonomous systems
+            </span>
+            <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-white/20">
+              Deploy anywhere
+            </span>
+            <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-white/20">
+              Operate with confidence
+            </span>
+          </div>
+        </Reveal>
       </div>
     </section>
   );
