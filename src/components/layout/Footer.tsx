@@ -135,7 +135,7 @@ export default function Footer() {
   return (
     <footer
       ref={footerRef}
-      className="relative z-10 overflow-hidden border-t border-line bg-bg-2 px-6 pt-20 pb-12 md:pt-28"
+      className="relative z-10 overflow-hidden border-t border-line bg-bg-2 px-6 pt-24 pb-12 md:pt-32"
     >
       {!prefersReducedMotion && (
         <motion.div
@@ -162,7 +162,7 @@ export default function Footer() {
               <a
                 key={l.href}
                 href={l.href}
-                className="text-[0.95rem] text-muted transition-colors duration-200 hover:text-fg"
+                className="text-[0.95rem] text-muted transition-all duration-300 hover:text-fg hover:translate-x-0.5"
               >
                 {l.label}
               </a>
@@ -181,7 +181,7 @@ export default function Footer() {
                 href={l.href}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-[0.95rem] text-muted transition-colors duration-200 hover:text-fg"
+                className="text-[0.95rem] text-muted transition-all duration-300 hover:text-fg hover:translate-x-0.5"
               >
                 {l.label}
                 <ExternalLinkMarker />
@@ -224,11 +224,11 @@ export default function Footer() {
           </motion.p>
         </div>
 
-        <div className="mt-6 flex flex-col items-center justify-between gap-3 text-xs text-muted sm:flex-row">
+        <div className="mt-8 flex flex-col items-center justify-between gap-4 text-xs text-muted sm:flex-row">
           <p>© 2026 Bajrang Dronetech Pvt Ltd · Built in India</p>
           <div className="flex gap-3">
-            <span className="border border-line px-2 py-1 font-mono text-[10px]">DGCA COMPLIANT</span>
-            <span className="border border-line px-2 py-1 font-mono text-[10px]">MeitY RECOGNIZED</span>
+            <span className="border border-line px-2.5 py-1.5 font-mono text-[10px] transition-colors duration-300 hover:border-grey-600 hover:text-fg">DGCA COMPLIANT</span>
+            <span className="border border-line px-2.5 py-1.5 font-mono text-[10px] transition-colors duration-300 hover:border-grey-600 hover:text-fg">MeitY RECOGNIZED</span>
           </div>
         </div>
       </motion.div>

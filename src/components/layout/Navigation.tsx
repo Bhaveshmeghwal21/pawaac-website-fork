@@ -1,8 +1,8 @@
 "use client";
 
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, useMotionValueEvent, useScroll } from "framer-motion";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Logo from "@/components/ui/Logo";
 
 // Spec: pawaac-design-language-evolution, Task 57 (supersedes Task 17)
@@ -119,230 +119,270 @@ function ExternalLinkMarker() {
 export default function Navigation() {
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
+  const [hidden, setHidden] = useState(false);
   const [open, setOpen] = useState(false);
+  const lastScrollY = useRef(0);
+  const { scrollY } = useScroll();
+
+  useMotionValueEvent(scrollY, "change", (latest) => {
+    const diff = latest - lastScrollY.current;
+    // Hide nav on scroll down, show on scroll up
+    if (latest > 120 && diff > 8) {
+      setHidden(true);
+    } else if (diff < -4) {
+      setHidden(false);
+    }
+    setScrolled(latest > 24);
+    lastScrollY.current = latest;
+  });
 
   useEffect(() => {
-    // Requirements: 1.5, 1.6 / Design: Header / Navigation
-    // Scroll threshold refined from 50px -> 24px to match design.md's
-    // "transparent at scroll 0, transitioning ... once scrolled > 24px".
-    const onScroll = () => setScrolled(window.scrollY > 24);
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+    if (open) document.body.style.overflow = "hidden";
+    else document.body.style.overflow = "";
+    return () => { document.body.style.overflow = ""; };
+  }, [open]);
 
   return (
     <>
-      <header
-      className={`fixed inset-x-0 top-0 z-[90] transition-colors duration-300 ${
-        scrolled
-          ? "bg-black/72 backdrop-blur-[16px] border-b border-line"
-          : "bg-transparent"
-      }`}
-    >
-      {/*
-        Skip-to-content link (Requirement 10.5): first focusable element in
-        the render tree, visually hidden until focused, moves focus to the
-        <main id="main-content"> wrapper set in src/app/layout.tsx.
-      */}
-      <a
-        href="#main-content"
-        className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[100] focus:bg-fg focus:px-4 focus:py-2 focus:font-mono focus:text-[11px] focus:font-semibold focus:uppercase focus:tracking-[0.1em] focus:text-bg"
+      <motion.header
+        initial={{ y: 0 }}
+        animate={{ y: hidden && !open ? "-120%" : "0%" }}
+        transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+        className={`fixed left-4 right-4 top-4 z-[90] rounded-full transition-[background,border-color,backdrop-filter,box-shadow] duration-500 md:left-8 md:right-8 md:top-5 lg:left-16 lg:right-16 ${
+          scrolled
+            ? "bg-black/70 backdrop-blur-2xl border border-white/[0.4] shadow-[0_8px_32px_-8px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(255,255,255,0.15),0_0_0_1px_rgba(255,255,255,0.08)]"
+            : "bg-black/40 backdrop-blur-xl border border-white/[0.3] shadow-[0_4px_24px_-4px_rgba(0,0,0,0.3),0_0_0_1px_rgba(255,255,255,0.05)]"
+        }`}
       >
-        Skip to content
-      </a>
-
-      <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
-        <a href="/" className="flex items-center gap-2.5 text-fg">
-          <Logo className="h-7 w-7" />
-          <span className="font-display text-lg font-bold tracking-tight text-fg">
-            PAWAAC
-          </span>
-        </a>
-
-        <ul className="hidden items-center gap-8 md:flex">
-          {LINKS.map((l) => {
-            // Requirements: 1.5, 1.6 / Design: Header / Navigation ->
-            // Active-item indicator, Correctness Property 14.
-            // Product and Autonomy are active only on an exact route match
-            // to their own page. Resources has no own route, so it instead
-            // shows active on its Planner route — Analyser is external and
-            // cannot itself be "the current page", so it does not drive the
-            // indicator. Company shows active on its own page and on its
-            // Company_Menu-linked routes: Careers, Contact, News, and Our
-            // Commitments. No item is active on Homepage ("/") or any other
-            // non-matching route (Deployments_Page has been removed
-            // entirely — task 65).
-            const isResourcesActive = RESOURCES_ACTIVE_ROUTES.includes(
-              pathname ?? "",
-            );
-            const isCompanyActive = COMPANY_ACTIVE_ROUTES.includes(
-              pathname ?? "",
-            );
-            const isActive =
-              l.label === "Resources"
-                ? isResourcesActive
-                : l.label === "Company"
-                  ? isCompanyActive
-                  : pathname === l.href;
-            const hasChildren = !!l.children?.length;
-            const TriggerTag: "a" | "button" = l.href ? "a" : "button";
-
-            return (
-              <li key={l.label} className={hasChildren ? "group/nav relative" : ""}>
-                <TriggerTag
-                  {...(l.href
-                    ? { href: l.href }
-                    : { type: "button" as const })}
-                  aria-current={isActive ? "page" : undefined}
-                  aria-haspopup={hasChildren ? "true" : undefined}
-                  aria-expanded={hasChildren ? "false" : undefined}
-                  className={`label group relative flex items-center gap-1.5 !text-white transition-colors hover:text-fg ${
-                    isActive ? "text-fg" : "text-muted"
-                  }`}
-                >
-                  {l.label}
-                  {hasChildren && (
-                    <span
-                      aria-hidden="true"
-                      className="mt-px inline-block text-[9px] transition-transform duration-200 group-hover/nav:rotate-180"
-                    >
-                      ▾
-                    </span>
-                  )}
-                  <span
-                    className={`absolute -bottom-1 left-0 h-px bg-interactive transition-all duration-300 ${
-                      isActive ? "w-full" : "w-0 group-hover:w-full"
-                    }`}
-                  />
-                </TriggerTag>
-
-                {hasChildren && (
-                  <ul
-                    className="invisible absolute left-0 top-full z-[91] mt-2 w-56 border border-line bg-black/95 py-2 opacity-0 backdrop-blur-[16px] transition-opacity duration-200 group-hover/nav:visible group-hover/nav:opacity-100 group-focus-within/nav:visible group-focus-within/nav:opacity-100"
-                  >
-                    {l.children!.map((child) => (
-                      <li key={child.href}>
-                        <a
-                          href={child.href}
-                          {...(child.external
-                            ? { target: "_blank", rel: "noopener noreferrer" }
-                            : {})}
-                          className="label block px-4 py-2.5 text-muted transition-colors hover:text-fg"
-                        >
-                          {child.label}
-                          {child.external && <ExternalLinkMarker />}
-                        </a>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </li>
-            );
-          })}
-        </ul>
-
         <a
-          href="/contact"
-          className="hidden border border-fg px-4 py-2 font-mono text-[11px] font-semibold uppercase tracking-[0.1em] text-fg transition-colors hover:bg-fg hover:text-bg md:block"
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[100] focus:bg-fg focus:px-4 focus:py-2 focus:font-mono focus:text-[11px] focus:font-semibold focus:uppercase focus:tracking-[0.1em] focus:text-bg"
         >
-          Contact Us
+          Skip to content
         </a>
 
-        <button
-          aria-label="Menu"
-          onClick={() => setOpen((o) => !o)}
-          className="flex flex-col gap-1.5 md:hidden"
-        >
-          <span className="h-px w-6 bg-fg" />
-          <span className="h-px w-6 bg-fg" />
-        </button>
-      </nav>
+        {/* Subtle bottom glow line when scrolled */}
+        {scrolled && (
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-x-4 -bottom-px h-px rounded-full"
+            style={{
+              background: "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.06) 30%, rgba(255,255,255,0.06) 70%, transparent 100%)"
+            }}
+          />
+        )}
 
-      </header>
+        <nav className="mx-auto flex h-[56px] max-w-7xl items-center justify-between px-6 md:px-8">
+          <a href="/" className="group flex items-center gap-2.5 text-white">
+            <div className="relative">
+              <Logo className="h-7 w-7 transition-transform duration-500 group-hover:scale-110" />
+              <div
+                aria-hidden="true"
+                className="absolute inset-0 rounded-full bg-white/0 blur-md transition-all duration-500 group-hover:bg-white/10"
+              />
+            </div>
+            <span className="font-display text-base font-bold tracking-tight text-white">
+              PAWAAC
+            </span>
+          </a>
 
+          <ul className="hidden items-center gap-9 md:flex">
+            {LINKS.map((l) => {
+              const isResourcesActive = RESOURCES_ACTIVE_ROUTES.includes(
+                pathname ?? "",
+              );
+              const isCompanyActive = COMPANY_ACTIVE_ROUTES.includes(
+                pathname ?? "",
+              );
+              const isActive =
+                l.label === "Resources"
+                  ? isResourcesActive
+                  : l.label === "Company"
+                    ? isCompanyActive
+                    : pathname === l.href;
+              const hasChildren = !!l.children?.length;
+              const TriggerTag: "a" | "button" = l.href ? "a" : "button";
+
+              return (
+                <li key={l.label} className={hasChildren ? "group/nav relative" : ""}>
+                  <TriggerTag
+                    {...(l.href
+                      ? { href: l.href }
+                      : { type: "button" as const })}
+                    aria-current={isActive ? "page" : undefined}
+                    aria-haspopup={hasChildren ? "true" : undefined}
+                    aria-expanded={hasChildren ? "false" : undefined}
+                    className={`label group relative flex items-center gap-1.5 !text-[12px] !font-medium transition-all duration-300 hover:!text-white ${
+                      isActive ? "!text-white" : "!text-white/70"
+                    }`}
+                  >
+                    {l.label}
+                    {hasChildren && (
+                      <span
+                        aria-hidden="true"
+                        className="mt-px inline-block text-[9px] transition-transform duration-300 group-hover/nav:rotate-180"
+                      >
+                        ▾
+                      </span>
+                    )}
+                    {/* Premium animated underline */}
+                    <span
+                      className={`absolute -bottom-2 left-0 h-[2px] rounded-full bg-white transition-all duration-500 ${
+                        isActive ? "w-full opacity-100" : "w-0 opacity-0 group-hover:w-full group-hover:opacity-50"
+                      }`}
+                    />
+                  </TriggerTag>
+
+                  {hasChildren && (
+                    <div className="invisible absolute left-1/2 top-full z-[91] mt-4 -translate-x-1/2 opacity-0 transition-all duration-300 group-hover/nav:visible group-hover/nav:mt-3 group-hover/nav:opacity-100 group-focus-within/nav:visible group-focus-within/nav:mt-3 group-focus-within/nav:opacity-100">
+                      <ul className="glass-stronger w-60 py-2 shadow-2xl">
+                        {l.children!.map((child) => (
+                          <li key={child.href}>
+                            <a
+                              href={child.href}
+                              {...(child.external
+                                ? { target: "_blank", rel: "noopener noreferrer" }
+                                : {})}
+                              className="group/link flex items-center px-5 py-2.5 text-[12px] font-mono uppercase tracking-[0.08em] text-muted transition-all duration-300 hover:bg-white/[0.04] hover:text-fg"
+                            >
+                              <span
+                                aria-hidden="true"
+                                className="mr-2 inline-block h-px w-0 bg-fg/60 transition-all duration-300 group-hover/link:w-3"
+                              />
+                              {child.label}
+                              {child.external && <ExternalLinkMarker />}
+                            </a>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+
+          <a
+            href="/contact"
+            className="btn-primary hidden md:inline-flex"
+          >
+            Contact Us
+          </a>
+
+          {/* Animated hamburger */}
+          <button
+            aria-label={open ? "Close menu" : "Open menu"}
+            onClick={() => setOpen((o) => !o)}
+            className="relative flex h-10 w-10 flex-col items-center justify-center gap-[5px] md:hidden"
+          >
+            <motion.span
+              animate={open ? { rotate: 45, y: 6.5 } : { rotate: 0, y: 0 }}
+              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+              className="block h-[1.5px] w-5 bg-fg"
+            />
+            <motion.span
+              animate={open ? { opacity: 0, scaleX: 0 } : { opacity: 1, scaleX: 1 }}
+              transition={{ duration: 0.2 }}
+              className="block h-[1.5px] w-5 bg-fg"
+            />
+            <motion.span
+              animate={open ? { rotate: -45, y: -6.5 } : { rotate: 0, y: 0 }}
+              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+              className="block h-[1.5px] w-5 bg-fg"
+            />
+          </button>
+        </nav>
+      </motion.header>
+
+      {/* Premium Mobile Menu */}
       <AnimatePresence>
         {open && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
             data-mobile-menu
-            className="fixed inset-0 z-[95] flex flex-col items-center justify-center gap-8 bg-bg md:hidden"
+            className="fixed inset-0 z-[95] md:hidden"
           >
-            <button
-              aria-label="Close"
-              onClick={() => setOpen(false)}
-              className="absolute right-6 top-5 font-mono text-sm text-muted"
-            >
-              CLOSE ✕
-            </button>
-            {LINKS.map((l, i) =>
-              l.href ? (
-                <div key={l.label} className="flex flex-col items-center gap-3">
-                  <motion.a
-                    href={l.href}
-                    onClick={() => setOpen(false)}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.05 * i }}
-                    className="font-display text-3xl font-semibold text-fg"
-                  >
-                    {l.label}
-                  </motion.a>
-                  {l.children?.map((child) => (
+            {/* Background */}
+            <div className="absolute inset-0 bg-bg/[0.97] backdrop-blur-2xl" />
+
+            <div className="relative flex h-full flex-col items-center justify-center gap-7 px-8">
+              {LINKS.map((l, i) =>
+                l.href ? (
+                  <div key={l.label} className="flex flex-col items-center gap-2.5">
                     <motion.a
-                      key={child.href}
-                      href={child.href}
-                      {...(child.external
-                        ? { target: "_blank", rel: "noopener noreferrer" }
-                        : {})}
+                      href={l.href}
                       onClick={() => setOpen(false)}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.05 * i + 0.03 }}
-                      className="label text-muted"
+                      initial={{ opacity: 0, y: 24, filter: "blur(6px)" }}
+                      animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                      transition={{ delay: 0.06 * i, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                      className="font-display text-3xl font-semibold text-fg"
                     >
-                      {child.label}
-                      {child.external && <ExternalLinkMarker />}
+                      {l.label}
                     </motion.a>
-                  ))}
-                </div>
-              ) : (
-                // Resources has no own route (design.md: "a Label_Caps
-                // dropdown trigger" rather than a link) — the mobile menu
-                // renders its label as static (non-navigating) text
-                // heading above its children, mirroring how Product's
-                // dropdown appears in the mobile menu otherwise.
-                <div key={l.label} className="flex flex-col items-center gap-3">
-                  <motion.span
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.05 * i }}
-                    className="font-display text-3xl font-semibold text-fg"
-                  >
-                    {l.label}
-                  </motion.span>
-                  {l.children?.map((child) => (
-                    <motion.a
-                      key={child.href}
-                      href={child.href}
-                      {...(child.external
-                        ? { target: "_blank", rel: "noopener noreferrer" }
-                        : {})}
-                      onClick={() => setOpen(false)}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.05 * i + 0.03 }}
-                      className="label text-muted"
+                    {l.children?.map((child) => (
+                      <motion.a
+                        key={child.href}
+                        href={child.href}
+                        {...(child.external
+                          ? { target: "_blank", rel: "noopener noreferrer" }
+                          : {})}
+                        onClick={() => setOpen(false)}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.06 * i + 0.04, duration: 0.4 }}
+                        className="label text-muted transition-colors hover:text-fg"
+                      >
+                        {child.label}
+                        {child.external && <ExternalLinkMarker />}
+                      </motion.a>
+                    ))}
+                  </div>
+                ) : (
+                  <div key={l.label} className="flex flex-col items-center gap-2.5">
+                    <motion.span
+                      initial={{ opacity: 0, y: 24, filter: "blur(6px)" }}
+                      animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                      transition={{ delay: 0.06 * i, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                      className="font-display text-3xl font-semibold text-fg"
                     >
-                      {child.label}
-                      {child.external && <ExternalLinkMarker />}
-                    </motion.a>
-                  ))}
-                </div>
-              ),
-            )}
+                      {l.label}
+                    </motion.span>
+                    {l.children?.map((child) => (
+                      <motion.a
+                        key={child.href}
+                        href={child.href}
+                        {...(child.external
+                          ? { target: "_blank", rel: "noopener noreferrer" }
+                          : {})}
+                        onClick={() => setOpen(false)}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.06 * i + 0.04, duration: 0.4 }}
+                        className="label text-muted transition-colors hover:text-fg"
+                      >
+                        {child.label}
+                        {child.external && <ExternalLinkMarker />}
+                      </motion.a>
+                    ))}
+                  </div>
+                ),
+              )}
+
+              {/* Mobile CTA */}
+              <motion.a
+                href="/contact"
+                onClick={() => setOpen(false)}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.35, duration: 0.5 }}
+                className="btn-primary mt-4"
+              >
+                Contact Us
+              </motion.a>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

@@ -6,6 +6,9 @@ import FilmGrain from "@/components/ui/FilmGrain";
 import Preloader from "@/components/ui/Preloader";
 import HudFrame from "@/components/ui/HudFrame";
 import Navigation from "@/components/layout/Navigation";
+import ScrollProgress from "@/components/ui/ScrollProgress";
+import ScrollDrone from "@/components/ui/ScrollDrone";
+import PageTransition from "@/components/providers/PageTransition";
 
 // Typeface decision (resolved OCP-01, design.md -> Design Tokens -> Type tokens):
 // Display_Type/Heading use Space Grotesk (SIL OFL, variable-weight geometric grotesk).
@@ -27,11 +30,13 @@ import Navigation from "@/components/layout/Navigation";
 const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
   variable: "--font-space-grotesk",
+  display: "swap",
 });
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
 const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
   variable: "--font-jetbrains-mono",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -54,6 +59,10 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_IN",
   },
+  other: {
+    "theme-color": "#080808",
+    "color-scheme": "dark",
+  },
 };
 
 export default function RootLayout({
@@ -68,9 +77,11 @@ export default function RootLayout({
         <Preloader />
         <FilmGrain />
         <HudFrame />
+        <ScrollDrone />
         <LenisProvider>
+          <ScrollProgress />
           <Navigation />
-          <main id="main-content">{children}</main>
+          <main id="main-content"><PageTransition>{children}</PageTransition></main>
         </LenisProvider>
       </body>
     </html>
