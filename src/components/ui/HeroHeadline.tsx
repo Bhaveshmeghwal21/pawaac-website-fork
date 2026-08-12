@@ -29,7 +29,8 @@ export default function HeroHeadline({
 }) {
   const prefersReducedMotion = usePrefersReducedMotion();
   const containerRef = useRef<HTMLHeadingElement>(null);
-  const words = text.split(" ");
+  // Support explicit line breaks via "|" in the text prop
+  const lines = text.split("|").map((line) => line.trim().split(" "));
 
   useEffect(() => {
     if (prefersReducedMotion || !containerRef.current) return;
@@ -70,15 +71,19 @@ export default function HeroHeadline({
   return (
     <h1 ref={containerRef} className={className}>
       <span className="sr-only">{text}</span>
-      <span aria-hidden="true">
-        {words.map((w, i) => (
-          <span
-            key={`${w}-${i}`}
-            data-word
-            className="inline-block will-change-[transform,filter,opacity]"
-          >
-            {w}
-            {i < words.length - 1 && <>&nbsp;</>}
+      <span aria-hidden="true" className="block">
+        {lines.map((line, li) => (
+          <span key={li} className="block">
+            {line.map((w, wi) => (
+              <span
+                key={`${w}-${li}-${wi}`}
+                data-word
+                className="inline-block will-change-[transform,filter,opacity]"
+              >
+                {w}
+                {wi < line.length - 1 && <>&nbsp;</>}
+              </span>
+            ))}
           </span>
         ))}
       </span>

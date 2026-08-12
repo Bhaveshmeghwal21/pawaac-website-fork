@@ -23,8 +23,8 @@ export default function Preloader() {
     <AnimatePresence>
       {!done && (
         <motion.div
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+          exit={{ opacity: 0, scale: 1.02 }}
+          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
           className="fixed inset-0 z-[120] flex items-center justify-center overflow-hidden bg-black"
         >
           {/* diagonal recon scan, sweeps once off-axis */}

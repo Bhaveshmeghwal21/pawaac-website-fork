@@ -100,7 +100,7 @@ export default function Reveal({
           ? { clipPath: openClipPath, y: 0, scale: 1 }
           : { clipPath: closedClipPath, y: settleDistance, scale: 0.985 }
       }
-      transition={{ duration: 0.7, delay, ease: [0.16, 1, 0.3, 1] }}
+      transition={{ duration: 0.8, delay, ease: [0.16, 1, 0.3, 1] }}
       style={{ willChange: "clip-path, transform" }}
     >
       {children}

@@ -37,11 +37,12 @@ const container: Variants = {
 };
 
 const wordVariant: Variants = {
-  hidden: { opacity: 0, y: "0.35em" },
+  hidden: { opacity: 0, y: "0.3em", filter: "blur(4px)" },
   visible: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.55, ease: [0.16, 1, 0.3, 1] },
+    filter: "blur(0px)",
+    transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] },
   },
 };
 

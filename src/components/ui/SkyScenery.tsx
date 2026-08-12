@@ -61,9 +61,9 @@ export default function SkyScenery() {
 
     const tween = gsap.fromTo(
       el,
-      { y: -24 },
+      { y: -32 },
       {
-        y: 24,
+        y: 32,
         ease: "none",
         scrollTrigger: {
           trigger: document.body,
@@ -118,6 +118,15 @@ export default function SkyScenery() {
         style={{
           backgroundImage:
             "repeating-linear-gradient(to bottom, var(--color-white) 0px, var(--color-white) 1px, transparent 1px, transparent 4px)",
+        }}
+      />
+
+      {/* Cinematic vignette for depth */}
+      <div
+        aria-hidden="true"
+        className="absolute inset-0"
+        style={{
+          background: "radial-gradient(ellipse at center, transparent 40%, rgba(8,8,8,0.4) 100%)"
         }}
       />
     </div>
