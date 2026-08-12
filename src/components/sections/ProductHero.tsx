@@ -47,17 +47,14 @@ export default function ProductHero() {
 
         <Reveal delay={0.1}>
           <div
-            className="relative mx-auto w-full max-w-sm"
+            className="image-hover-zoom relative mx-auto w-full max-w-md border border-line"
             style={{ aspectRatio: "4 / 5" }}
           >
-            {/* Real brochure-extracted platform photo (resolved OCP-06),
-                grayscale resting-state filter per the site's monochrome
-                pattern (Requirement 3.1-3.2). */}
             <Image
               src="/images/hawkai-plus-product-2.jpg"
               alt="Pawaac autonomous drone platform hardware"
               fill
-              sizes="(min-width: 768px) 384px, 90vw"
+              sizes="(min-width: 768px) 448px, 90vw"
               className="object-cover grayscale"
               priority
             />
