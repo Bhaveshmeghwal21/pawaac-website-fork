@@ -120,7 +120,7 @@ export default function ContactForm() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="mt-6 w-full bg-white py-3 text-sm font-semibold text-black transition hover:bg-interactive disabled:opacity-60"
+            className="mt-6 w-full bg-white py-3.5 text-sm font-semibold uppercase tracking-[0.08em] text-black transition-all duration-400 hover:bg-grey-100 hover:shadow-[0_4px_20px_-4px_rgba(255,255,255,0.15)] disabled:opacity-60"
           >
             {isSubmitting ? "Submitting…" : "Request Live Demo →"}
           </button>

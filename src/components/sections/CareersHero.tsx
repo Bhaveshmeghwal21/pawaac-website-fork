@@ -20,7 +20,7 @@ import Reveal from "@/components/ui/Reveal";
 
 export default function CareersHero() {
   return (
-    <section className="relative overflow-hidden bg-bg px-6 py-28 md:py-36">
+    <section className="section-glow-line relative overflow-hidden bg-bg px-6 py-28 md:py-36">
       {/* Display_Type oversized background texture (Pattern 1), purely
           decorative — hidden from assistive technology per Requirement 10.6 */}
       <span

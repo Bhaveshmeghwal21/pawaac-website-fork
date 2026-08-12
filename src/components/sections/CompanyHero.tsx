@@ -20,7 +20,7 @@ import Reveal from "@/components/ui/Reveal";
 
 export default function CompanyHero() {
   return (
-    <section className="relative overflow-hidden bg-bg px-6 py-32 md:py-44">
+    <section className="section-glow-line relative overflow-hidden bg-bg px-6 py-32 md:py-44">
       {/* Display_Type oversized word-mark texture (Pattern 1), rendered as
           the section's sole visual (resolved OCP-15) — purely decorative,
           hidden from assistive technology per Requirement 10.6 */}
