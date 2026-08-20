@@ -1,24 +1,9 @@
 "use client";
 
-// HeroHeadline — GSAP-driven word-stagger entrance for the homepage hero
-// statement.
-//
-// Distinct from StaggerHeading.tsx (Framer Motion, opacity/y-only word
-// reveal used for in-page section headings): this is a hero-grade moment,
-// so it uses GSAP directly (already installed and wired up via
-// LenisProvider for Lenis sync, but previously unused anywhere on the
-// homepage) for finer per-word timeline control — each word blurs into
-// focus while rising slightly and settling from a soft scale, rather than
-// a flat opacity/clip-path wipe. Runs once on mount (this is the first
-// thing a visitor sees; it is not scroll-triggered).
-//
-// Reduced-motion (Requirement 9.8, same convention as every other motion
-// component in this codebase via usePrefersReducedMotion): renders the
-// final, fully-visible state immediately, with no GSAP timeline created
-// at all.
 import { useEffect, useRef } from "react";
 import gsap from "gsap";
-import usePrefersReducedMotion from "@/hooks/usePrefersReducedMotion";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { subscribeToPageReady } from "@/lib/motion/pageReady";
 
 export default function HeroHeadline({
   text,
@@ -27,45 +12,99 @@ export default function HeroHeadline({
   text: string;
   className?: string;
 }) {
-  const prefersReducedMotion = usePrefersReducedMotion();
   const containerRef = useRef<HTMLHeadingElement>(null);
   const words = text.split(" ");
 
   useEffect(() => {
-    if (prefersReducedMotion || !containerRef.current) return;
+    const heading = containerRef.current;
+    if (!heading || typeof window.matchMedia !== "function") return;
 
-    const wordEls = containerRef.current.querySelectorAll<HTMLElement>(
-      "[data-word]",
-    );
+    let cleanupMotion: (() => void) | undefined;
+    const unsubscribe = subscribeToPageReady(() => {
+      const hero = heading.closest<HTMLElement>("[data-home-hero]");
+      if (!hero) return;
 
-    const tween = gsap.fromTo(
-      wordEls,
-      { opacity: 0, y: 28, scale: 0.96, filter: "blur(14px)" },
-      {
-        opacity: 1,
-        y: 0,
-        scale: 1,
-        filter: "blur(0px)",
-        duration: 1.1,
-        ease: "power3.out",
-        stagger: 0.09,
-        delay: 0.15,
-      },
-    );
+      gsap.registerPlugin(ScrollTrigger);
+      let media: ReturnType<typeof gsap.matchMedia> | undefined;
+      const context = gsap.context(() => {
+        media = gsap.matchMedia();
+        media.add(
+          {
+            desktop: "(min-width: 768px) and (prefers-reduced-motion: no-preference)",
+            mobile: "(max-width: 767px) and (prefers-reduced-motion: no-preference)",
+            reduce: "(prefers-reduced-motion: reduce)",
+          },
+          ({ conditions }) => {
+            const { desktop, reduce } = conditions as {
+              desktop: boolean;
+              mobile: boolean;
+              reduce: boolean;
+            };
+            if (reduce) return;
+
+            const wordEls = heading.querySelectorAll<HTMLElement>("[data-word]");
+            const support = hero.querySelector<HTMLElement>("[data-hero-support]");
+            const scenery = hero.querySelector<HTMLElement>("[data-hero-scenery-image]");
+            const timeline = gsap.timeline();
+
+            if (desktop && scenery) {
+              timeline.fromTo(
+                scenery,
+                { scale: 1.025 },
+                { scale: 1, duration: 0.7, ease: "power2.out" },
+                0,
+              );
+            }
+
+            timeline.from(wordEls, {
+              autoAlpha: 0,
+              y: desktop ? 18 : 10,
+              duration: desktop ? 0.65 : 0.45,
+              ease: "power3.out",
+              stagger: desktop ? 0.05 : 0.04,
+            }, desktop ? 0.08 : 0);
+
+            if (support) {
+              timeline.from(support, {
+                autoAlpha: 0,
+                y: desktop ? 16 : 8,
+                duration: desktop ? 0.55 : 0.4,
+                ease: "power2.out",
+              }, "<0.2");
+            }
+
+            if (desktop && scenery) {
+              gsap.fromTo(
+                scenery,
+                { y: -20 },
+                {
+                  y: 20,
+                  ease: "none",
+                  scrollTrigger: {
+                    trigger: hero,
+                    start: "top top",
+                    end: "bottom top",
+                    scrub: 0.8,
+                  },
+                },
+              );
+            }
+
+          },
+        );
+      }, hero);
+
+      cleanupMotion = () => {
+        media?.revert();
+        context.revert();
+      };
+    });
 
     return () => {
-      tween.kill();
+      unsubscribe();
+      cleanupMotion?.();
     };
-  }, [prefersReducedMotion]);
-
-  if (prefersReducedMotion) {
-    return (
-      <h1 className={className}>
-        <span className="sr-only">{text}</span>
-        <span aria-hidden="true">{text}</span>
-      </h1>
-    );
-  }
+  }, []);
 
   return (
     <h1 ref={containerRef} className={className}>
@@ -75,7 +114,7 @@ export default function HeroHeadline({
           <span
             key={`${w}-${i}`}
             data-word
-            className="inline-block will-change-[transform,filter,opacity]"
+            className="inline-block will-change-[transform,opacity]"
           >
             {w}
             {i < words.length - 1 && <>&nbsp;</>}

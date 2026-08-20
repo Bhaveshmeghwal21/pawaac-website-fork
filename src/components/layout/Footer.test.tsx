@@ -9,6 +9,48 @@ import Footer from "./Footer";
 //   Components -> Footer
 
 describe("Footer", () => {
+  it("keeps the existing full-density layout by default", () => {
+    render(<Footer />);
+    const footer = screen.getByRole("contentinfo");
+
+    expect(footer).toHaveClass("pt-20", "pb-12", "md:pt-28");
+    expect(footer.querySelector(".grid")).toHaveClass("gap-12");
+    expect(screen.getByText("PAWAAC", { selector: "p" }).parentElement).toHaveClass(
+      "mt-20",
+      "pt-10",
+    );
+    expect(footer.querySelector("[data-footer-motion-content]")).not.toBeNull();
+  });
+
+  it("supports a compact homepage layout without dropping trust or navigation content", () => {
+    render(<Footer compact />);
+    const footer = screen.getByRole("contentinfo");
+
+    expect(footer).toHaveClass("pt-12", "pb-8", "md:pt-16");
+    expect(footer).not.toHaveClass("pt-20", "pb-12", "md:pt-28");
+    expect(footer.querySelector(".grid")).toHaveClass("gap-8");
+    expect(screen.queryByText("PAWAAC", { selector: "p" })).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Careers" })).toHaveAttribute(
+      "href",
+      "/careers",
+    );
+    expect(screen.getByRole("link", { name: "Contact" })).toHaveAttribute(
+      "href",
+      "/contact",
+    );
+    expect(
+      screen.getByRole("link", {
+        name: "Bajrang Dronetech Pvt Ltd (opens external site)",
+      }),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/kshitij@pawaac.com/i)).toBeInTheDocument();
+    expect(screen.getByText("DGCA COMPLIANT")).toBeInTheDocument();
+    expect(screen.getByText("MeitY RECOGNIZED")).toBeInTheDocument();
+    expect(footer.querySelector("[data-footer-static-content]")).not.toBeNull();
+    expect(footer.querySelector("[data-footer-motion-content]")).toBeNull();
+    expect(footer.querySelector("[data-footer-motion-overlay]")).toBeNull();
+  });
+
   it("renders above the shared background with a readable dark-gray surface", () => {
     render(<Footer />);
     const footer = screen.getByRole("contentinfo");
