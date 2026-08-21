@@ -5,6 +5,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 type HomeMotionVariant =
+  | "problem"
   | "operating"
   | "platforms"
   | "applications"

@@ -3,28 +3,60 @@
 import Image from "next/image";
 import Link from "next/link";
 import HomeMotionSection from "@/components/motion/HomeMotionSection";
+import OperatingStepSymbol, {
+  type OperatingSymbolVariant,
+} from "@/components/ui/OperatingStepSymbol";
 import ReticleFrame from "@/components/ui/ReticleFrame";
 
-const STEPS = [
+// The operating concept is a closed mission cycle, not a row of feature cards.
+// Dock is both the starting state and the destination after recovery. GPS
+// denied navigation spans the airborne portion rather than pretending to be a
+// separate mission step, and the human interface branches from Escalate.
+//
+// "Rapid battery swap and recharge" is published in the Sentrivion brochure.
+// The copy deliberately does not claim that the swap itself is automated;
+// automated docking and charging are separate published capabilities. "GPS
+// denied navigation" is a site-owner supplied capability statement approved
+// for this section; no unverified implementation method is named.
+const STEPS: {
+  name: string;
+  body: string;
+  symbol: OperatingSymbolVariant;
+}[] = [
   {
-    index: "01",
     name: "Dock",
-    body: "Aircraft remain charged at the site they cover, ready without a separate launch crew.",
+    body: "Protected on site, charged and ready.",
+    symbol: "dock",
   },
   {
-    index: "02",
+    name: "Dispatch",
+    body: "Launches on schedule or when called.",
+    symbol: "dispatch",
+  },
+  {
     name: "Patrol",
-    body: "Scheduled and on demand routes fly inside a defined geofence with automatic return safeguards.",
+    body: "Follows the mission inside defined bounds.",
+    symbol: "patrol",
   },
   {
-    index: "03",
     name: "Detect",
-    body: "Onboard vision surfaces events worth reviewing instead of sending back hours of undifferentiated footage.",
+    body: "Onboard vision identifies what needs attention.",
+    symbol: "detect",
   },
   {
-    index: "04",
-    name: "Escalate & respond",
-    body: "An operator receives a located alert, opens live oversight, and decides what happens next.",
+    name: "Escalate",
+    body: "A located alert reaches the operator.",
+    symbol: "escalate",
+  },
+  {
+    name: "Return",
+    body: "The aircraft returns after the mission.",
+    symbol: "return",
+  },
+  {
+    name: "Swap",
+    body: "Rapid battery recovery prepares the next flight.",
+    symbol: "recharge",
   },
 ];
 
@@ -40,42 +72,110 @@ export default function HomeOperatingLoop() {
           <h2 className="mt-3 text-heading font-display text-fg">
             Surveillance that notices, not just records
           </h2>
-          <p className="mt-5 max-w-2xl text-body font-body text-fg/80">
-            Pawaac connects the aircraft, dock, onboard vision, and operator
-            into one repeatable coverage cycle.
-          </p>
         </div>
 
-        <div data-motion-group className="mt-10 grid border-y border-line sm:grid-cols-2 lg:grid-cols-4">
-          {STEPS.map((step) => (
-            <div
-              key={step.index}
-              data-motion-item
-              className="border-b border-line p-5 last:border-b-0 sm:[&:nth-child(odd)]:border-r sm:[&:nth-child(n+3)]:border-b-0 lg:border-b-0 lg:border-r lg:last:border-r-0"
+        <div
+          data-motion-group
+          className="mt-10 border border-line bg-bg-2 p-5 md:p-8"
+        >
+          <div className="relative">
+            <span
+              aria-hidden="true"
+              className="absolute bottom-6 left-[23px] top-6 w-px bg-line md:hidden"
+            />
+            <span
+              aria-hidden="true"
+              className="absolute left-7 right-7 top-7 hidden h-px bg-line md:block"
+            />
+
+            <ol
+              data-mission-loop
+              className="relative grid gap-0 md:grid-cols-7"
             >
-              <article data-operating-step>
-                <p className="technical-data text-muted">{step.index}</p>
-                <h3 className="mt-3 font-display text-xl font-bold text-fg md:text-2xl">
-                  {step.name}
-                </h3>
-                <p className="mt-3 text-sm leading-relaxed text-fg/70">
-                  {step.body}
-                </p>
-              </article>
+              {STEPS.map((step, index) => (
+                <li
+                  key={step.name}
+                  data-motion-item
+                  className="relative grid grid-cols-[48px_minmax(0,1fr)] gap-4 pb-7 last:pb-0 md:block md:px-2 md:pb-0"
+                >
+                  <OperatingStepSymbol variant={step.symbol} />
+                  {index < STEPS.length - 1 && (
+                    <span
+                      aria-hidden="true"
+                      className="absolute right-[-2px] top-[25px] hidden size-1.5 rotate-45 border-r border-t border-fg/40 md:block"
+                    />
+                  )}
+                  <article data-operating-step className="md:mt-5">
+                    <h3 className="font-display text-lg font-bold leading-snug text-fg md:text-xl">
+                      {step.name}
+                    </h3>
+                    <p className="mt-2 max-w-40 text-xs leading-relaxed text-fg/65 md:text-sm">
+                      {step.body}
+                    </p>
+                    {step.symbol === "escalate" && (
+                      <span
+                        data-operator-branch
+                        className="technical-data mt-3 inline-flex items-center gap-2 text-fg"
+                      >
+                        <span
+                          aria-hidden="true"
+                          className="size-1.5 bg-fg"
+                        />
+                        Human oversight ↓
+                      </span>
+                    )}
+                  </article>
+                </li>
+              ))}
+            </ol>
+          </div>
+
+          <div className="mt-8 grid md:grid-cols-7">
+            <div
+              data-navigation-resilience
+              className="border border-line bg-bg p-4 md:col-span-5 md:col-start-2 md:p-5"
+            >
+              <div className="flex items-center gap-4">
+                <OperatingStepSymbol variant="gpsDenied" compact />
+                <div className="min-w-0">
+                  <p className="label">Navigation resilience</p>
+                  <h3 className="mt-1 font-display text-lg font-bold text-fg md:text-xl">
+                    GPS denied navigation
+                  </h3>
+                  <p className="mt-1 text-xs leading-relaxed text-muted md:text-sm">
+                    Mission continuity when satellite positioning is unavailable.
+                  </p>
+                </div>
+                <div
+                  aria-hidden="true"
+                  className="ml-auto hidden min-w-24 flex-1 items-center sm:flex"
+                >
+                  <span className="h-px flex-1 bg-fg/60" />
+                  <span className="size-2 rotate-45 border-r border-t border-fg/60" />
+                </div>
+              </div>
             </div>
-          ))}
+          </div>
+
+          <div
+            data-loop-return
+            className="mt-6 flex items-center gap-3 border-t border-line pt-4"
+          >
+            <span aria-hidden="true" className="font-mono text-lg text-fg">
+              ←
+            </span>
+            <p className="technical-data text-muted">
+              Back to Dock. Ready again.
+            </p>
+          </div>
         </div>
 
-        <div data-motion-group className="mt-14 grid gap-8 border-t border-line pt-10 md:grid-cols-[minmax(0,4fr)_minmax(0,7fr)] md:items-center md:gap-14">
+        <div data-motion-group className="mt-12 grid gap-8 border-t border-line pt-10 md:grid-cols-[minmax(0,4fr)_minmax(0,7fr)] md:items-center md:gap-14">
           <div data-motion-item>
               <p className="label">Human oversight</p>
               <h3 className="mt-3 font-display text-3xl font-bold leading-tight text-fg md:text-5xl">
                 One tap from alert to oversight
               </h3>
-              <p className="mt-4 max-w-md text-body text-muted">
-                The system flags what deserves attention. The operator enters
-                the loop only when context and judgment are needed.
-              </p>
               <Link
                 href="/autonomy"
                 className="group mt-6 inline-flex items-center gap-2 font-mono text-sm text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fg focus-visible:ring-offset-4 focus-visible:ring-offset-bg"
@@ -87,10 +187,10 @@ export default function HomeOperatingLoop() {
 
           <div data-motion-item>
             <div data-motion-image className="relative overflow-hidden border border-grey-800 bg-bg-2">
-              <div className="relative w-full" style={{ aspectRatio: "1198 / 684" }}>
+              <div className="relative w-full" style={{ aspectRatio: "16 / 9" }}>
                 <Image
-                  src="/images/gcs.png"
-                  alt="Concept ground control interface showing target tracking and flight commands"
+                  src="/images/visionModelOutput.jpeg"
+                  alt="Illustrative aerial detection view marking trucks and a person for operator review"
                   fill
                   sizes="(min-width: 768px) 60vw, 100vw"
                   className="object-cover"
@@ -99,7 +199,7 @@ export default function HomeOperatingLoop() {
               </div>
             </div>
             <p className="technical-data mt-2 text-muted">
-              Concept interface (in development)
+              Illustrative detection view (in development)
             </p>
           </div>
         </div>

@@ -14,10 +14,12 @@ export default function HomeContactBand() {
             <h2 className="mt-3 max-w-4xl text-heading font-display text-fg">
               Built by Bajrang Dronetech Pvt Ltd
             </h2>
-            <p className="mt-4 max-w-2xl text-body text-muted">
-              Engineering and operations based in India, purpose-built for
-              demanding field environments.
-            </p>
+            {/* The "Engineering and operations based in India, built
+                specifically for demanding field environments" line was cut in
+                the copy density pass: the credentials row below already carries
+                "ENGINEERING & OPERATIONS · INDIA", so it was saying the same
+                thing twice. The mission sentence stays; it is the emotional
+                close of the page and earns its length. */}
             <p className="mt-7 max-w-3xl border-l border-line pl-5 font-display text-xl leading-relaxed text-fg/85 md:text-2xl">
               Pawaac exists to make continuous, pilotless coverage the default
               for the places that can least afford a gap in watch.
@@ -31,7 +33,7 @@ export default function HomeContactBand() {
                 Talk to the team
               </h3>
               <p className="mt-3 text-sm leading-relaxed text-muted">
-                Tell us what you need to cover and how the site operates.
+                Tell us what you need to cover.
               </p>
               <Link
                 href="/contact"

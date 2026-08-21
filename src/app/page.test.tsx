@@ -12,6 +12,7 @@ import HomeDeploymentsPreview from "@/components/sections/HomeDeploymentsPreview
 import HomeHero from "@/components/sections/HomeHero";
 import HomeOperatingLoop from "@/components/sections/HomeOperatingLoop";
 import HomePlannerCTA from "@/components/sections/HomePlannerCTA";
+import HomeProblemFraming from "@/components/sections/HomeProblemFraming";
 import HomeSpecSheet from "@/components/sections/HomeSpecSheet";
 import SkyScenery from "@/components/ui/SkyScenery";
 import Home from "./page";
@@ -25,11 +26,16 @@ function elementChildren(element: ElementWithChildren) {
 }
 
 describe("Home page composition", () => {
-  it("renders only the six consolidated sections in order, followed by the compact footer", () => {
+  // HomeProblemFraming sits at index 1, immediately after the hero: the page
+  // previously opened solution first (hero -> operating loop -> platforms) and
+  // never stated the operational gap being closed, so the problem framing has
+  // to land before the mechanics that resolve it.
+  it("renders the seven consolidated sections in order, followed by the compact footer", () => {
     const children = elementChildren(Home() as ElementWithChildren);
 
     expect(children.map((child) => child.type)).toEqual([
       HomeHero,
+      HomeProblemFraming,
       HomeOperatingLoop,
       HomeSpecSheet,
       HomeDeploymentsPreview,
@@ -38,6 +44,17 @@ describe("Home page composition", () => {
       Footer,
     ]);
     expect(children.at(-1)?.props).toMatchObject({ compact: true });
+  });
+
+  it("states the problem before the operating loop that resolves it", () => {
+    const order = elementChildren(Home() as ElementWithChildren).map(
+      (child) => child.type,
+    );
+
+    expect(order.indexOf(HomeProblemFraming)).toBeLessThan(
+      order.indexOf(HomeOperatingLoop),
+    );
+    expect(order.indexOf(HomeProblemFraming)).toBeGreaterThan(order.indexOf(HomeHero));
   });
 
   it("keeps exactly one SkyScenery inside HomeHero instead of at page level", () => {

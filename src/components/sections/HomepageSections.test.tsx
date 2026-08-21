@@ -2,6 +2,7 @@
 import { describe, expect, it } from "vitest";
 import { render, screen, within } from "@testing-library/react";
 import HomeOperatingLoop from "./HomeOperatingLoop";
+import HomeProblemFraming from "./HomeProblemFraming";
 import HomeSpecSheet from "./HomeSpecSheet";
 import HomeDeploymentsPreview from "./HomeDeploymentsPreview";
 import HomePlannerCTA from "./HomePlannerCTA";
@@ -13,8 +14,69 @@ function owningSection(element: Element) {
   return section as HTMLElement;
 }
 
+// Number of shortcoming cards in HomeProblemFraming, used by the guard that
+// keeps prose from creeping back into that section.
+const SHORTCOMING_COUNT = 5;
+
 describe("condensed homepage sections", () => {
-  it("combines the operating loop and escalation visual into four concise stages", () => {
+  it("frames the problem as five visual shortcomings, with no ungated numerals", () => {
+    const { container } = render(<HomeProblemFraming />);
+    const section = owningSection(
+      screen.getByRole("heading", { name: "Where surveillance falls short" }),
+    );
+
+    // These are the limitations of conventional PILOTED drone surveillance, not
+    // of fixed cameras and manned guarding. An earlier version of the section
+    // got that wrong; the distinction is the whole competitive argument, since
+    // the alternative a buyer weighs up is usually another drone operator.
+    // "Camera blind spots" is the deliberate exception and comes first: it is
+    // the reason to fly anything over a site at all.
+    expect(
+      Array.from(container.querySelectorAll("h3")).map((h) => h.textContent),
+    ).toEqual([
+      "Camera blind spots",
+      "Incomplete patrols",
+      "Delayed response",
+      "Manpower strain",
+      "GPS signal loss",
+    ]);
+    expect(container.querySelectorAll("[data-problem-card]")).toHaveLength(5);
+    expect(section).toHaveAttribute("data-home-motion", "problem");
+
+    // Site-owner direction: use compact symbols rather than explanatory
+    // diagrams or generated imagery. One pictogram identifies each problem;
+    // each is decorative because the adjacent title and line provide its
+    // accessible meaning.
+    const symbols = container.querySelectorAll("[data-problem-symbol]");
+    expect(symbols).toHaveLength(SHORTCOMING_COUNT);
+    const svgs = container.querySelectorAll("[data-problem-symbol] svg");
+    expect(svgs).toHaveLength(SHORTCOMING_COUNT);
+    for (const symbol of symbols) {
+      expect(symbol).toHaveAttribute("aria-hidden", "true");
+      // SVG <text> would land in textContent and break the no digits rule.
+      expect(symbol.querySelectorAll("text")).toHaveLength(0);
+    }
+
+    // The section has to stay inside one viewport, so the earlier standfirst,
+    // per card paragraphs and closing pivot sentence are gone. Guard against
+    // prose creeping back: at most one short line of copy per card.
+    expect(container.querySelectorAll("p")).toHaveLength(
+      1 + SHORTCOMING_COUNT, // the eyebrow label, plus one line per card
+    );
+
+    // Content governance: every numeral on the site must trace to an already
+    // published figure. The original Problem.tsx was dropped at Task 16
+    // precisely because its stat counters were ungated, so this section is
+    // required to stay qualitative rather than reintroduce them. The diagrams
+    // show proportions, never quantities, for the same reason.
+    expect(section.textContent ?? "").not.toMatch(/\d/);
+
+    // The site owner's no hyphens or dashes rule is enforced for this section
+    // and every other homepage section in HomepageCopyRules.test.tsx, via the
+    // dashFreeCopy validator, rather than by an ad hoc regex here.
+  });
+
+  it("presents a closed mission loop with recovery, navigation resilience, and oversight", () => {
     const { container } = render(<HomeOperatingLoop />);
     const section = owningSection(
       screen.getByRole("heading", {
@@ -27,13 +89,42 @@ describe("condensed homepage sections", () => {
         screen.getByRole("heading", { name: "One tap from alert to oversight" }),
       ),
     ).toBe(section);
-    expect(container.querySelectorAll("[data-operating-step]")).toHaveLength(4);
-    expect(within(section).getByText("Dock")).toBeInTheDocument();
-    expect(within(section).getByText("Patrol")).toBeInTheDocument();
-    expect(within(section).getByText("Detect")).toBeInTheDocument();
-    expect(within(section).getByText("Escalate & respond")).toBeInTheDocument();
+    expect(container.querySelectorAll("[data-operating-step]")).toHaveLength(7);
+    expect(container.querySelector("[data-mission-loop]")).not.toBeNull();
+    expect(container.querySelector("[data-loop-return]")).not.toBeNull();
+    expect(container.querySelector("[data-operator-branch]")).not.toBeNull();
+    expect(container.querySelector("[data-navigation-resilience]")).not.toBeNull();
+
+    const symbols = container.querySelectorAll("[data-operating-symbol]");
+    expect(symbols).toHaveLength(8);
+    for (const symbol of symbols) {
+      expect(symbol).toHaveAttribute("aria-hidden", "true");
+      expect(symbol.querySelectorAll("text")).toHaveLength(0);
+    }
+
+    for (const stage of [
+      "Dock",
+      "Dispatch",
+      "Patrol",
+      "Detect",
+      "Escalate",
+      "Return",
+      "Swap",
+    ]) {
+      expect(within(section).getByText(stage)).toBeInTheDocument();
+    }
     expect(
-      within(section).getByText("Concept interface (in development)"),
+      within(section).getByRole("heading", { name: "GPS denied navigation" }),
+    ).toBeInTheDocument();
+    expect(within(section).getByText("Back to Dock. Ready again.")).toBeInTheDocument();
+    expect(container.querySelector('img[src*="visionModelOutput.jpeg"]')).not.toBeNull();
+    expect(
+      screen.getByRole("img", {
+        name: /illustrative aerial detection view/i,
+      }),
+    ).toBeInTheDocument();
+    expect(
+      within(section).getByText("Illustrative detection view (in development)"),
     ).toBeInTheDocument();
     expect(section).toHaveAttribute("data-home-motion", "operating");
   });

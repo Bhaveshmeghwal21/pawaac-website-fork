@@ -84,11 +84,18 @@ export default function HomeHero() {
             background is bg-transparent (the raw SkyScenery photo shows
             through directly, not a tinted panel), so both carry the same
             drop-shadow treatment as the headline above for legibility
-            against the photo, rather than a new backdrop scrim. */}
+            against the photo, rather than a new backdrop scrim.
+            Second sentence added per finding F1
+            (docs/superpowers/plans/2026-08-20-homepage-problem-framing.md):
+            the first names what this is and who it is for, the second names
+            the differentiator, so the gap HomeProblemFraming then opens is
+            already hinted at above the fold. Kept to one short clause so the
+            hero stays a hero and does not become the problem section. */}
         <div data-hero-support>
           <p className="mt-5 max-w-lg text-body font-body text-fg/90 [text-shadow:0_2px_12px_rgba(0,0,0,0.65)]">
             Fully autonomous surveillance drones for defense, police, and
-            critical infrastructure.
+            critical infrastructure. Continuous coverage, with no pilot on
+            site.
           </p>
           <Link
             href="/product"

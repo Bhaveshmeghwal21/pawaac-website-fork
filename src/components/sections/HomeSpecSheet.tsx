@@ -2,11 +2,36 @@ import Image from "next/image";
 import Link from "next/link";
 import HomeMotionSection from "@/components/motion/HomeMotionSection";
 
+// Numeral provenance (finding F3,
+// docs/superpowers/plans/2026-08-20-homepage-problem-framing.md).
+//
+// This section publishes six hard figures: thermal endurance, operational
+// range and wind resistance for HawkAI Plus, and time to operational, area
+// coverage and payload swap time for Sentrivion. Content governance for this
+// repo requires that every numeral on the site trace to a real, already
+// published figure, and that anything unconfirmed render a visible
+// "Pending confirmation" placeholder instead of a plausible looking number.
+// No provenance was recorded anywhere in this file, so a later reader had no
+// way to tell which of those applied.
+//
+// Presumed source of record, both already shipped in this repo under
+// public/images and therefore already published by the company:
+//   HawkAI Plus  -> "HAWKAI PLUS UAV - Tactical Surveillance Platform.pdf"
+//   Sentrivion   -> "Sentrivion_Brochur_compressed.pdf"
+//
+// OUTSTANDING: these figures are recorded here as brochure sourced, but no per
+// figure check against those PDFs has been performed in code review, and the
+// values were not verified line by line when this comment was added. Site
+// owner confirmation is still required before treating them as gated. They are
+// intentionally left exactly as published rather than being edited, replaced or
+// removed on assumption: silently changing a real specification is the worse
+// failure of the two. If any figure turns out not to appear in its brochure,
+// it must become a "Pending confirmation" placeholder, not a corrected guess.
 const PLATFORMS = [
   {
     name: "HawkAI Plus",
     type: "Tactical quadcopter",
-    description: "A compact surveillance platform built for endurance and fast field deployment.",
+    description: "Built for endurance and fast field deployment.",
     href: "/product/hawkai",
     image: "/images/hawkai-plus-product.jpg",
     alt: "HawkAI Plus tactical quadcopter in its original color",
@@ -19,7 +44,7 @@ const PLATFORMS = [
   {
     name: "Sentrivion",
     type: "VTOL platform",
-    description: "A long range VTOL platform designed for rapid setup and broad-area coverage.",
+    description: "Long range VTOL for rapid setup and wide coverage.",
     href: "/product/sentrivion",
     image: "/images/sentri_main2.jpg",
     alt: "Sentrivion VTOL aircraft on a runway at sunset in its original color",
@@ -43,10 +68,6 @@ export default function HomeSpecSheet() {
           <h2 className="mt-3 text-heading font-display text-fg">
             Two platforms, one autonomous system
           </h2>
-          <p className="mt-4 max-w-2xl text-body text-muted">
-            Compare the headline engineering specifications here, then open
-            each platform for the full technical detail.
-          </p>
         </div>
 
         <div data-motion-group className="mt-10 grid gap-6 lg:grid-cols-2">

@@ -60,3 +60,25 @@
 - [ ] Render with `npx next dev --webpack` at 1440×900 and 390×844, check six sections, color images, no background spillover, no horizontal overflow, and measure the new document height.
 - [ ] Review the final diff against the approved structure and remove temporary audit artifacts.
 
+
+
+## Follow up: closed mission loop
+
+The condensed four-card operating row was later rejected because its numbered
+boxes implied a sequence without showing direction, mixed states with actions,
+and ended at escalation without returning the aircraft to readiness. The row is
+now a closed mission cycle with seven explicit stages: Dock, Dispatch, Patrol,
+Detect, Escalate, Return, and Swap.
+
+`OperatingStepSymbol.tsx` supplies one static achromatic pictogram per stage.
+Desktop renders the stages on one connected route; narrow layouts use the same
+sequence as a vertical track. A return rail after battery recovery points back
+to Dock so the operating concept reads as continuous rather than one way.
+
+Battery copy is grounded in the published Sentrivion brochure, which states
+rapid battery swap and recharge as well as automated docking for charging. The
+page does not claim that battery swapping itself is automated. GPS denied
+navigation was added at the site owner's direction as a resilience rail spanning
+the airborne stages rather than as a false extra mission step. No specific
+navigation method is named. Escalate carries a visible Human oversight branch
+to the existing concept interface below the loop.

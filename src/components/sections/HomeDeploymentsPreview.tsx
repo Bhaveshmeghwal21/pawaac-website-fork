@@ -39,7 +39,7 @@ export default function HomeDeploymentsPreview() {
             </h2>
             <p className="mt-4 max-w-2xl text-body text-[#454545]">
               Autonomous coverage for borders, urban operations, facilities,
-              and time-critical response environments.
+              and response environments where timing is critical.
             </p>
           </div>
 
@@ -48,10 +48,6 @@ export default function HomeDeploymentsPreview() {
               <h3 className="font-display text-2xl font-bold leading-tight text-[#080808]">
                 Security autonomy for critical sites
               </h3>
-              <p className="mt-3 text-sm leading-relaxed text-[#555]">
-                The same system architecture extends from defense and police
-                missions to industrial and public infrastructure perimeters.
-              </p>
             </div>
           </div>
         </div>
@@ -76,9 +72,15 @@ export default function HomeDeploymentsPreview() {
                   className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/5 to-transparent" />
-                <h3 className="absolute inset-x-3 bottom-3 font-mono text-[10px] font-semibold uppercase tracking-[0.08em] text-white sm:inset-x-4 sm:bottom-4 sm:text-xs">
+                {/* One word overlay tag, not a heading (finding F4,
+                    docs/superpowers/plans/2026-08-20-homepage-problem-framing.md).
+                    These were <h3> and competed in the heading outline with
+                    this section's two real <h3> headings above, giving screen
+                    reader users four single word entries with no content of
+                    their own beneath them. Visual treatment is unchanged. */}
+                <p className="absolute inset-x-3 bottom-3 font-mono text-[10px] font-semibold uppercase tracking-[0.08em] text-white sm:inset-x-4 sm:bottom-4 sm:text-xs">
                   {application.tag}
-                </h3>
+                </p>
               </article>
             </div>
           ))}
