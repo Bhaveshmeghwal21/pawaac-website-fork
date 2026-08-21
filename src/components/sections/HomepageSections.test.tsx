@@ -1,4 +1,6 @@
 // @vitest-environment jsdom
+import { existsSync } from "node:fs";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { render, screen, within } from "@testing-library/react";
 import HomeOperatingLoop from "./HomeOperatingLoop";
@@ -19,6 +21,21 @@ function owningSection(element: Element) {
 const SHORTCOMING_COUNT = 5;
 
 describe("condensed homepage sections", () => {
+  it("keeps every homepage image source backed by a public asset", () => {
+    const { container } = render(<HomeDeploymentsPreview />);
+    const imageSources = Array.from(container.querySelectorAll("img"))
+      .map((image) => image.getAttribute("src"))
+      .filter((src): src is string => Boolean(src))
+      .map((src) => src.split("?")[0])
+      .filter((src) => src.startsWith("/images/"));
+
+    for (const source of imageSources) {
+      expect(existsSync(join(process.cwd(), "public", source.slice(1)))).toBe(
+        true,
+      );
+    }
+  });
+
   it("frames the problem as five visual shortcomings, with no ungated numerals", () => {
     const { container } = render(<HomeProblemFraming />);
     const section = owningSection(
