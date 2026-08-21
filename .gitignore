@@ -88,11 +88,3 @@ next-env.d.ts
 /.claude/settings.local.json
 /.claude/*.local.json
 
-# Unused sourced-but-unwired image — a candidate infrastructure sector photo
-# generated during this session's sector re-sourcing work, superseded by the
-# disaster-response tile before it was ever referenced in code (see
-# HomeDeploymentsPreview.tsx header). Never committed, so ignoring is
-# sufficient. Not the same as sector-defense-v2.jpg or
-# sector-disaster-response.jpg, which ARE wired into the live sector tiles
-# and must stay tracked.
-/public/images/sector-infrastructure-v2.jpg
