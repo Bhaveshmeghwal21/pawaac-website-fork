@@ -3,24 +3,47 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { LOGO_PATH } from "@/components/ui/Logo";
+import usePrefersReducedMotion from "@/hooks/usePrefersReducedMotion";
+import { signalPageReady } from "@/lib/motion/pageReady";
 
 const TRACE = { duration: 1.5, ease: [0.65, 0, 0.35, 1] as const };
 
 export default function Preloader() {
+  const prefersReducedMotion = usePrefersReducedMotion();
   const [done, setDone] = useState(true);
 
   useEffect(() => {
-    if (sessionStorage.getItem("pawaac-loaded")) return;
-    setDone(false);
-    const t = setTimeout(() => {
+    if (prefersReducedMotion || sessionStorage.getItem("pawaac-loaded")) {
+      sessionStorage.setItem("pawaac-loaded", "1");
+      signalPageReady();
+      const hideTimer = setTimeout(() => setDone(true), 0);
+      return () => clearTimeout(hideTimer);
+    }
+
+    const showTimer = setTimeout(() => setDone(false), 0);
+    const finishTimer = setTimeout(() => {
       setDone(true);
       sessionStorage.setItem("pawaac-loaded", "1");
     }, 2300);
-    return () => clearTimeout(t);
-  }, []);
+    return () => {
+      clearTimeout(showTimer);
+      clearTimeout(finishTimer);
+    };
+  }, [prefersReducedMotion]);
+
+  const handleExitComplete = () => {
+    if (
+      prefersReducedMotion ||
+      sessionStorage.getItem("pawaac-loaded") === "1"
+    ) {
+      signalPageReady();
+    }
+  };
+
+  if (prefersReducedMotion) return null;
 
   return (
-    <AnimatePresence>
+    <AnimatePresence onExitComplete={handleExitComplete}>
       {!done && (
         <motion.div
           exit={{ opacity: 0 }}

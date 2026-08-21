@@ -1,7 +1,30 @@
 // @vitest-environment jsdom
-import { describe, expect, it } from "vitest";
+import { createElement, type ComponentProps } from "react";
+import { describe, expect, it, vi } from "vitest";
 import { render } from "@testing-library/react";
 import SkyScenery from "./SkyScenery";
+
+type MockImageProps = ComponentProps<"img"> & {
+  fill?: boolean;
+  preload?: boolean;
+  priority?: boolean;
+};
+
+vi.mock("next/image", () => ({
+  default: (imageProps: MockImageProps) => {
+    const props = { ...imageProps };
+    const { preload, priority } = props;
+    delete props.fill;
+    delete props.preload;
+    delete props.priority;
+
+    return createElement("img", {
+      ...props,
+      "data-preload": preload ? "true" : undefined,
+      "data-priority": priority ? "true" : undefined,
+    });
+  },
+}));
 
 // Spec: pawaac-design-language-evolution follow-up — site-owner-requested
 // full-bleed SkyScenery backdrop.
@@ -20,12 +43,14 @@ import SkyScenery from "./SkyScenery";
 // than kept as a no-op.
 
 describe("SkyScenery", () => {
-  it("renders as a single aria-hidden, pointer-events-none root layer (Requirement 10.6)", () => {
+  it("renders as a hero-scoped absolute decorative layer (Requirement 10.6)", () => {
     const { container } = render(<SkyScenery />);
     const root = container.firstElementChild as HTMLElement;
 
     expect(root).toHaveAttribute("aria-hidden", "true");
     expect(root.className).toContain("pointer-events-none");
+    expect(root).toHaveClass("absolute", "inset-0");
+    expect(root).not.toHaveClass("fixed");
   });
 
   it("renders no focusable descendants", () => {
@@ -33,11 +58,14 @@ describe("SkyScenery", () => {
     expect(container.querySelectorAll("a, button, input, select, textarea")).toHaveLength(0);
   });
 
-  it("renders the real sky photo with priority (LCP-relevant, above the fold)", () => {
+  it("renders the real sky photo with Next 16 preload (LCP-relevant, above the fold)", () => {
     const { container } = render(<SkyScenery />);
     const img = container.querySelector("img");
 
     expect(img).not.toBeNull();
     expect(img?.getAttribute("src")).toContain("droneInSky.png");
+    expect(img).toHaveAttribute("data-preload", "true");
+    expect(img).not.toHaveAttribute("data-priority");
+    expect(img?.parentElement).toHaveAttribute("data-hero-scenery-image");
   });
 });

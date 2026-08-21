@@ -1,61 +1,78 @@
-"use client";
-
-// Spec: pawaac-design-language-evolution — Task 16 (Homepage Section 8)
-// Requirements: 4.1, 4.3, 6.1, 6.3, 6.4
-// Design: design.md -> Page Specifications -> Homepage, Section 8
-//         (Request Demo contact band)
-//
-// Persona: Both. An Uplink_Form-STYLED CTA shell — a styled CTA
-// button/band linking to Contact_Page (/contact, task 14) — NOT a full
-// form. The actual contact form (with its Uplink_Form field styling)
-// lives only on Contact_Page per task 14; duplicating it here would
-// reintroduce the old homepage-anchor `Contact.tsx` pattern the migration
-// explicitly removes. Reveal_On_Scroll entrance (P5).
-//
-// CTA rename (site-owner request, a prior session): eyebrow label and
-// button text renamed from "Request demo" / "Request a demo" to
-// "Contact us" — same /contact destination (Requirement 6.4 unaffected),
-// label only. Matches the header CTA's matching rename in Navigation.tsx.
-//
-// Position (homepage narrative-arc review, current session, see page.tsx's
-// header): this section moves down to be the LAST section before Footer,
-// following HomeClosingVision instead of preceding it. The CTA now lands
-// after the page's strongest emotional beat (Vision's mission paragraph)
-// rather than before it, so the page peaks and then asks, instead of
-// asking and then philosophizing. No content, styling, or link changes.
-import Reveal from "@/components/ui/Reveal";
-import ReticleFrame from "@/components/ui/ReticleFrame";
+import HomeMotionSection from "@/components/motion/HomeMotionSection";
+import Link from "next/link";
 
 export default function HomeContactBand() {
   return (
-    // bg-bg/80 -> bg-bg/50: SkyScenery's contrast fix (see SkyScenery.tsx)
-    // now makes the sky genuinely visible, so this section's tint is
-    // loosened further to let more of it show through.
-    <section className="relative overflow-hidden bg-bg/50 px-6 py-24 md:py-32">
-      <div className="mx-auto max-w-4xl text-center">
-        <Reveal>
-          <p className="label justify-center">Contact us</p>
-          <h2 className="mt-3 text-heading font-display text-fg">
-            Talk to the team
-          </h2>
-          <p className="mx-auto mt-4 max-w-md text-body font-body text-muted">
-            Tell us your use case and we&apos;ll follow up within one
-            business day.
-          </p>
-        </Reveal>
-
-        <Reveal delay={0.18} className="mt-10">
-          <div className="relative mx-auto w-fit border border-grey-800 px-1 py-1">
-            <ReticleFrame variant="dark" />
-            <a
-              href="/contact"
-              className="block bg-white px-10 py-4 font-mono text-sm font-semibold uppercase tracking-[0.1em] text-black transition-colors hover:bg-interactive"
-            >
-              Contact us →
-            </a>
+    <HomeMotionSection
+      variant="closing"
+      className="relative overflow-hidden border-t border-line bg-bg-2 px-6 py-16 md:py-24"
+    >
+      <div className="mx-auto max-w-7xl">
+        <div className="grid gap-10 lg:grid-cols-[minmax(0,7fr)_minmax(280px,3fr)] lg:items-end">
+          <div data-motion-group>
+            <p className="label">Company &amp; mission</p>
+            <h2 className="mt-3 max-w-4xl text-heading font-display text-fg">
+              Built by Bajrang Dronetech Pvt Ltd
+            </h2>
+            {/* The "Engineering and operations based in India, built
+                specifically for demanding field environments" line was cut in
+                the copy density pass: the credentials row below already carries
+                "ENGINEERING & OPERATIONS · INDIA", so it was saying the same
+                thing twice. The mission sentence stays; it is the emotional
+                close of the page and earns its length. */}
+            <p className="mt-7 max-w-3xl border-l border-line pl-5 font-display text-xl leading-relaxed text-fg/85 md:text-2xl">
+              Pawaac exists to make continuous, pilotless coverage the default
+              for the places that can least afford a gap in watch.
+            </p>
           </div>
-        </Reveal>
+
+          <div data-motion-group>
+            <div className="border border-line bg-bg p-6">
+              <p className="label">Next step</p>
+              <h3 className="mt-3 font-display text-3xl font-bold text-fg">
+                Talk to the team
+              </h3>
+              <p className="mt-3 text-sm leading-relaxed text-muted">
+                Tell us what you need to cover.
+              </p>
+              <Link
+                href="/contact"
+                className="mt-6 block bg-white px-6 py-3 text-center font-mono text-xs font-semibold uppercase tracking-[0.1em] text-black transition-colors hover:bg-interactive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
+              >
+                Contact us →
+              </Link>
+            </div>
+          </div>
+        </div>
+
+        <div data-motion-group>
+          <div className="mt-10 flex flex-col gap-6 border-t border-line pt-6 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-wrap gap-2">
+              <span className="border border-line px-3 py-2 font-mono text-[10px] text-fg">
+                DGCA COMPLIANT
+              </span>
+              <span className="border border-line px-3 py-2 font-mono text-[10px] text-fg">
+                MeitY RECOGNIZED
+              </span>
+              <span className="border border-line px-3 py-2 font-mono text-[10px] text-fg">
+                ENGINEERING &amp; OPERATIONS · INDIA
+              </span>
+            </div>
+            <Link
+              href="/company"
+              className="group inline-flex items-center gap-2 font-mono text-sm text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fg focus-visible:ring-offset-4 focus-visible:ring-offset-bg-2"
+            >
+              About the company
+              <span
+                aria-hidden="true"
+                className="transition-transform group-hover:translate-x-1"
+              >
+                →
+              </span>
+            </Link>
+          </div>
+        </div>
       </div>
-    </section>
+    </HomeMotionSection>
   );
 }

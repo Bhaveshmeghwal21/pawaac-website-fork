@@ -49,15 +49,16 @@
 // entrance above are untouched; the new content is added around it in the
 // same left-aligned content column.
 import HeroHeadline from "@/components/ui/HeroHeadline";
+import SkyScenery from "@/components/ui/SkyScenery";
+import Link from "next/link";
 
 export default function HomeHero() {
   return (
-    // bg-bg/80 -> bg-transparent: Hero is the first, most prominent
-    // section and now shows the (fixed) SkyScenery backdrop completely
-    // unobstructed, rather than through a near-opaque dark tint. See
-    // SkyScenery.tsx for the corresponding contrast fix that makes the
-    // sky itself actually visible.
-    <section className="relative flex min-h-[100dvh] items-end overflow-hidden bg-transparent px-6 pb-[14vh] pt-28 md:pb-[16vh] md:pt-36">
+    // The hero owns its scenery so the absolute layer cannot escape into
+    // the rest of the page.
+    <section data-home-hero className="relative flex min-h-[100dvh] items-end overflow-hidden bg-transparent px-6 pb-[14vh] pt-28 md:pb-[16vh] md:pt-36">
+      <SkyScenery />
+
       {/* Display_Type oversized word-mark texture behind hero media
           (Pattern 1), purely decorative — hidden from assistive
           technology per Requirement 10.6. Capped at 15vw below sm (mobile
@@ -83,17 +84,26 @@ export default function HomeHero() {
             background is bg-transparent (the raw SkyScenery photo shows
             through directly, not a tinted panel), so both carry the same
             drop-shadow treatment as the headline above for legibility
-            against the photo, rather than a new backdrop scrim. */}
-        <p className="mt-5 max-w-lg text-body font-body text-fg/90 [text-shadow:0_2px_12px_rgba(0,0,0,0.65)]">
-          Fully autonomous surveillance drones for defense, police, and
-          critical infrastructure.
-        </p>
-        <a
-          href="/product"
-          className="mt-6 inline-block border border-fg px-5 py-2.5 font-mono text-[11px] font-semibold uppercase tracking-[0.1em] text-fg drop-shadow-[0_3px_10px_rgba(0,0,0,0.55)] transition-colors hover:bg-fg hover:text-bg"
-        >
-          See the platform
-        </a>
+            against the photo, rather than a new backdrop scrim.
+            Second sentence added per finding F1
+            (docs/superpowers/plans/2026-08-20-homepage-problem-framing.md):
+            the first names what this is and who it is for, the second names
+            the differentiator, so the gap HomeProblemFraming then opens is
+            already hinted at above the fold. Kept to one short clause so the
+            hero stays a hero and does not become the problem section. */}
+        <div data-hero-support>
+          <p className="mt-5 max-w-lg text-body font-body text-fg/90 [text-shadow:0_2px_12px_rgba(0,0,0,0.65)]">
+            Fully autonomous surveillance drones for defense, police, and
+            critical infrastructure. Continuous coverage, with no pilot on
+            site.
+          </p>
+          <Link
+            href="/product"
+            className="mt-6 inline-block border border-fg px-5 py-2.5 font-mono text-[11px] font-semibold uppercase tracking-[0.1em] text-fg drop-shadow-[0_3px_10px_rgba(0,0,0,0.55)] transition-colors hover:bg-fg hover:text-bg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fg focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+          >
+            See the platform
+          </Link>
+        </div>
       </div>
     </section>
   );

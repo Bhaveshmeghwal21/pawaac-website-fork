@@ -35,59 +35,17 @@
 // Gated behind `prefers-reduced-motion: reduce` (Requirement 9.8): the
 // ScrollTrigger is never created under reduced motion, so the layer stays
 // completely static, matching every other motion component's fallback.
-import { useEffect, useRef } from "react";
 import Image from "next/image";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-import usePrefersReducedMotion from "@/hooks/usePrefersReducedMotion";
 
 export default function SkyScenery() {
-  const prefersReducedMotion = usePrefersReducedMotion();
-  const imageWrapRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (prefersReducedMotion || !imageWrapRef.current) return;
-    // Defensive guard matching usePrefersReducedMotion.ts's own fallback:
-    // ScrollTrigger's setup probes `window.matchMedia` internally, which
-    // jsdom (the test environment) does not implement. Skip creating the
-    // ScrollTrigger entirely in any environment where matchMedia is
-    // unavailable, rather than letting GSAP throw.
-    if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
-      return;
-    }
-
-    gsap.registerPlugin(ScrollTrigger);
-    const el = imageWrapRef.current;
-
-    const tween = gsap.fromTo(
-      el,
-      { y: -24 },
-      {
-        y: 24,
-        ease: "none",
-        scrollTrigger: {
-          trigger: document.body,
-          start: "top top",
-          end: "bottom bottom",
-          scrub: true,
-        },
-      },
-    );
-
-    return () => {
-      tween.scrollTrigger?.kill();
-      tween.kill();
-    };
-  }, [prefersReducedMotion]);
-
   return (
     <div
       aria-hidden="true"
-      className="pointer-events-none fixed inset-0 z-0 overflow-hidden select-none"
+      className="pointer-events-none absolute inset-0 z-0 overflow-hidden select-none"
     >
       {/* Real sky photo, full-bleed. This is the Homepage's LCP element
           (rendered above/behind all Homepage sections on first paint), so
-          `priority` is set to preload it and skip lazy-loading. `fill` +
+          `preload` begins loading it in the document head. `fill` +
           `sizes="100vw"` covers the full viewport at every breakpoint;
           `object-cover` crops to fill without distortion; `object-position`
           is biased slightly above center so the horizon/sky band (rather
@@ -97,13 +55,13 @@ export default function SkyScenery() {
           The wrapping div (rather than the Image itself) carries the
           parallax translateY, oversized via inset:-40px so the drift range
           above never exposes an edge gap. */}
-      <div ref={imageWrapRef} className="absolute -inset-10">
+      <div data-hero-scenery-image className="absolute -inset-10">
         <Image
           src="/images/droneInSky.png"
           alt=""
           fill
           sizes="100vw"
-          priority
+          preload
           className="object-cover"
           style={{ objectPosition: "center 35%" }}
         />

@@ -24,7 +24,7 @@ Then open <http://localhost:3000>.
 | `npm run dev` | Dev server (Turbopack) on port 3000 |
 | `npm run build` | Production build |
 | `npm start` | Serve the production build |
-| `npm test` | Vitest suite (22 files, 168 tests) |
+| `npm test` | Vitest suite (31 files, 212 tests) |
 | `npm run lint` | ESLint |
 
 > **Read this before writing code.** `AGENTS.md` at the repo root carries a
@@ -105,6 +105,11 @@ photograph in `SkyScenery.tsx`.
   `mx-auto max-w-7xl`), never on the inner wrapper — nesting the gutter inside
   `max-w-7xl` pushes that section off the page's content grid at wide viewports.
 - No hyphens or dashes in on-page homepage copy (site-owner preference).
+  Enforced by `dashFreeCopy.ts`, which `HomepageCopyRules.test.tsx` runs
+  against the rendered text of every homepage section and the compact footer.
+  The rule covers rendered copy only, so hyphens in class names, hrefs and
+  image alt text are unaffected, and the `·` separator in the footer is
+  deliberately not treated as a dash.
 - Decorative layers are `aria-hidden` + `pointer-events-none`, and are static —
   `ReducedMotionMatrix.test.tsx` pins that.
 
@@ -130,6 +135,7 @@ question.
 | Validator | Enforces |
 | --- | --- |
 | `bannedTerms` | Placeholder copy contains no coordinates, range/speed/unit figures, GPS, serials or `AES-` references |
+| `dashFreeCopy` | On-page homepage copy contains no hyphens or dashes |
 | `sensitiveContent` | Content that must not be published |
 | `simulatedLabel` | Concept/simulated UI is explicitly labelled |
 | `placeholderMedia` | Placeholder media is registered and compliant |

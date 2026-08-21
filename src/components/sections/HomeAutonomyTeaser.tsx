@@ -40,17 +40,17 @@
 // after HomeOperatingLoop (see page.tsx's header for the full diagnosis).
 // This section's previous copy ("One stack: sense, decide, act" / "The same
 // autonomy engine powers detection, planning, and dispatch") re-explained
-// the same mechanism HomeOperatingLoop already covers concretely
-// (dock/patrol/detect/alert/respond), three sections earlier — a reader who
+// the same mechanism HomeOperatingLoop now covers as a closed cycle
+// (dock/dispatch/patrol/detect/escalate/return/recharge), three sections
+// earlier — a reader who
 // absorbed that section got nothing new here, just a more abstract
 // restatement next to a concept mockup.
 //
 // Reworded to do a different job: illustrate, rather than re-explain, the
-// specific claim HomeOperatingLoop's own closing line just made ("an
-// operator stays in the loop for escalation by design") and its step 04
-// ("Alert") already states ("An operator gets a located alert and taps in
-// for live video only when there is something worth looking at"). This
-// section is now the visual zoom-in on THAT moment specifically, using the
+// Escalate branch in HomeOperatingLoop's closed mission cycle. That stage
+// states that a located alert reaches the operator, and the loop now labels
+// the branch itself "Human oversight". This section is the visual zoom-in on
+// that moment specifically, using the
 // same gcs.png concept mockup and the same Simulated_Label disclosure
 // ("Concept interface (in development)") — no new claim, no new asset, just
 // a headline/body that points at one beat instead of restating the whole

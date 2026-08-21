@@ -121,7 +121,11 @@ const EXTERNAL_LINKS: { label: string; href: string }[] = [
 // convention): when usePrefersReducedMotion() is true, the content
 // renders at its final y:0 position and the overlay is not rendered at
 // all, rather than being computed and just left at a static value.
-export default function Footer() {
+type FooterProps = {
+  compact?: boolean;
+};
+
+export default function Footer({ compact = false }: FooterProps) {
   const footerRef = useRef<HTMLElement>(null);
   const prefersReducedMotion = usePrefersReducedMotion();
 
@@ -135,20 +139,29 @@ export default function Footer() {
   return (
     <footer
       ref={footerRef}
-      className="relative z-10 overflow-hidden border-t border-line bg-bg-2 px-6 pt-20 pb-12 md:pt-28"
+      className={`relative z-10 overflow-hidden border-t border-line bg-bg-2 px-6 ${
+        compact ? "pt-12 pb-8 md:pt-16" : "pt-20 pb-12 md:pt-28"
+      }`}
     >
-      {!prefersReducedMotion && (
+      {!compact && !prefersReducedMotion && (
         <motion.div
+          data-footer-motion-overlay
           aria-hidden="true"
           className="pointer-events-none absolute inset-0 bg-bg"
           style={{ opacity: overlayOpacity }}
         />
       )}
       <motion.div
+        data-footer-static-content={compact ? true : undefined}
+        data-footer-motion-content={compact ? undefined : true}
         className="mx-auto max-w-7xl"
-        style={{ y: prefersReducedMotion ? 0 : contentY }}
+        style={compact ? undefined : { y: prefersReducedMotion ? 0 : contentY }}
       >
-        <div className="grid gap-12 lg:grid-cols-[1.2fr_0.8fr_0.8fr]">
+        <div
+          className={`grid lg:grid-cols-[1.2fr_0.8fr_0.8fr] ${
+            compact ? "gap-8" : "gap-12"
+          }`}
+        >
           <div>
             <div className="flex items-center gap-2.5 text-fg">
               <Logo className="h-7 w-7" />
@@ -210,21 +223,25 @@ export default function Footer() {
             fade/rise on scroll-into-view, and a hover state that fades the
             wordmark toward fully invisible (opacity -> 0) rather than
             toward more visible. */}
-        <div className="mt-20 border-t border-line pt-10">
-          <motion.p
-            aria-hidden="true"
-            className="select-none font-display text-[18vw] font-semibold leading-[0.8] tracking-[-0.04em] text-fg/[0.06] md:text-[12rem]"
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.1 }}
-            whileHover={{ opacity: 0 }}
-            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-          >
-            PAWAAC
-          </motion.p>
-        </div>
+        {!compact && (
+          <div className="mt-20 border-t border-line pt-10">
+            <motion.p
+              aria-hidden="true"
+              className="select-none font-display text-[18vw] font-semibold leading-[0.8] tracking-[-0.04em] text-fg/[0.06] md:text-[12rem]"
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.1 }}
+              whileHover={{ opacity: 0 }}
+              transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+            >
+              PAWAAC
+            </motion.p>
+          </div>
+        )}
 
-        <div className="mt-6 flex flex-col items-center justify-between gap-3 text-xs text-muted sm:flex-row">
+        <div
+          className={`${compact ? "mt-10" : "mt-6"} flex flex-col items-center justify-between gap-3 border-t border-line pt-6 text-xs text-muted sm:flex-row`}
+        >
           <p>© 2026 Bajrang Dronetech Pvt Ltd · Built in India</p>
           <div className="flex gap-3">
             <span className="border border-line px-2 py-1 font-mono text-[10px]">DGCA COMPLIANT</span>
