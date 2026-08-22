@@ -82,8 +82,19 @@ const PLACEHOLDER_MEDIA_FIXTURE: PlaceholderMediaFixtureEntry[] = [
     page: "Product_Page",
     section: "4. Dock & charging",
     description:
-      "Resolved via site-owner-delegated judgment: denser generated SVG technical diagram with labeled callouts (dock/charging), not photographic",
-    realAssetPaths: ["generated:product-dock-charging-diagram"],
+      "Resolved via site-owner-delegated judgment: site-owner supplied dock image (public/images/dock-station.webp), grayscale, carrying a visible 'Dock design visualization' provenance caption. Supersedes the earlier generated SVG technical diagram, which existed only because no dock asset was available at the time",
+    realAssetPaths: ["public/images/dock-station.webp"],
+    changeProposalId: null,
+  },
+  {
+    page: "Product_Page",
+    section: "3. The aircraft (HawkAI Plus / Sentrivion)",
+    description:
+      "Real in-repo brochure/build photographs of both airframes, grayscale + Reticle_Frame, added when the page was rebuilt around the operating loop (site-owner request)",
+    realAssetPaths: [
+      "public/images/hawkai-plus-product.jpg",
+      "public/images/sentrivion-product-1.jpg",
+    ],
     changeProposalId: null,
   },
   // Autonomy_Page

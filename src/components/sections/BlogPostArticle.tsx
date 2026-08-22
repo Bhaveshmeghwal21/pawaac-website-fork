@@ -6,7 +6,7 @@
 // Persona: Both.
 //
 // Site-owner request (current session): each blog post is read on its own page
-// (/news/[slug]) rather than in full on the index. This renders that reading
+// (/blogs/[slug]) rather than in full on the index. This renders that reading
 // view. Copy lives in lib/blogPosts.ts so the index teaser and this article
 // cannot drift apart.
 //
@@ -44,7 +44,7 @@ export default function BlogPostArticle({ post }: { post: BlogPost }) {
           {/* Back to the index. Placed before the headline so keyboard and
               screen-reader users reach it without traversing the whole essay. */}
           <Link
-            href="/news"
+            href="/blogs"
             className="group inline-flex items-center gap-2 font-mono text-[11px] font-semibold uppercase tracking-[0.1em] text-muted transition-colors hover:text-fg"
           >
             <span
@@ -75,29 +75,36 @@ export default function BlogPostArticle({ post }: { post: BlogPost }) {
         </Reveal>
 
         {post.image && (
-          <Reveal delay={0.1} className="mt-12">
-            <figure>
-              <div
-                className="relative w-full"
-                style={{ aspectRatio: "16 / 10" }}
-              >
-                <Image
-                  src={post.image.src}
-                  alt={post.image.alt}
-                  fill
-                  sizes="(min-width: 768px) 768px, 100vw"
-                  className="object-cover"
-                  preload
-                />
-                <ReticleFrame variant="dark" />
-              </div>
-              {/* Kept deliberately: states that the photograph is illustrative
-                  and not a deployment claim. See this file's image note. */}
-              <figcaption className="mt-3 font-mono text-[11px] leading-relaxed text-muted">
-                {post.image.caption}
-              </figcaption>
-            </figure>
-          </Reveal>
+          // Site-owner report (current session): the clip-path wipe here was
+          // caught mid-animation and read as a broken/cropped photograph
+          // rather than an in-progress reveal — the underlying <img> already
+          // fills its box correctly at every screen size (fill + object-cover
+          // + a fixed 16/10 box), the wipe was purely cosmetic. Text reveals
+          // fine mid-wipe; a photograph does not, so this one figure renders
+          // immediately with no Reveal wrapper rather than trying to tune the
+          // wipe's timing. Every other block in this article keeps its
+          // Reveal entrance.
+          <figure className="mt-12">
+            <div
+              className="relative w-full"
+              style={{ aspectRatio: "16 / 10" }}
+            >
+              <Image
+                src={post.image.src}
+                alt={post.image.alt}
+                fill
+                sizes="(min-width: 768px) 768px, 100vw"
+                className="object-cover"
+                preload
+              />
+              <ReticleFrame variant="dark" />
+            </div>
+            {/* Kept deliberately: states that the photograph is illustrative
+                and not a deployment claim. See this file's image note. */}
+            <figcaption className="mt-3 font-mono text-[11px] leading-relaxed text-muted">
+              {post.image.caption}
+            </figcaption>
+          </figure>
         )}
 
         <Reveal delay={0.15} className="mt-12">
@@ -136,7 +143,7 @@ export default function BlogPostArticle({ post }: { post: BlogPost }) {
             </Link>
 
             <Link
-              href="/news"
+              href="/blogs"
               className="font-mono text-[11px] font-semibold uppercase tracking-[0.1em] text-muted transition-colors hover:text-fg"
             >
               All blogs

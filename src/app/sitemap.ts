@@ -4,7 +4,7 @@ import { BLOG_POST_SLUGS, blogPostPath } from "@/lib/blogPosts";
 
 // Sitemap for the 13 public routes.
 //
-// Without this, /commitments and /news were effectively undiscoverable: the
+// Without this, /commitments and /blogs were effectively undiscoverable: the
 // footer does not link to them (Footer.tsx's link groups omit both), so nothing
 // on the site pointed a crawler at them.
 //
@@ -25,18 +25,23 @@ const ROUTES: Array<{
 }> = [
   { path: "/", changeFrequency: "monthly", priority: 1 },
   { path: "/product", changeFrequency: "monthly", priority: 0.9 },
-  { path: "/product/hawkai", changeFrequency: "monthly", priority: 0.8 },
-  { path: "/product/sentrivion", changeFrequency: "monthly", priority: 0.8 },
-  // /autonomy deliberately excluded — hidden from navigation (site-owner
-  // request, current session). Re-add `{ path: "/autonomy", changeFrequency:
-  // "monthly", priority: 0.8 }` here when it is unhidden.
+  // /autonomy, /product/hawkai, /product/sentrivion,
+  // /product/software-stack and /product/docking-system deliberately
+  // excluded — all five hidden from navigation (site-owner request). The
+  // /product top-level route stays listed above; only its four individual
+  // sub-pages are hidden, and the Platform primary nav item (renamed from
+  // "Product") is now a plain link with no dropdown as a result. Re-add
+  // `{ path: "/autonomy", changeFrequency: "monthly", priority: 0.8 }`,
+  // `{ path: "/product/hawkai", changeFrequency: "monthly", priority: 0.8 }`,
+  // `{ path: "/product/sentrivion", changeFrequency: "monthly", priority: 0.8 }`,
+  // `{ path: "/product/software-stack", changeFrequency: "monthly", priority: 0.5 }`
+  // and `{ path: "/product/docking-system", changeFrequency: "monthly",
+  // priority: 0.5 }` here when each is unhidden.
   { path: "/contact", changeFrequency: "yearly", priority: 0.7 },
   { path: "/designer", changeFrequency: "yearly", priority: 0.7 },
   { path: "/company", changeFrequency: "monthly", priority: 0.6 },
-  { path: "/product/docking-system", changeFrequency: "monthly", priority: 0.5 },
-  { path: "/product/software-stack", changeFrequency: "monthly", priority: 0.5 },
   { path: "/careers", changeFrequency: "weekly", priority: 0.5 },
-  { path: "/news", changeFrequency: "weekly", priority: 0.5 },
+  { path: "/blogs", changeFrequency: "weekly", priority: 0.5 },
   { path: "/commitments", changeFrequency: "yearly", priority: 0.4 },
 ];
 
@@ -44,7 +49,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const lastModified = new Date();
 
   // Individual blog posts (site-owner request, current session: each post is
-  // read on its own /news/[slug] page). Derived from BLOG_POSTS rather than
+  // read on its own /blogs/[slug] page). Derived from BLOG_POSTS rather than
   // hardcoded, so publishing a post cannot silently leave it out of the
   // sitemap. Ranked just under the index that links to them.
   const postRoutes = BLOG_POST_SLUGS.map((slug) => ({

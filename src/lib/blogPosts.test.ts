@@ -9,7 +9,7 @@ import {
 } from "./blogPosts";
 
 // Site-owner request (current session): blog posts moved to their own
-// /news/[slug] reading pages, with the index showing only a teaser card.
+// /blogs/[slug] reading pages, with the index showing only a teaser card.
 //
 // These cover the failures that would be silent rather than loud — a
 // mispositioned pull-quote or a missing image file degrades the page without
@@ -29,9 +29,9 @@ describe("blog post data", () => {
     });
   });
 
-  it("builds each post path under /news", () => {
+  it("builds each post path under /blogs", () => {
     BLOG_POSTS.forEach((post) => {
-      expect(blogPostPath(post.slug)).toBe(`/news/${post.slug}`);
+      expect(blogPostPath(post.slug)).toBe(`/blogs/${post.slug}`);
     });
   });
 

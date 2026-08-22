@@ -1,5 +1,5 @@
-// Blog post content, shared by the Blogs index (/news) and each post's own
-// reading page (/news/[slug]).
+// Blog post content, shared by the Blogs index (/blogs) and each post's own
+// reading page (/blogs/[slug]).
 //
 // Site-owner request (current session): each post is read on its own page, and
 // the index carries only a title, a short teaser paragraph and a small button
@@ -29,7 +29,7 @@ export type BlogPostImage = {
 };
 
 export type BlogPost = {
-  /** URL segment under /news. Lowercase, hyphenated, stable once published. */
+  /** URL segment under /blogs. Lowercase, hyphenated, stable once published. */
   slug: string;
   headline: string;
   /** One-line deck shown under the headline on the article page. */
@@ -99,7 +99,7 @@ export const BLOG_POST_SLUGS = BLOG_POSTS.map((post) => post.slug);
 
 /** The canonical path a post is read at. */
 export function blogPostPath(slug: string): string {
-  return `/news/${slug}`;
+  return `/blogs/${slug}`;
 }
 
 /** Returns the post for `slug`, or undefined so the caller can 404. */

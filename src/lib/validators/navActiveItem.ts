@@ -16,7 +16,7 @@
 //
 // Follow-up update (Company dropdown): Company was restructured from a
 // flat link into a dropdown (Company_Menu) exposing About Us (/company),
-// Careers (/careers), Contact Us (/contact), News (/news), and Our
+// Careers (/careers), Contact Us (/contact), Blogs (/blogs), and Our
 // Commitments (/commitments) — mirroring how Resources collapses its own
 // internal route onto one indicator. These routes map to `"company"`.
 //
@@ -43,7 +43,7 @@ export type PrimaryNavItemId =
  * to themselves 1:1; `/designer` maps to `"resources"`, since Resources has
  * no own route and instead activates for its internal Planner dropdown link
  * (Analyser is external and is intentionally excluded — it cannot itself
- * be "the current page"). `/company`, `/contact`, `/news`, and
+ * be "the current page"). `/company`, `/contact`, `/blogs`, and
  * `/commitments` map to `"company"`, since Company_Menu links to those four
  * internal company pages (Careers no longer among them).
  */
@@ -53,7 +53,7 @@ export const NAV_ROUTE_TO_PRIMARY_ITEM: Record<string, PrimaryNavItemId> = {
   "/careers": "careers",
   "/company": "company",
   "/contact": "company",
-  "/news": "company",
+  "/blogs": "company",
   "/commitments": "company",
   "/designer": "resources",
 };
@@ -67,7 +67,7 @@ export const NAV_ROUTE_TO_PRIMARY_ITEM: Record<string, PrimaryNavItemId> = {
  * primary items — Product, Resources, Careers, or Company — if the current
  * route is `/product`, the Resources_Menu-linked Planner route (`/designer`),
  * `/careers`, or one of the Company_Menu-linked routes (`/company`,
- * `/contact`, `/news`, `/commitments`, all of which resolve to the Company
+ * `/contact`, `/blogs`, `/commitments`, all of which resolve to the Company
  * indicator), or under none of the items if the current route matches none
  * of those (i.e. Homepage, or /autonomy while it remains unlinked in the
  * real nav). Deployments_Page (`/deployments`) has been removed entirely

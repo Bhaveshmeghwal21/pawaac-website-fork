@@ -25,21 +25,26 @@ const MotionLink = motion.create(Link);
 // to Footer-only, task 58, Requirement 1.8); Planner and Log Analyser live
 // under Resources, while News and Our Commitments live under Company.
 //
-// "Product" carries a dropdown exposing the 4 product lines. The 4th line
-// is named "HawkAI" (site owner has finalized the name; previously
-// "Quadcopter (name pending)").
-//
-// CTA rename (site-owner request, current session): the header's primary
-// CTA button (still linking to /contact, Requirement 1.7) is now labeled
-// "Contact Us" rather than "Request Demo" — text change only, no route
-// change. See the matching HomeContactBand.tsx rename for the homepage's
-// closing CTA.
-const PRODUCT_SUBLINKS = [
-  { label: "Software Stack", href: "/product/software-stack" },
-  { label: "Docking System", href: "/product/docking-system" },
-  { label: "Sentrivion", href: "/product/sentrivion" },
-  { label: "HawkAI", href: "/product/hawkai" },
-];
+// "Product" carried a dropdown exposing all 4 product lines. Site-owner
+// requests (current session, in three steps):
+//   1. "hide sentrivion page and hawkai page" — removed the two individual
+//      airframe sub-pages, leaving Software Stack and Docking System.
+//   2. "hide the software stack page" — removed Software Stack too,
+//      leaving Docking System alone.
+//   3. "hide the docking system page as well naturally that dropdown
+//      should be removed" — removed the last remaining child, and per the
+//      site owner's own word "naturally", the dropdown itself is removed:
+//      the primary item (renamed "Product" -> "Platform" in the same
+//      request) is now a plain link with no children, matching how Careers
+//      renders. See LINKS below.
+// All four routes (src/app/product/sentrivion, src/app/product/hawkai,
+// src/app/product/software-stack, src/app/product/docking-system) and
+// every section component under them are left entirely on disk and still
+// resolve at their URLs — this only removes the link, per this repo's
+// "don't delete, don't break things" convention, same treatment as
+// /autonomy earlier this session. To restore any of them as a dropdown
+// child, re-add a `children: [...]` array to the "Platform" entry in LINKS
+// below with the relevant `{ label, href }` pairs.
 
 // Resources_Menu dropdown contents, in order (Requirement 1.1, design.md ->
 // Header / Navigation). "Log Analyser" is the sole external destination and
@@ -79,7 +84,7 @@ const RESOURCES_ACTIVE_ROUTES = ["/designer"];
 const COMPANY_SUBLINKS = [
   { label: "About Us", href: "/company" },
   { label: "Contact Us", href: "/contact" },
-  { label: "Blogs", href: "/news" },
+  { label: "Blogs", href: "/blogs" },
   { label: "Our Commitments", href: "/commitments" },
 ];
 
@@ -91,7 +96,7 @@ const COMPANY_SUBLINKS = [
 const COMPANY_ACTIVE_ROUTES = [
   "/company",
   "/contact",
-  "/news",
+  "/blogs",
   "/commitments",
 ];
 
@@ -118,7 +123,11 @@ const LINKS: {
   href?: string;
   children?: SubLink[];
 }[] = [
-  { label: "Product", href: "/product", children: PRODUCT_SUBLINKS },
+  // Site-owner request (current session): renamed "Product" -> "Platform",
+  // and its dropdown removed (see the comment above PRODUCT_SUBLINKS' old
+  // location for the sequence that led here) — this is now a plain link
+  // like Careers, not a dropdown trigger.
+  { label: "Platform", href: "/product" },
   { label: "Resources", children: RESOURCES_SUBLINKS },
   // Site-owner request (current session): promoted out of the Company
   // dropdown into its own primary item — see COMPANY_SUBLINKS above.
@@ -410,6 +419,11 @@ export default function Navigation() {
           })}
         </ul>
 
+        {/* CTA rename (site-owner request, earlier session): this button
+            (still linking to /contact, Requirement 1.7) is labeled
+            "Contact Us" rather than "Request Demo" — text change only, no
+            route change. See the matching HomeContactBand.tsx rename for
+            the homepage's closing CTA. */}
         <Link
           href="/contact"
           className="hidden border border-fg px-4 py-2 font-mono text-[11px] font-semibold uppercase tracking-[0.1em] text-fg transition-colors hover:bg-fg hover:text-bg md:block"

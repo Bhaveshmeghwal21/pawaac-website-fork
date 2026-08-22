@@ -23,7 +23,7 @@ describe("resolveActiveNavItem", () => {
   it("returns 'company' for each remaining Company_Menu-linked route (Careers excluded, now its own primary item)", () => {
     expect(resolveActiveNavItem("/company")).toBe("company");
     expect(resolveActiveNavItem("/contact")).toBe("company");
-    expect(resolveActiveNavItem("/news")).toBe("company");
+    expect(resolveActiveNavItem("/blogs")).toBe("company");
     expect(resolveActiveNavItem("/commitments")).toBe("company");
   });
 

@@ -207,7 +207,8 @@ describe("Reduced-Motion Fallback Matrix — Header blur/translucency ramp", () 
     const container = renderScrolledHeader();
     const header = container.querySelector("header");
     expect(header?.className).toContain("backdrop-blur-[16px]");
-    expect(screen.getByRole("link", { name: "Product" })).toHaveAttribute(
+    // Site-owner request (current session): renamed "Product" -> "Platform".
+    expect(screen.getByRole("link", { name: "Platform" })).toHaveAttribute(
       "href",
       "/product",
     );
@@ -218,7 +219,8 @@ describe("Reduced-Motion Fallback Matrix — Header blur/translucency ramp", () 
     const container = renderScrolledHeader();
     const header = container.querySelector("header");
     expect(header?.className).toContain("backdrop-blur-[16px]");
-    expect(screen.getByRole("link", { name: "Product" })).toHaveAttribute(
+    // Site-owner request (current session): renamed "Product" -> "Platform".
+    expect(screen.getByRole("link", { name: "Platform" })).toHaveAttribute(
       "href",
       "/product",
     );

@@ -41,7 +41,10 @@ function ExternalLinkMarker() {
 // navigation "for now" — removed here too, same reasoning as Navigation.tsx.
 // Re-add `{ label: "Autonomy", href: "/autonomy" }` to restore it.
 const INTERNAL_LINKS: { label: string; href: string }[] = [
-  { label: "Product", href: "/product" },
+  // Site-owner request (current session): visible label renamed from
+  // "Product" to "Platform", matching the primary nav item rename. Same
+  // /product route.
+  { label: "Platform", href: "/product" },
   { label: "Company", href: "/company" },
   // Requirement 1.3: Careers link -> Careers_Page (task 15)
   { label: "Careers", href: "/careers" },

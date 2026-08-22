@@ -9,7 +9,7 @@
 // Site-owner request (current session), in two steps:
 //   1. The original product announcement item ("Pawaac introduces HawkAI Plus
 //      and Sentrivion") was replaced with a real long-form essay.
-//   2. That essay then moved to its own reading page (/news/[slug]), and this
+//   2. That essay then moved to its own reading page (/blogs/[slug]), and this
 //      index became a card list: title, a short teaser paragraph, and a small
 //      button through to the full post.
 //

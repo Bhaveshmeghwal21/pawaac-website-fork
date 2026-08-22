@@ -5,9 +5,11 @@ import BlogPostArticle from "@/components/sections/BlogPostArticle";
 import { BLOG_POSTS, getBlogPost } from "@/lib/blogPosts";
 import { absoluteUrl } from "@/lib/site";
 
-// Site-owner request (current session): each blog post is read on its own page
-// rather than in full on the Blogs index (/news), which now shows a title, a
-// short teaser and a button through to here.
+// Site-owner request (current session): the whole Blogs route moved from
+// /news to /blogs (see src/app/blogs/page.tsx's note and the permanent
+// redirect in next.config.ts). Individual posts are read on their own page
+// rather than in full on the Blogs index, which shows a title, a short
+// teaser and a button through to here.
 //
 // `params` is a Promise in this version of Next and must be awaited — see
 // node_modules/next/dist/docs/01-app/01-getting-started/03-layouts-and-pages.md
@@ -38,7 +40,7 @@ export async function generateMetadata({
 
   if (!post) return {};
 
-  const canonical = absoluteUrl(`/news/${post.slug}`);
+  const canonical = absoluteUrl(`/blogs/${post.slug}`);
 
   return {
     title: `${post.headline} · PAWAAC Drones`,

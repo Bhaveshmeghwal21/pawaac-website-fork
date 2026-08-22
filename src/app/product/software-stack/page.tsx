@@ -18,7 +18,12 @@ export default function SoftwareStackPage() {
     <>
       <section className="relative bg-bg px-6 py-28 md:py-36">
         <div className="mx-auto max-w-3xl">
-          <p className="label">Product / Software Stack</p>
+          {/* Site-owner request (current session): breadcrumb label updated
+              from "Product / Software Stack" to "Platform / Software
+              Stack", matching the primary nav item rename. This page is
+              itself hidden from navigation as of the same session — updated
+              for consistency since it still resolves directly at its URL. */}
+          <p className="label">Platform / Software Stack</p>
           <h1 className="mt-3 text-heading font-display text-fg">
             The software stack
           </h1>

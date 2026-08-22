@@ -25,7 +25,7 @@ Then open <http://localhost:3000>.
 | `npm run dev` | Dev server (Turbopack) on port 3000 |
 | `npm run build` | Production build |
 | `npm start` | Serve the production build |
-| `npm test` | Vitest suite (35 files, 247 tests) |
+| `npm test` | Vitest suite (36 files, 263 tests) |
 | `npm run lint` | ESLint |
 
 > **Read this before writing code.** `AGENTS.md` at the repo root carries a
@@ -41,15 +41,26 @@ Then open <http://localhost:3000>.
 | Path | Contents |
 | --- | --- |
 | `/` | Homepage — the curated section set (see below) |
-| `/product` | Platform overview |
+| `/product` | **Platform** — how the proposed solution works end to end: the seven step mission cycle (dock, dispatch, patrol, detect, escalate, return, swap), the human oversight branch, GPS denied navigation, then the hardware that runs it |
 | `/product/hawkai` · `/product/sentrivion` | Per-airframe spec pages |
 | `/product/docking-system` · `/product/software-stack` | Supporting subsystems |
 | `/autonomy` | Autonomy stack: sense, decide, act |
 | `/designer` | Coverage planner — patrol radii and docking-station placement (react-leaflet) |
-| `/company` · `/careers` · `/commitments` · `/news` · `/contact` | Company pages |
-| `/news/[slug]` | Individual blog post, prerendered per post from `lib/blogPosts.ts` |
+| `/company` · `/careers` · `/commitments` · `/blogs` · `/contact` | Company pages |
+| `/blogs/[slug]` | Individual blog post, prerendered per post from `lib/blogPosts.ts` |
 | `/api/contact` · `/api/careers` | Form handlers (react-hook-form + zod) |
 | `/sitemap.xml` · `/robots.txt` · `/opengraph-image` | Generated from `app/sitemap.ts`, `app/robots.ts`, `app/opengraph-image.tsx` |
+
+**Five routes are currently hidden from navigation** at the site owner's
+request: `/autonomy` and all four `/product/*` sub-pages. They are hidden, not
+deleted — each still resolves if visited directly, and every section component
+is untouched on disk. Only the discovery links were removed (from
+`Navigation.tsx` and `app/sitemap.ts`), each with a comment naming the exact
+snippet to re-add. Because the last `/product/*` child was hidden, the primary
+nav item — renamed from "Product" to **"Platform"** — is now a plain link
+rather than a dropdown. The `/product` URL itself is unchanged; only the label
+moved, so `ProductHero`, `Product_Page` in spec comments and the route all keep
+their existing names.
 
 `Footer` is rendered per page rather than from the root layout. Every route
 renders it identically except `/designer`, which is a full-viewport map tool —

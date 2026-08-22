@@ -22,25 +22,31 @@ vi.mock("next/navigation", () => ({
 // Requirements: 1.1, 1.5, 1.6
 // Design: design.md -> Shared Components -> Header / Navigation
 //
-// Site-owner request (current session, in two steps):
+// Site-owner request (current session, in three steps):
 //   1. /autonomy hidden from navigation "for now" (Navigation.tsx's LINKS
 //      array), dropping the primary nav from 4 items to 3 — Product,
 //      Resources, Company.
 //   2. "Careers" promoted out of the Company dropdown into its own primary
 //      item, bringing the count back to 4 — Product, Resources, Careers,
 //      Company.
-// Product, Careers, and Company are real links; Resources has no own
+//   3. "Product" renamed to "Platform" (label change only — the route
+//      stays /product). Its dropdown is also fully removed as of the same
+//      session (its last remaining child, Docking System, was hidden), so
+//      it is now a plain link, matching Careers and Company's
+//      both-link-AND-trigger pattern minus the trigger part — no children
+//      at all.
+// Platform, Careers, and Company are real links; Resources has no own
 // route — it is a dropdown trigger only (rendered as a <button>) — so it
 // is asserted separately by role "button", not role "link". Restore
-// Autonomy here (after Product) if /autonomy is unhidden.
+// Autonomy here (after Platform) if /autonomy is unhidden.
 const EXPECTED_PRIMARY_LINK_ITEMS = [
-  { label: "Product", href: "/product" },
+  { label: "Platform", href: "/product" },
   { label: "Careers", href: "/careers" },
   { label: "Company", href: "/company" },
 ];
 
 describe("Navigation", () => {
-  it("renders exactly 4 primary items, in order — Product, Resources, Careers, Company (Requirement 1.1)", () => {
+  it("renders exactly 4 primary items, in order — Platform, Resources, Careers, Company (Requirement 1.1)", () => {
     render(<Navigation />);
 
     const items = EXPECTED_PRIMARY_LINK_ITEMS.map((item) =>
@@ -71,7 +77,7 @@ describe("Navigation", () => {
     // Requirements: 1.1, 1.7
     //
     // The two tests above assert hrefs and item count in isolation, but
-    // neither confirms Resources' *position* relative to Product, Careers
+    // neither confirms Resources' *position* relative to Platform, Careers
     // and Company (it's a <button>, not an <a>, so it's excluded from the
     // getAllByRole("link") DOM-order check further below in this file).
     // This test walks the actual desktop primary-nav <ul> directly and
@@ -83,7 +89,7 @@ describe("Navigation", () => {
     const itemLabels = Array.from(desktopList!.children).map(
       (li) => li.querySelector("a, button")?.textContent?.replace(/▾$/, "").trim(),
     );
-    expect(itemLabels).toEqual(["Product", "Resources", "Careers", "Company"]);
+    expect(itemLabels).toEqual(["Platform", "Resources", "Careers", "Company"]);
   });
 
   it('activating "Contact Us" navigates to Contact_Page (/contact) (Requirement 1.7)', () => {
@@ -115,7 +121,7 @@ describe("Navigation", () => {
     // Careers promotion follow-up (current session)
     // Requirements: 1.1, 1.5, 10.4
     //
-    // "3 linked" = Product, Careers, Company (Resources is a <button>, no
+    // "3 linked" = Platform, Careers, Company (Resources is a <button>, no
     // href, excluded below by the `el?.tagName === "A"` filter).
     //
     // Scoped to each primary <li>'s *own* trigger element (mirroring the
@@ -154,34 +160,60 @@ describe("Navigation", () => {
   });
 });
 
-// User-requested follow-up: "Product" header item exposes a dropdown with
+// User-requested follow-up: "Product" header item exposed a dropdown with
 // 4 product-line links (Software Stack, Docking System, Sentrivion,
 // HawkAI), each routed to a real src/app/product/**/page.tsx page.
-describe("Navigation Product dropdown", () => {
-  const EXPECTED_PRODUCT_SUBLINKS = [
-    { label: "Software Stack", href: "/product/software-stack" },
-    { label: "Docking System", href: "/product/docking-system" },
-    { label: "Sentrivion", href: "/product/sentrivion" },
-    { label: "HawkAI", href: "/product/hawkai" },
-  ];
-
-  it("renders all 4 product sub-links with the correct hrefs", () => {
+//
+// Site-owner requests (current session, in three steps):
+//   1. "hide sentrivion page and hawkai page" — removed those two,
+//      dropping the dropdown to 2 sub-links.
+//   2. "hide the software stack page" — removed Software Stack too,
+//      dropping it to 1 sub-link (Docking System alone).
+//   3. "rename the product page into platform hide the docking system
+//      page as well naturally that dropdown should be removed" — removed
+//      the last remaining child and, per the site owner's own reasoning,
+//      the dropdown itself is gone. The primary item is renamed
+//      "Product" -> "Platform" and rendered as a plain link, exactly like
+//      Careers: no chevron, no <ul>, no aria-haspopup.
+// All four routes are left resolvable on disk (this repo's "don't delete,
+// don't break things" convention) — visiting them directly still works,
+// only the link is gone.
+describe("Navigation Platform item (formerly a Product dropdown)", () => {
+  it('renders "Platform" as a plain link to /product, with no dropdown trigger', () => {
     render(<Navigation />);
 
-    EXPECTED_PRODUCT_SUBLINKS.forEach((item) => {
-      const link = screen.getByRole("link", { name: item.label });
-      expect(link).toHaveAttribute("href", item.href);
-    });
+    const platformLink = screen.getByRole("link", { name: "Platform" });
+    expect(platformLink.tagName).toBe("A");
+    expect(platformLink).toHaveAttribute("href", "/product");
+    expect(platformLink).not.toHaveAttribute("aria-haspopup");
+    expect(platformLink).not.toHaveAttribute("aria-expanded");
+
+    // No chevron/disclosure button sits beside it, unlike Company (which
+    // keeps its own dropdown and therefore its own chevron button).
+    const platformItem = platformLink.closest("li");
+    expect(
+      platformItem?.querySelector('button[aria-label*="Platform"]'),
+    ).toBeNull();
   });
 
-  it("every product sub-link href resolves to a real src/app/product/**/page.tsx route", () => {
-    const appDir = join(__dirname, "..", "..", "app");
+  it("does not render Sentrivion, HawkAI, Software Stack or Docking System anywhere (all hidden, current session)", () => {
+    render(<Navigation />);
 
-    EXPECTED_PRODUCT_SUBLINKS.forEach((item) => {
-      const routeDir = item.href.replace(/^\//, "");
-      const pagePath = join(appDir, routeDir, "page.tsx");
-      expect(existsSync(pagePath)).toBe(true);
-    });
+    expect(screen.queryByRole("link", { name: "Sentrivion" })).toBeNull();
+    expect(screen.queryByRole("link", { name: "HawkAI" })).toBeNull();
+    expect(
+      screen.queryByRole("link", { name: "Software Stack" }),
+    ).toBeNull();
+    expect(
+      screen.queryByRole("link", { name: "Docking System" }),
+    ).toBeNull();
+  });
+
+  it("no longer renders a Product label anywhere in the primary bar", () => {
+    render(<Navigation />);
+
+    expect(screen.queryByRole("link", { name: "Product" })).toBeNull();
+    expect(screen.queryByRole("button", { name: /Product/ })).toBeNull();
   });
 });
 
@@ -190,7 +222,7 @@ describe("Navigation Product dropdown", () => {
 // Requirements: 1.1, 1.3, 1.4
 // Design: design.md -> Testing Strategy
 //
-// Confirms Navigation's 3 linked primary hrefs (Product, Careers,
+// Confirms Navigation's 3 linked primary hrefs (Platform, Careers,
 // Company — Resources has no own route, and Autonomy is currently hidden
 // from navigation per a site-owner request) exactly match real
 // `src/app/**/page.tsx` routes, by checking each href resolves to an
@@ -271,9 +303,11 @@ describe("Navigation Company dropdown", () => {
   const EXPECTED_COMPANY_SUBLINKS = [
     { label: "About Us", href: "/company" },
     { label: "Contact Us", href: "/contact" },
-    // Site-owner request (current session): visible label renamed from
-    // "News" to "Blogs" — same /news route, label only.
-    { label: "Blogs", href: "/news" },
+    // Site-owner request (current session, in two steps): visible label
+    // renamed from "News" to "Blogs" first, then the route itself renamed
+    // from /news to /blogs (a permanent redirect from /news is configured
+    // in next.config.ts).
+    { label: "Blogs", href: "/blogs" },
     { label: "Our Commitments", href: "/commitments" },
   ];
 

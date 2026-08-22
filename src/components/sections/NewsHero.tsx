@@ -19,7 +19,8 @@
 // happen". See design.md's Resolved Change Proposals table.
 // Site-owner request (current session): visible "News" copy renamed to
 // "Blogs" throughout — page label, decorative wordmark, and supporting
-// sentence. The route itself stays /news (see app/news/page.tsx) and
+// sentence. The route itself was later renamed from /news to /blogs (see
+// app/blogs/page.tsx and the permanent redirect in next.config.ts) and
 // internal identifiers (NewsHero, NewsList, News_Page in spec comments)
 // are left as-is; this is a label change, not a route or component rename,
 // matching the same pattern already used for the header's "Contact Us"

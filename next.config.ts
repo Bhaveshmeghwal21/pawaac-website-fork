@@ -24,6 +24,31 @@ const nextConfig: NextConfig = {
     minimumCacheTTL: 2678400,
   },
 
+  async redirects() {
+    return [
+      // Site-owner request (current session): the Blogs route was renamed
+      // from /news to /blogs. `permanent: true` sends a 308, which
+      // instructs browsers and search engines to cache the redirect
+      // rather than re-checking it on every request — correct here since
+      // the move is not coming back. `/news/:slug` is listed separately
+      // from `/news` (rather than a single `/news/:path*`) because the
+      // bare index has no slug segment to forward; matching both
+      // explicitly avoids relying on the trailing `/:path*` resolving to
+      // nothing for the index case. See
+      // node_modules/next/dist/docs/01-app/03-api-reference/05-config/01-next-config-js/redirects.md.
+      {
+        source: "/news",
+        destination: "/blogs",
+        permanent: true,
+      },
+      {
+        source: "/news/:slug",
+        destination: "/blogs/:slug",
+        permanent: true,
+      },
+    ];
+  },
+
   async headers() {
     return [
       {
