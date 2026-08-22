@@ -134,14 +134,14 @@ describe("condensed homepage sections", () => {
       within(section).getByRole("heading", { name: "GPS denied navigation" }),
     ).toBeInTheDocument();
     expect(within(section).getByText("Back to Dock. Ready again.")).toBeInTheDocument();
-    expect(container.querySelector('img[src*="visionModelOutput.jpeg"]')).not.toBeNull();
+    expect(container.querySelector('img[src*="gcs.png"]')).not.toBeNull();
     expect(
       screen.getByRole("img", {
-        name: /illustrative aerial detection view/i,
+        name: /ground control interface showing live aerial detections/i,
       }),
     ).toBeInTheDocument();
     expect(
-      within(section).getByText("Illustrative detection view (in development)"),
+      within(section).getByText("Ground control interface (in development)"),
     ).toBeInTheDocument();
     expect(section).toHaveAttribute("data-home-motion", "operating");
   });

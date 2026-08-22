@@ -189,8 +189,8 @@ export default function HomeOperatingLoop() {
             <div data-motion-image className="relative overflow-hidden border border-grey-800 bg-bg-2">
               <div className="relative w-full" style={{ aspectRatio: "16 / 9" }}>
                 <Image
-                  src="/images/visionModelOutput.jpeg"
-                  alt="Illustrative aerial detection view marking trucks and a person for operator review"
+                  src="/images/gcs.png"
+                  alt="Ground control interface showing live aerial detections and operator controls"
                   fill
                   sizes="(min-width: 768px) 60vw, 100vw"
                   className="object-cover"
@@ -199,7 +199,7 @@ export default function HomeOperatingLoop() {
               </div>
             </div>
             <p className="technical-data mt-2 text-muted">
-              Illustrative detection view (in development)
+              Ground control interface (in development)
             </p>
           </div>
         </div>
