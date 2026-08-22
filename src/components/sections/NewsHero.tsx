@@ -12,9 +12,11 @@
 // assistive technology (Requirement 10.6).
 //
 // OCP-19 is now RESOLVED: the founder-approved "designed empty state"
-// (a Reticle_Frame-boxed "No news yet" panel) has been replaced with a
-// real listing — see NewsList.tsx, which currently renders exactly 1 real
-// news item. See design.md's Resolved Change Proposals table.
+// (a Reticle_Frame-boxed "No news yet" panel) has been replaced with real
+// content — see NewsList.tsx. Site-owner request (current session): that
+// listing is no longer a product announcement feed but a long-form essay
+// blog, so the hero copy here describes essays rather than "updates as they
+// happen". See design.md's Resolved Change Proposals table.
 // Site-owner request (current session): visible "News" copy renamed to
 // "Blogs" throughout — page label, decorative wordmark, and supporting
 // sentence. The route itself stays /news (see app/news/page.tsx) and
@@ -41,10 +43,10 @@ export default function NewsHero() {
         <Reveal>
           <p className="label">Blogs</p>
           <h1 className="mt-3 text-heading font-display text-fg">
-            Updates from the field
+            Notes from the watch
           </h1>
           <p className="mt-4 max-w-md text-body font-body text-muted">
-            Company and product blogs, as it happens.
+            Essays on autonomy, attention, and what it takes to keep watch.
           </p>
         </Reveal>
 

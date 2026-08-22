@@ -25,7 +25,7 @@ Then open <http://localhost:3000>.
 | `npm run dev` | Dev server (Turbopack) on port 3000 |
 | `npm run build` | Production build |
 | `npm start` | Serve the production build |
-| `npm test` | Vitest suite (33 files, 231 tests) |
+| `npm test` | Vitest suite (35 files, 247 tests) |
 | `npm run lint` | ESLint |
 
 > **Read this before writing code.** `AGENTS.md` at the repo root carries a
@@ -47,6 +47,7 @@ Then open <http://localhost:3000>.
 | `/autonomy` | Autonomy stack: sense, decide, act |
 | `/designer` | Coverage planner — patrol radii and docking-station placement (react-leaflet) |
 | `/company` · `/careers` · `/commitments` · `/news` · `/contact` | Company pages |
+| `/news/[slug]` | Individual blog post, prerendered per post from `lib/blogPosts.ts` |
 | `/api/contact` · `/api/careers` | Form handlers (react-hook-form + zod) |
 | `/sitemap.xml` · `/robots.txt` · `/opengraph-image` | Generated from `app/sitemap.ts`, `app/robots.ts`, `app/opengraph-image.tsx` |
 
@@ -126,9 +127,13 @@ current.** Where they disagree with the code, the code is right.
 | `--color-muted` | `#8a8a8a` |
 | `--color-line` | `#1f1f1f` |
 
-Every value satisfies R=G=B, and `colorToken.ts` tests that invariant. There is
-one deliberate exception, documented in the component itself: the real sky
-photograph in `SkyScenery.tsx`.
+Every value satisfies R=G=B, and `colorToken.ts` tests that invariant. Three
+photographs are deliberate exceptions, each documented in the component itself:
+the real sky photograph in `SkyScenery.tsx`, the Vision banner in
+`VisionHero.tsx` (`/commitments`), and the lead editorial image on the Blogs
+page in `NewsList.tsx`. Colour in editorial/blog imagery is expected; the
+achromatic rule governs the interface, not photography that is explicitly
+illustrative.
 
 **Type:** Space Grotesk (display/headings), Inter (body), JetBrains Mono
 (labels and technical data), all loaded as variable fonts via `next/font`.

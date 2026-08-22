@@ -13,7 +13,8 @@ import NewsHero from "@/components/sections/NewsHero";
 
 export const metadata: Metadata = {
   title: "Blogs · PAWAAC Drones",
-  description: "Company and product blogs, as it happens.",
+  description:
+    "Essays on autonomy, attention, and what it takes to keep watch.",
 };
 
 export default function NewsPage() {

@@ -322,11 +322,32 @@ export default function Navigation() {
                       aria-label={`${isMenuOpen ? "Hide" : "Show"} ${l.label} submenu`}
                       aria-expanded={isMenuOpen}
                       onClick={() => setOpenMenu(isMenuOpen ? null : l.label)}
-                      className="-m-1 p-1 text-muted transition-colors hover:text-fg"
+                      // Site-owner report (current session): "the dropdown
+                      // ones have downward arrow but 2 of them have grey or
+                      // black". Product and Company render their chevron as
+                      // this separate button (a <button> cannot nest inside
+                      // the <a>), which was styled `text-muted` (#8a8a8a)
+                      // while Resources' chevron sits inside its own
+                      // `!text-white` trigger and so rendered white. Against
+                      // the bright hero photo the grey ones were close to
+                      // invisible. Matched to the Resources chevron.
+                      //
+                      // Follow-up report: "these arrow positioning ... they
+                      // are at the bottom (product and company only)". Cause
+                      // was this button not being a flex container, unlike the
+                      // Resources trigger (`flex items-center`) whose chevron
+                      // is therefore a vertically centred flex item. Here the
+                      // 9px glyph was an inline-block sitting on the baseline
+                      // of a line box sized by the inherited ~16px font, which
+                      // pushed it well below the label's optical centre.
+                      // `flex items-center` plus `leading-none` on the glyph
+                      // collapses the line box to the glyph itself and centres
+                      // it, matching Resources exactly.
+                      className="-m-1 flex items-center p-1 !text-white transition-colors hover:text-fg"
                     >
                       <span
                         aria-hidden="true"
-                        className={`mt-px inline-block text-[9px] transition-transform duration-200 group-hover/nav:rotate-180 ${
+                        className={`inline-block text-[9px] leading-none transition-transform duration-200 group-hover/nav:rotate-180 ${
                           isMenuOpen ? "rotate-180" : ""
                         }`}
                       >

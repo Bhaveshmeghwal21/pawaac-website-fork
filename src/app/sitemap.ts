@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { absoluteUrl } from "@/lib/site";
+import { BLOG_POST_SLUGS, blogPostPath } from "@/lib/blogPosts";
 
 // Sitemap for the 13 public routes.
 //
@@ -42,10 +43,22 @@ const ROUTES: Array<{
 export default function sitemap(): MetadataRoute.Sitemap {
   const lastModified = new Date();
 
-  return ROUTES.map(({ path, changeFrequency, priority }) => ({
-    url: absoluteUrl(path),
-    lastModified,
-    changeFrequency,
-    priority,
+  // Individual blog posts (site-owner request, current session: each post is
+  // read on its own /news/[slug] page). Derived from BLOG_POSTS rather than
+  // hardcoded, so publishing a post cannot silently leave it out of the
+  // sitemap. Ranked just under the index that links to them.
+  const postRoutes = BLOG_POST_SLUGS.map((slug) => ({
+    path: blogPostPath(slug),
+    changeFrequency: "yearly" as const,
+    priority: 0.45,
   }));
+
+  return [...ROUTES, ...postRoutes].map(
+    ({ path, changeFrequency, priority }) => ({
+      url: absoluteUrl(path),
+      lastModified,
+      changeFrequency,
+      priority,
+    }),
+  );
 }
