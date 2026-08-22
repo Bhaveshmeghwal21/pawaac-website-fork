@@ -30,9 +30,23 @@ export default function HomePlannerCTA() {
         <div data-motion-group>
           <div data-motion-image className="relative overflow-hidden border border-grey-800 bg-bg">
             <div className="relative w-full" style={{ aspectRatio: "16 / 9" }}>
+              {/*
+                Site-owner request (current session): use planner2 here. The
+                previous planner.jpeg is a screenshot of the older planner, whose
+                survey zone was a dashed square sized by a corner handle and whose
+                second slider set the patrol radius per dock. Both of those changed
+                (the zone is a circle, and the visitor now sets the number of
+                drones while the radius is derived), so that image no longer showed
+                the tool it links to. planner.jpeg is left on disk unused per this
+                repo's "don't delete, don't break things" convention.
+
+                Alt text updated with it: it described "patrol radius circles and
+                docking station markers", which is still true but omits the two
+                controls that are the point of the new panel.
+              */}
               <Image
-                src="/images/planner.jpeg"
-                alt="Screenshot of the Pawaac coverage planner showing patrol radius circles and docking station markers over a map"
+                src="/images/planner2.jpeg"
+                alt="Screenshot of the Pawaac coverage planner: a dashed circular survey zone over a city map, with seven docking station markers and their overlapping patrol radius circles, beside sliders for coverage radius and number of drones"
                 fill
                 sizes="(min-width: 768px) 60vw, 100vw"
                 className="object-cover"
