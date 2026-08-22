@@ -8,7 +8,11 @@ const APPLICATIONS = [
     alt: "Operational aerial view representing defense coverage",
   },
   {
-    tag: "Police",
+    // Renamed from "Police" to "City" at the site owner's request (current
+    // session). The photo itself is unchanged — a color aerial of a major
+    // Indian city — and was never police specific; the label now matches what
+    // the image actually shows rather than one persona it might interest.
+    tag: "City",
     src: "/images/sector-police.jpg",
     alt: "Color aerial view of a major Indian city",
   },

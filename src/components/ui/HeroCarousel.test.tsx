@@ -1,8 +1,14 @@
 // @vitest-environment jsdom
 import { act, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import HomeHero from "@/components/sections/HomeHero";
+import HomeHero, { SLIDES } from "@/components/sections/HomeHero";
 import { MIN_SWIPE_PX, SWIPE_FRACTION } from "@/components/ui/HeroCarousel";
+
+/** Each slide's own hold, read from the real config rather than repeated here. */
+const PHOTO_HOLD = SLIDES[0].holdMs;
+const FOOTAGE_HOLD = SLIDES[1].holdMs;
+/** Comfortably longer than a full cycle, for "it never advances" assertions. */
+const WELL_PAST_A_CYCLE = (PHOTO_HOLD + FOOTAGE_HOLD) * 3;
 
 // Site-owner request (current session): the hero backdrop advances from the sky
 // photograph to real flight footage on its own, and can also be swiped by hand.
@@ -72,22 +78,24 @@ describe("hero carousel", () => {
     render(<HomeHero />);
     expect(activeIndex()).toBe(0);
 
-    // The photograph's own hold, from HomeHero's SLIDES config.
-    act(() => void vi.advanceTimersByTime(6000));
+    act(() => void vi.advanceTimersByTime(PHOTO_HOLD));
     expect(activeIndex()).toBe(1);
   });
 
   it("holds the footage longer than the photograph before cycling back", () => {
+    // The point of the assertion, stated once: the hold is per slide, not global.
+    expect(FOOTAGE_HOLD).toBeGreaterThan(PHOTO_HOLD);
+
     render(<HomeHero />);
-    act(() => void vi.advanceTimersByTime(6000));
+    act(() => void vi.advanceTimersByTime(PHOTO_HOLD));
     expect(activeIndex()).toBe(1);
 
     // Still on the footage after the photograph's shorter hold has elapsed
     // again, which is what proves the hold is per slide rather than global.
-    act(() => void vi.advanceTimersByTime(6000));
+    act(() => void vi.advanceTimersByTime(PHOTO_HOLD));
     expect(activeIndex()).toBe(1);
 
-    act(() => void vi.advanceTimersByTime(9000));
+    act(() => void vi.advanceTimersByTime(FOOTAGE_HOLD - PHOTO_HOLD));
     expect(activeIndex()).toBe(0);
   });
 
@@ -118,13 +126,13 @@ describe("hero carousel", () => {
     fireEvent.click(
       screen.getByRole("button", { name: "Pause the hero background slideshow" }),
     );
-    act(() => void vi.advanceTimersByTime(30000));
+    act(() => void vi.advanceTimersByTime(WELL_PAST_A_CYCLE));
     expect(activeIndex()).toBe(0);
 
     fireEvent.click(
       screen.getByRole("button", { name: "Play the hero background slideshow" }),
     );
-    act(() => void vi.advanceTimersByTime(6000));
+    act(() => void vi.advanceTimersByTime(PHOTO_HOLD));
     expect(activeIndex()).toBe(1);
   });
 
@@ -288,9 +296,9 @@ describe("hero carousel", () => {
       fireEvent.pointerDown(stage, { button: 0, pointerId: 1, clientX: 500 });
       fireEvent.pointerMove(stage, { pointerId: 1, clientX: 490 });
 
-      // Well past the photograph's 6000ms hold, but a held pointer must not have
-      // the slide change underneath it.
-      act(() => void vi.advanceTimersByTime(30000));
+      // Well past the photograph's hold, but a held pointer must not have the
+      // slide change underneath it.
+      act(() => void vi.advanceTimersByTime(WELL_PAST_A_CYCLE));
       expect(activeIndex()).toBe(0);
 
       fireEvent.pointerUp(stage, { pointerId: 1, clientX: 490 });
@@ -305,7 +313,7 @@ describe("hero carousel", () => {
     it("never advances on its own and offers no pause control", () => {
       render(<HomeHero />);
 
-      act(() => void vi.advanceTimersByTime(60000));
+      act(() => void vi.advanceTimersByTime(WELL_PAST_A_CYCLE));
       expect(activeIndex()).toBe(0);
 
       expect(

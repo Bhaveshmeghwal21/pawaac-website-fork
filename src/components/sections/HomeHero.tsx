@@ -76,13 +76,21 @@ import Link from "next/link";
 // array's identity, so a fresh array every render would reset the timer every
 // render and the carousel would never advance.
 //
-// The photograph holds for a beat because it is the first thing painted and the
-// headline animates over it; the footage holds far longer because a clip needs
-// time to read as movement rather than as a flicker. Neither is the full 19.5
-// second length of the source clip, which loops.
-const SLIDES: readonly HeroCarouselSlide[] = [
-  { label: "the sky view", holdMs: 6000 },
-  { label: "the flight footage", holdMs: 15000 },
+// Exported so HeroCarousel.test.tsx can derive its timings from these numbers
+// instead of hardcoding them. Same reasoning as MIN_SWIPE_PX/SWIPE_FRACTION in
+// ui/HeroCarousel.tsx: a test that repeats a duration silently stops testing
+// anything the moment the duration is tuned.
+//
+// Holds tuned at the site owner's request (current session): from 6000/15000 to
+// 3500/8000, then 2200/4500, then the footage back up to 8000 while the
+// photograph stays short. The photograph is a still, so it only needs a beat
+// before moving on; the footage is a clip, and 4.5 seconds was not long enough
+// for it to read as movement rather than as a flicker.
+//
+// Neither is the full 19.5 second length of the source clip, which loops.
+export const SLIDES: readonly HeroCarouselSlide[] = [
+  { label: "the sky view", holdMs: 2200 },
+  { label: "the flight footage", holdMs: 8000 },
 ];
 
 export default function HomeHero() {
