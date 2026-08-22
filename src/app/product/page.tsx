@@ -18,19 +18,23 @@ import Footer from "@/components/layout/Footer";
 //   2. ProductOperatingLoop   how it works, as one closed cycle (the core
 //                             of the request: the seven steps, the human
 //                             oversight branch, GPS denied navigation)
-//   3. ProductHardware        the two airframes that fly that cycle
+//   3. ProductDetectionDemo   the Detect step shown rather than described,
+//                             with an illustrative annotated clip of real
+//                             flight footage
+//   4. ProductHardware        the two airframes that fly that cycle
 //                             (HawkAI Plus, Sentrivion) with real photos
-//   4. ProductDockCharging    the dock that starts and ends it, with the
+//   5. ProductDockCharging    the dock that starts and ends it, with the
 //                             dock image the site owner supplied
-//   5. ProductSensorPayload   the payload that does the looking (existing
+//   6. ProductSensorPayload   the payload that does the looking (existing
 //                             3D viewer, unchanged)
-//   6. ProductSpecifications  closing CTA — figures on request
+//   7. ProductSpecifications  closing CTA — figures on request
 //
-// Sections 3 and 4 are adjacent on purpose: they are the two halves of the
+// Sections 4 and 5 are adjacent on purpose: they are the two halves of the
 // same answer ("what runs the loop"), split only because the dock asset is a
 // white-background image and therefore belongs in the white band.
 import ProductHero from "@/components/sections/ProductHero";
 import ProductOperatingLoop from "@/components/sections/ProductOperatingLoop";
+import ProductDetectionDemo from "@/components/sections/ProductDetectionDemo";
 import ProductHardware from "@/components/sections/ProductHardware";
 import ProductDockCharging from "@/components/sections/ProductDockCharging";
 import ProductSensorPayload from "@/components/sections/ProductSensorPayload";
@@ -53,6 +57,7 @@ export default function ProductPage() {
     <>
       <ProductHero />
       <ProductOperatingLoop />
+      <ProductDetectionDemo />
       <ProductHardware />
       <ProductDockCharging />
       <ProductSensorPayload />

@@ -25,7 +25,7 @@ Then open <http://localhost:3000>.
 | `npm run dev` | Dev server (Turbopack) on port 3000 |
 | `npm run build` | Production build |
 | `npm start` | Serve the production build |
-| `npm test` | Vitest suite (36 files, 263 tests) |
+| `npm test` | Vitest suite (37 files, 273 tests) |
 | `npm run lint` | ESLint |
 
 > **Read this before writing code.** `AGENTS.md` at the repo root carries a
@@ -144,7 +144,31 @@ the real sky photograph in `SkyScenery.tsx`, the Vision banner in
 `VisionHero.tsx` (`/commitments`), and the lead editorial image on the Blogs
 page in `NewsList.tsx`. Colour in editorial/blog imagery is expected; the
 achromatic rule governs the interface, not photography that is explicitly
-illustrative.
+illustrative. The detection demo video on `/product` is a fourth, for the same
+reason — it is camera footage, and the overlay drawn on it uses `--color-fg`.
+
+### The detection demo video
+
+`/product` carries the site's only video (`ProductDetectionDemo.tsx` →
+`ui/DemoVideo.tsx`). Read the header comments before touching it; the short
+version:
+
+- The **footage is real** Pawaac flight footage. The **bounding boxes are not
+  from Pawaac's detector** — they were generated with Gemini 3.7 Flash and
+  smoothed with a ByteTrack implementation (Kalman motion model, two-stage
+  high/low confidence association, lost-track buffer). Presenting it as product
+  output would be an unbacked capability claim, so the visible caption says
+  "illustrative" and explicitly disclaims the shipping detector.
+  `simulatedLabel.ts` encodes that wording rule and
+  `ProductDetectionDemo.test.tsx` asserts the real caption satisfies it.
+- It ships as `<video>` (webm + mp4 + poster), not the animated GIF that also
+  exists at `public/videos/detection-demo.gif`. A GIF cannot be paused, so it
+  can satisfy neither WCAG 2.2.2 nor this repo's reduced-motion rule, and it
+  costs more than twice the bytes at less than half the resolution.
+- Autoplay is **not** the `autoPlay` attribute. It is started from an effect
+  only when `prefers-reduced-motion` is not set, so the reduced-motion branch is
+  real rather than cosmetic, and the rendered markup does not depend on a
+  client-only media query.
 
 **Type:** Space Grotesk (display/headings), Inter (body), JetBrains Mono
 (labels and technical data), all loaded as variable fonts via `next/font`.
