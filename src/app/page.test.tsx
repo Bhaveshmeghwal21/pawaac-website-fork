@@ -5,6 +5,7 @@ import {
   type ReactElement,
   type ReactNode,
 } from "react";
+import { render } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import Footer from "@/components/layout/Footer";
 import HomeContactBand from "@/components/sections/HomeContactBand";
@@ -62,11 +63,34 @@ describe("Home page composition", () => {
     expect(order.indexOf(HomeProblemFraming)).toBeGreaterThan(order.indexOf(HomeHero));
   });
 
-  it("keeps exactly one SkyScenery inside HomeHero instead of at page level", () => {
+  // The hero's backdrop is now a two slide carousel (site-owner request), so
+  // SkyScenery sits inside it rather than being a direct child of the hero
+  // section. The invariant this test exists to protect is unchanged: exactly one
+  // sky backdrop, scoped inside the hero, never hoisted to page level where its
+  // absolute layer would escape into the rest of the page.
+  //
+  // The hero half is asserted against the rendered DOM rather than the element
+  // tree because HomeHero now owns the carousel's state, so calling it as a
+  // plain function would be an invalid hook call.
+  it("keeps exactly one sky backdrop inside HomeHero instead of at page level", () => {
     const pageChildren = elementChildren(Home() as ElementWithChildren);
-    const heroChildren = elementChildren(HomeHero() as ElementWithChildren);
-
     expect(pageChildren.filter((child) => child.type === SkyScenery)).toHaveLength(0);
-    expect(heroChildren.filter((child) => child.type === SkyScenery)).toHaveLength(1);
+
+    const { container } = render(<HomeHero />);
+    expect(
+      container.querySelectorAll('[data-hero-scenery-image] img[src*="droneInSky"]'),
+    ).toHaveLength(1);
+  });
+
+  it("renders both carousel slides, the photograph first", () => {
+    const { container } = render(<HomeHero />);
+    const track = container.querySelector("[data-hero-carousel-track]");
+
+    expect(track).not.toBeNull();
+    // Slide order is what makes the photograph the first thing painted and the
+    // footage the slide it advances to.
+    expect(track?.children).toHaveLength(2);
+    expect(track?.children[0].querySelector("[data-hero-scenery-image]")).not.toBeNull();
+    expect(track?.children[1].querySelector("video")).not.toBeNull();
   });
 });

@@ -48,16 +48,58 @@
 // plus a primary CTA link, into the hero itself. HeroHeadline and its GSAP
 // entrance above are untouched; the new content is added around it in the
 // same left-aligned content column.
+//
+// Background carousel (site-owner request, current session): the hero
+// backdrop was the single sky photograph in SkyScenery. It is now the first
+// of two slides, the second being real flight footage, advancing on its own
+// from the photograph to the footage and swipeable by hand. See
+// ui/HeroCarousel.tsx for the mechanics and for why the footage ships as a
+// <video> rather than the GIF the request allowed for.
+//
+// The carousel's state lives here rather than inside one component because
+// its two halves belong in different layers of this section: the media is
+// the absolute z-0 backdrop, while the controls belong in the z-10 content
+// column so they sit on the same content grid as the headline and the CTA.
 import HeroHeadline from "@/components/ui/HeroHeadline";
 import SkyScenery from "@/components/ui/SkyScenery";
+import HeroFlightVideo from "@/components/ui/HeroFlightVideo";
+import {
+  HeroCarouselControls,
+  HeroCarouselSlideFrame,
+  HeroCarouselStage,
+  useHeroCarousel,
+  type HeroCarouselSlide,
+} from "@/components/ui/HeroCarousel";
 import Link from "next/link";
 
+// Module scope, not inline: `useHeroCarousel` keys its advance timer on this
+// array's identity, so a fresh array every render would reset the timer every
+// render and the carousel would never advance.
+//
+// The photograph holds for a beat because it is the first thing painted and the
+// headline animates over it; the footage holds far longer because a clip needs
+// time to read as movement rather than as a flicker. Neither is the full 19.5
+// second length of the source clip, which loops.
+const SLIDES: readonly HeroCarouselSlide[] = [
+  { label: "the sky view", holdMs: 6000 },
+  { label: "the flight footage", holdMs: 15000 },
+];
+
 export default function HomeHero() {
+  const carousel = useHeroCarousel(SLIDES);
+
   return (
     // The hero owns its scenery so the absolute layer cannot escape into
     // the rest of the page.
     <section data-home-hero className="relative flex min-h-[100dvh] items-end overflow-hidden bg-transparent px-6 pb-[14vh] pt-28 md:pb-[16vh] md:pt-36">
-      <SkyScenery />
+      <HeroCarouselStage api={carousel}>
+        <HeroCarouselSlideFrame>
+          <SkyScenery />
+        </HeroCarouselSlideFrame>
+        <HeroCarouselSlideFrame>
+          <HeroFlightVideo active={carousel.index === 1} />
+        </HeroCarouselSlideFrame>
+      </HeroCarouselStage>
 
       {/* Display_Type oversized word-mark texture behind hero media
           (Pattern 1), purely decorative — hidden from assistive
@@ -74,35 +116,56 @@ export default function HomeHero() {
         PAWAAC
       </span>
 
-      <div className="relative z-10 mx-auto w-full max-w-7xl text-left">
-        <HeroHeadline
-          text="Autonomous drones that watch what matters"
-          className="max-w-5xl font-display text-[clamp(2.25rem,4.8vw,4.75rem)] font-bold uppercase leading-[0.94] tracking-[-0.035em] text-fg [text-wrap:balance] [text-shadow:0_3px_18px_rgba(0,0,0,0.7)]"
-        />
+      <div className="relative z-10 mx-auto w-full max-w-7xl">
+        {/* Headline column and carousel controls share one row on desktop so the
+            controls sit on the content grid's right edge, level with the CTA,
+            rather than floating over the media. They stack below the CTA on
+            narrow viewports.
 
-        {/* Supporting sentence + CTA (UX fix, see file header). Section
-            background is bg-transparent (the raw SkyScenery photo shows
-            through directly, not a tinted panel), so both carry the same
-            drop-shadow treatment as the headline above for legibility
-            against the photo, rather than a new backdrop scrim.
-            Second sentence added per finding F1
-            (docs/superpowers/plans/2026-08-20-homepage-problem-framing.md):
-            the first names what this is and who it is for, the second names
-            the differentiator, so the gap HomeProblemFraming then opens is
-            already hinted at above the fold. Kept to one short clause so the
-            hero stays a hero and does not become the problem section. */}
-        <div data-hero-support>
-          <p className="mt-5 max-w-lg text-body font-body text-fg/90 [text-shadow:0_2px_12px_rgba(0,0,0,0.65)]">
-            Fully autonomous surveillance drones for defense, police, and
-            critical infrastructure. Continuous coverage, with no pilot on
-            site.
-          </p>
-          <Link
-            href="/product"
-            className="mt-6 inline-block border border-fg px-5 py-2.5 font-mono text-[11px] font-semibold uppercase tracking-[0.1em] text-fg drop-shadow-[0_3px_10px_rgba(0,0,0,0.55)] transition-colors hover:bg-fg hover:text-bg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fg focus-visible:ring-offset-2 focus-visible:ring-offset-black"
-          >
-            See the platform
-          </Link>
+            `pointer-events-none` on this row, with it re-enabled on the two
+            things that are actually interactive, is what makes the hero
+            swipeable end to end on a phone. Without it this column sits over the
+            carousel stage and swallows every touch that starts on the headline
+            or the supporting sentence — which on a narrow viewport is most of
+            the hero, leaving only a thin band above the text as a swipe
+            surface. */}
+        <div className="pointer-events-none flex flex-col gap-8 md:flex-row md:items-end md:justify-between md:gap-10">
+          <div className="min-w-0 flex-1 text-left">
+            <HeroHeadline
+              text="Autonomous drones that watch what matters"
+              className="max-w-5xl font-display text-[clamp(2.25rem,4.8vw,4.75rem)] font-bold uppercase leading-[0.94] tracking-[-0.035em] text-fg [text-wrap:balance] [text-shadow:0_3px_18px_rgba(0,0,0,0.7)]"
+            />
+
+            {/* Supporting sentence + CTA (UX fix, see file header). Section
+                background is bg-transparent (the raw carousel media shows
+                through directly, not a tinted panel), so both carry the same
+                drop-shadow treatment as the headline above for legibility
+                against the photo, rather than a new backdrop scrim.
+                Second sentence added per finding F1
+                (docs/superpowers/plans/2026-08-20-homepage-problem-framing.md):
+                the first names what this is and who it is for, the second names
+                the differentiator, so the gap HomeProblemFraming then opens is
+                already hinted at above the fold. Kept to one short clause so the
+                hero stays a hero and does not become the problem section. */}
+            <div data-hero-support>
+              <p className="mt-5 max-w-lg text-body font-body text-fg/90 [text-shadow:0_2px_12px_rgba(0,0,0,0.65)]">
+                Fully autonomous surveillance drones for defense, police, and
+                critical infrastructure. Continuous coverage, with no pilot on
+                site.
+              </p>
+              <Link
+                href="/product"
+                className="pointer-events-auto mt-6 inline-block border border-fg px-5 py-2.5 font-mono text-[11px] font-semibold uppercase tracking-[0.1em] text-fg drop-shadow-[0_3px_10px_rgba(0,0,0,0.55)] transition-colors hover:bg-fg hover:text-bg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fg focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+              >
+                See the platform
+              </Link>
+            </div>
+          </div>
+
+          <HeroCarouselControls
+            api={carousel}
+            className="pointer-events-auto shrink-0 md:pb-3"
+          />
         </div>
       </div>
     </section>
