@@ -26,8 +26,25 @@
 //     still names design.md's "Dock & charging" section, which is a
 //     historical reference and not a claim.
 //
-// Persona: Enterprise_Persona. Placed after the Defense_Police_Persona
-// sections per the persona-ordering policy (Property 7).
+// Position (site-owner request, current session): "move this section before
+// explaination as well". This section used to render after
+// ProductOperatingLoop and now renders before it, as the last of the three
+// physical things (airframes, what the vision produces, the dock) that the loop
+// then ties together.
+//
+// Persona: Enterprise_Persona. It no longer renders after every
+// Defense_Police_Persona section, so design.md's Property 7 ordering
+// preference is not satisfied on this page any more — ProductSpecifications
+// carries that tag and closes the page. This is a deliberate override of a
+// design-doc preference by an explicit site-owner instruction, not an
+// oversight; see the ordering note in app/product/page.tsx. Property 7 is
+// enforced by personaOrder.ts against its own fixtures rather than against
+// this page, so nothing fails, and the note is here so the order is not
+// "corrected" back later.
+//
+// The white band still matters and is unchanged by the move: this is the one
+// light section on the page, which is why it is the right home for an asset
+// whose studio background is white.
 //
 // OCP-08 history: this section previously rendered a generated SVG
 // technical diagram, on the explicit grounds that "no real dock photo

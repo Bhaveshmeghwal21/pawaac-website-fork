@@ -41,6 +41,7 @@ import {
   useMemo,
   useRef,
   useState,
+  type DragEvent as ReactDragEvent,
   type PointerEvent as ReactPointerEvent,
   type ReactNode,
 } from "react";
@@ -72,6 +73,7 @@ export type HeroCarouselApi = {
     onPointerMove: (event: ReactPointerEvent<HTMLDivElement>) => void;
     onPointerUp: (event: ReactPointerEvent<HTMLDivElement>) => void;
     onPointerCancel: (event: ReactPointerEvent<HTMLDivElement>) => void;
+    onDragStart: (event: ReactDragEvent<HTMLDivElement>) => void;
   };
 };
 
@@ -167,6 +169,24 @@ export function useHeroCarousel(
     [drag, goTo, index],
   );
 
+  // Mouse dragging did not work before this, and the reason is not obvious.
+  //
+  // A slide contains a real <img> (SkyScenery's photograph), and images are
+  // draggable by default in desktop browsers. Pressing on one and moving starts
+  // a native HTML5 image drag, which fires `dragstart` and, in turn, cancels the
+  // in-flight pointer interaction with `pointercancel`. `onPointerCancel` then
+  // ended the drag while `dx` was still only a few pixels, below the threshold,
+  // so nothing happened. Touch was unaffected — touch does not start a native
+  // drag — which is why this presented as "the mouse does not work".
+  //
+  // Preventing `dragstart` on the whole stage fixes it for any slide content,
+  // present or future, rather than relying on every image remembering to opt out.
+  // `select-none` on the stage does not cover this: text selection and native
+  // element dragging are separate behaviours.
+  const onDragStart = useCallback((event: ReactDragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+  }, []);
+
   return useMemo<HeroCarouselApi>(
     () => ({
       index,
@@ -183,6 +203,7 @@ export function useHeroCarousel(
         onPointerMove,
         onPointerUp: endDrag,
         onPointerCancel: endDrag,
+        onDragStart,
       },
     }),
     [
@@ -191,6 +212,7 @@ export function useHeroCarousel(
       goTo,
       index,
       isPaused,
+      onDragStart,
       onPointerDown,
       onPointerMove,
       prefersReducedMotion,
@@ -223,7 +245,13 @@ export function HeroCarouselStage({
       {...stageProps}
       aria-hidden="true"
       className="absolute inset-0 z-0 overflow-hidden select-none"
-      style={{ touchAction: "pan-y", cursor: isDragging ? "grabbing" : undefined }}
+      style={{
+        touchAction: "pan-y",
+        // `grab` at rest is the only affordance a mouse user gets that the hero
+        // can be dragged at all; without it the interaction is invisible until
+        // someone tries it by accident. Touch needs no equivalent hint.
+        cursor: isDragging ? "grabbing" : "grab",
+      }}
     >
       <div
         data-hero-carousel-track

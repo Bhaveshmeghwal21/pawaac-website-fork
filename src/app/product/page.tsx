@@ -16,39 +16,52 @@ import Footer from "@/components/layout/Footer";
 //
 // Order revision (site-owner request, current session): "in platform before
 // explaining how the platform works, add the airframes photos first, then use
-// drone vision model output second then explaination of whole platform". The
-// hardware and detection sections were previously downstream of the operating
-// loop; they now precede it, so the page shows the aircraft and what it sees
-// before explaining the cycle those two things serve:
+// drone vision model output second then explaination of whole platform", then
+// "move this section before explaination as well and hide sense every angle
+// section in platform page" — "this section" being the dock, which the previous
+// revision had left downstream of the loop.
+//
+// The page therefore front loads everything physical and shows the explanation
+// last, as the thing that ties the hardware together rather than the thing that
+// introduces it:
 //
 //   1. ProductHero            what the platform is
 //   2. ProductHardware        the two airframes, with real photos
 //   3. ProductDetectionDemo   what the onboard vision produces, as an
 //                             illustrative annotated clip of real footage
-//   4. ProductOperatingLoop   how it works, as one closed cycle (the seven
+//   4. ProductDockCharging    the dock the aircraft lives in
+//   5. ProductOperatingLoop   how it all works, as one closed cycle (the seven
 //                             steps, the human oversight branch, GPS denied
 //                             navigation)
-//   5. ProductDockCharging    the dock that starts and ends that cycle, with
-//                             the dock image the site owner supplied
-//   6. ProductSensorPayload   the payload that does the looking (existing
-//                             3D viewer, unchanged)
-//   7. ProductSpecifications  closing CTA — figures on request
+//   6. ProductSpecifications  closing CTA — figures on request
 //
-// ProductHardware and ProductDockCharging were previously adjacent, as the two
-// halves of one answer ("what runs the loop"). That pairing is deliberately
-// given up here: the site owner's order puts the airframes early as the
-// concrete thing a reader recognises, while the dock only makes sense once the
-// cycle has been described, since its whole job is starting and ending that
-// cycle. The dock also has to stay in its own white band, which is what the
-// asset's white studio background requires (see ProductDockCharging.tsx), so
-// moving it up would have put a bright band between the two dark sections the
-// site owner asked to lead with.
+// ProductSensorPayload (the 3D drone viewer, "Sense every angle") is HIDDEN at
+// the site owner's request, not deleted — same treatment as the five hidden
+// routes described in the README. The component is untouched on disk and still
+// works; only its import and render call were removed here. To restore it, add
+// back:
+//
+//   import ProductSensorPayload from "@/components/sections/ProductSensorPayload";
+//
+// and render <ProductSensorPayload /> between <ProductOperatingLoop /> and
+// <ProductSpecifications />, which is where it sat. ProductPlatformPage.test.tsx
+// pins that it stays out until then, so an accidental re-add fails loudly rather
+// than silently changing the page.
+//
+// Persona ordering note: ProductDockCharging is tagged Enterprise_Persona and
+// now renders before two Defense_Police_Persona sections (ProductOperatingLoop
+// carries no tag, but ProductSpecifications does). Property 7's ordering
+// preference is therefore not satisfied on this page any more. That is a
+// deliberate, site-owner-directed override of a design-doc preference, recorded
+// here and in ProductDockCharging.tsx rather than quietly ignored. Property 7 is
+// enforced by personaOrder.ts against its own fixtures, not against this page,
+// so nothing fails; the note exists so the next person does not "fix" the order
+// back and undo an explicit request.
 import ProductHero from "@/components/sections/ProductHero";
 import ProductHardware from "@/components/sections/ProductHardware";
 import ProductDetectionDemo from "@/components/sections/ProductDetectionDemo";
-import ProductOperatingLoop from "@/components/sections/ProductOperatingLoop";
 import ProductDockCharging from "@/components/sections/ProductDockCharging";
-import ProductSensorPayload from "@/components/sections/ProductSensorPayload";
+import ProductOperatingLoop from "@/components/sections/ProductOperatingLoop";
 import ProductSpecifications from "@/components/sections/ProductSpecifications";
 
 export const metadata: Metadata = {
@@ -69,9 +82,8 @@ export default function ProductPage() {
       <ProductHero />
       <ProductHardware />
       <ProductDetectionDemo />
-      <ProductOperatingLoop />
       <ProductDockCharging />
-      <ProductSensorPayload />
+      <ProductOperatingLoop />
       <ProductSpecifications />
       <Footer />
     </>

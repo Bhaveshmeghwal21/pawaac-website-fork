@@ -64,6 +64,12 @@ export default function SkyScenery() {
           preload
           className="object-cover"
           style={{ objectPosition: "center 35%" }}
+          // This photograph is a slide in the hero carousel, which is drag
+          // navigable. An <img> is draggable by default, and that native drag
+          // cancels the carousel's pointer drag mid gesture, so a mouse drag
+          // starting on the photo would do nothing. HeroCarousel's stage also
+          // blocks dragstart; this is the same fix at the element that causes it.
+          draggable={false}
         />
       </div>
 

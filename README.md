@@ -25,7 +25,7 @@ Then open <http://localhost:3000>.
 | `npm run dev` | Dev server (Turbopack) on port 3000 |
 | `npm run build` | Production build |
 | `npm start` | Serve the production build |
-| `npm test` | Vitest suite (39 files, 318 tests) |
+| `npm test` | Vitest suite (39 files, 327 tests) |
 | `npm run lint` | ESLint |
 
 > **Read this before writing code.** `AGENTS.md` at the repo root carries a
@@ -41,7 +41,7 @@ Then open <http://localhost:3000>.
 | Path | Contents |
 | --- | --- |
 | `/` | Homepage — the curated section set (see below) |
-| `/product` | **Platform** — how the proposed solution works end to end: the two airframes, an illustrative detection overlay on real footage, then the seven step mission cycle (dock, dispatch, patrol, detect, escalate, return, swap), the human oversight branch and GPS denied navigation, closing on the dock and payload |
+| `/product` | **Platform** — how the proposed solution works end to end: the two airframes, an illustrative detection overlay on real footage, then the dock, then the seven step mission cycle (dock, dispatch, patrol, detect, escalate, return, swap) with the human oversight branch and GPS denied navigation, closing on a specifications CTA |
 | `/product/hawkai` · `/product/sentrivion` | Per-airframe spec pages |
 | `/product/docking-system` · `/product/software-stack` | Supporting subsystems |
 | `/autonomy` | Autonomy stack: sense, decide, act |
@@ -61,6 +61,14 @@ nav item — renamed from "Product" to **"Platform"** — is now a plain link
 rather than a dropdown. The `/product` URL itself is unchanged; only the label
 moved, so `ProductHero`, `Product_Page` in spec comments and the route all keep
 their existing names.
+
+**One section is hidden the same way.** `ProductSensorPayload` ("Sense every
+angle", the 3D drone viewer) no longer renders on `/product` at the site
+owner's request. The component is untouched on disk and still works; only its
+import and render call were removed from `app/product/page.tsx`, which names the
+exact two lines to re-add. `ProductPlatformPage.test.tsx` pins both that it
+stays out and that the component still renders when mounted directly, so the
+hide cannot decay into a deletion.
 
 `Footer` is rendered per page rather than from the root layout. Every route
 renders it identically except `/designer`, which is a full-viewport map tool —

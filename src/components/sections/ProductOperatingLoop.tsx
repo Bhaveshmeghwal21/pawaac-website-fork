@@ -1,11 +1,13 @@
-// Platform page (/product), Section 4 — the proposed solution, end to end.
+// Platform page (/product), Section 5 — the proposed solution, end to end.
 //
 // Position (site-owner request, current session): "before explaining how the
 // platform works, add the airframes photos first, then use drone vision model
-// output second then explaination of whole platform". This section led the
-// page body before that request and now follows ProductHardware and
-// ProductDetectionDemo, so the reader meets the aircraft and its output before
-// the cycle that ties them together.
+// output second then explaination of whole platform", followed by "move this
+// section before explaination as well" for the dock. This section led the page
+// body before those requests and now closes the argument instead, following
+// ProductHardware, ProductDetectionDemo and ProductDockCharging, so the reader
+// meets the aircraft, its output and its dock before the cycle that ties all
+// three together. Only ProductSpecifications follows it.
 //
 // Site-owner request (current session): "fill the platform page exactly how
 // does the proposed solution by pawaac platform, in short ... how are they
@@ -146,6 +148,24 @@ const NUMBERED_PHASES: {
   }));
 })();
 
+// Column count follows how many steps the phase actually has.
+//
+// A fixed md:grid-cols-3 was wrong for the two step phases ("On site" and
+// "Back on site"): the leftover third cell had no <li> covering it, so the
+// grid's own bg-line showed through and read as an empty card sitting next to
+// the real ones, rather than as deliberate space. Each phase is its own
+// bordered <ol> separated by a heading, so the internal divider does not need
+// to line up with the three step phase above it.
+//
+// Written as a lookup of complete class strings because Tailwind resolves
+// classes by scanning source text; an interpolated `md:grid-cols-${n}` would
+// never be generated.
+const PHASE_COLUMNS: Record<number, string> = {
+  1: "md:grid-cols-1",
+  2: "md:grid-cols-2",
+  3: "md:grid-cols-3",
+};
+
 export default function ProductOperatingLoop() {
   return (
     <section className="relative bg-bg px-6 py-24">
@@ -175,7 +195,11 @@ export default function ProductOperatingLoop() {
                 </div>
               </Reveal>
 
-              <ol className="mt-6 grid gap-px border border-line bg-line md:grid-cols-3">
+              <ol
+                className={`mt-6 grid gap-px border border-line bg-line ${
+                  PHASE_COLUMNS[phase.steps.length] ?? "md:grid-cols-3"
+                }`}
+              >
                 {phase.steps.map((step) => (
                   <li key={step.name} className="bg-bg">
                     <Reveal className="h-full">

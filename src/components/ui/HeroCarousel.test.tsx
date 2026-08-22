@@ -203,6 +203,100 @@ describe("hero carousel", () => {
     ).toContain("pointer-events-auto");
   });
 
+  // Regression: site-owner report that the carousel was not draggable by mouse.
+  // Touch worked; the mouse did not, and the cause was not in the drag code.
+  //
+  // A slide holds a real <img>, and images are draggable by default on desktop.
+  // Pressing and moving on one starts a native HTML5 image drag, which fires
+  // `dragstart` and cancels the live pointer interaction with `pointercancel`.
+  // The carousel ends the drag on cancel, and at that point the pointer had
+  // travelled only a few pixels, so it fell under the swipe threshold and the
+  // slide never changed. Touch never starts a native drag, which is exactly why
+  // the bug looked mouse specific.
+  describe("mouse dragging", () => {
+    it("blocks the native image drag that was cancelling the gesture", () => {
+      render(<HomeHero />);
+      const stage = track().parentElement as HTMLElement;
+
+      // fireEvent returns false when the handler called preventDefault, which is
+      // what stops the browser taking the gesture over.
+      expect(fireEvent.dragStart(stage)).toBe(false);
+    });
+
+    it("blocks it when the drag starts on the photograph itself", () => {
+      render(<HomeHero />);
+      const photo = document.querySelector(
+        '[data-hero-scenery-image] img[src*="droneInSky"]',
+      ) as HTMLElement;
+
+      // The realistic case: the press lands on the image, not on bare stage.
+      // Prevented either by the image opting out or by the stage handler the
+      // event bubbles to.
+      expect(photo).toHaveAttribute("draggable", "false");
+      expect(fireEvent.dragStart(photo)).toBe(false);
+    });
+
+    it("changes slide on a left button drag past the threshold", () => {
+      render(<HomeHero />);
+      const stage = track().parentElement as HTMLElement;
+      // Integer, because the transform is asserted as a string below and the
+      // threshold itself is fractional (a fraction of the viewport width).
+      const dx = Math.ceil(swipeThreshold()) + 20;
+
+      fireEvent.pointerDown(stage, { button: 0, pointerId: 1, clientX: 500 });
+      fireEvent.pointerMove(stage, { pointerId: 1, clientX: 500 - dx });
+      // Mid gesture the track follows the pointer rather than snapping.
+      expect(track().style.transform).toContain(`${-dx}px`);
+      expect(track().className).not.toContain("transition-transform");
+      fireEvent.pointerUp(stage, { pointerId: 1, clientX: 500 - dx });
+
+      expect(activeIndex()).toBe(1);
+    });
+
+    it("ignores a right or middle button drag", () => {
+      render(<HomeHero />);
+      const stage = track().parentElement as HTMLElement;
+      const dx = swipeThreshold() + 20;
+
+      for (const button of [1, 2]) {
+        fireEvent.pointerDown(stage, { button, pointerId: 1, clientX: 500 });
+        fireEvent.pointerMove(stage, { pointerId: 1, clientX: 500 - dx });
+        fireEvent.pointerUp(stage, { pointerId: 1, clientX: 500 - dx });
+        expect(activeIndex()).toBe(0);
+      }
+    });
+
+    it("shows a grab cursor at rest and a grabbing cursor mid drag", () => {
+      render(<HomeHero />);
+      const stage = track().parentElement as HTMLElement;
+
+      // The only hint a mouse user gets that the hero is draggable at all.
+      expect(stage.style.cursor).toBe("grab");
+
+      fireEvent.pointerDown(stage, { button: 0, pointerId: 1, clientX: 500 });
+      fireEvent.pointerMove(stage, { pointerId: 1, clientX: 460 });
+      expect(stage.style.cursor).toBe("grabbing");
+
+      fireEvent.pointerUp(stage, { pointerId: 1, clientX: 460 });
+      expect(stage.style.cursor).toBe("grab");
+    });
+
+    it("holds the auto advance while a drag is in progress", () => {
+      render(<HomeHero />);
+      const stage = track().parentElement as HTMLElement;
+
+      fireEvent.pointerDown(stage, { button: 0, pointerId: 1, clientX: 500 });
+      fireEvent.pointerMove(stage, { pointerId: 1, clientX: 490 });
+
+      // Well past the photograph's 6000ms hold, but a held pointer must not have
+      // the slide change underneath it.
+      act(() => void vi.advanceTimersByTime(30000));
+      expect(activeIndex()).toBe(0);
+
+      fireEvent.pointerUp(stage, { pointerId: 1, clientX: 490 });
+    });
+  });
+
   describe("under prefers-reduced-motion: reduce", () => {
     beforeEach(() => {
       mockMatchMedia(true);

@@ -178,39 +178,123 @@ describe("Platform page hardware sections", () => {
 
 // Site-owner request (current session): "in platform before explaining how the
 // platform works, add the airframes photos first, then use drone vision model
-// output second then explaination of whole platform".
+// output second then explaination of whole platform", then "move this section
+// before explaination as well and hide sense every angle section in platform
+// page" — the dock moved ahead of the loop too, and the payload section was
+// hidden.
 //
 // This is pinned because it is a reading-order argument, not a layout detail,
 // and reordering a page is a one line change that no other test would notice.
-// The requested sequence is: the aircraft, then what its vision produces, then
-// the cycle both serve.
+// The requested sequence is: the aircraft, what its vision produces, the dock,
+// and only then the cycle all three serve.
 describe("Platform page section order", () => {
   const order = () =>
     Children.toArray((ProductPage() as ReactElement<{ children?: ReactNode }>).props.children)
       .filter(isValidElement)
       .map((child) => (child as ReactElement).type);
 
-  it("shows the airframes and the detection output before explaining the loop", () => {
+  it("shows the hardware and the detection output before explaining the loop", () => {
     const seq = order();
 
     expect(seq.indexOf(ProductHardware)).toBeLessThan(seq.indexOf(ProductDetectionDemo));
-    expect(seq.indexOf(ProductDetectionDemo)).toBeLessThan(
+    expect(seq.indexOf(ProductDetectionDemo)).toBeLessThan(seq.indexOf(ProductDockCharging));
+    expect(seq.indexOf(ProductDockCharging)).toBeLessThan(
       seq.indexOf(ProductOperatingLoop),
     );
     expect(seq.indexOf(ProductHardware)).toBeGreaterThan(seq.indexOf(ProductHero));
   });
 
-  it("renders the seven sections in the requested order, closing with the footer", () => {
+  it("renders the six sections in the requested order, closing with the footer", () => {
     expect(order()).toEqual([
       ProductHero,
       ProductHardware,
       ProductDetectionDemo,
-      ProductOperatingLoop,
       ProductDockCharging,
-      ProductSensorPayload,
+      ProductOperatingLoop,
       ProductSpecifications,
       Footer,
     ]);
+  });
+
+  // Hidden at the site owner's request, not deleted: the component still exists
+  // and still works, so re-adding it is a two line change. That is exactly why
+  // this is pinned — without it, the section could return unnoticed.
+  it("keeps the Sense every angle payload section hidden", () => {
+    expect(order()).not.toContain(ProductSensorPayload);
+
+    // The component itself must stay intact on disk, so the hide stays
+    // reversible rather than becoming a deletion by attrition. Rendering it
+    // needs matchMedia, which jsdom does not implement; `matches: true` reports
+    // a mobile viewport so useMediaQuery takes the static fallback branch and
+    // the WebGL viewer is never imported.
+    const original = Reflect.get(window, "matchMedia");
+    Object.defineProperty(window, "matchMedia", {
+      writable: true,
+      configurable: true,
+      value: (query: string) => ({
+        matches: true,
+        media: query,
+        onchange: null,
+        addEventListener: () => {},
+        removeEventListener: () => {},
+        addListener: () => {},
+        removeListener: () => {},
+        dispatchEvent: () => false,
+      }),
+    });
+
+    try {
+      const { container } = render(<ProductSensorPayload />);
+      expect(container.textContent).toContain("Sense every angle");
+    } finally {
+      if (original === undefined) {
+        Reflect.deleteProperty(window, "matchMedia");
+      } else {
+        Object.defineProperty(window, "matchMedia", {
+          writable: true,
+          configurable: true,
+          value: original,
+        });
+      }
+    }
+  });
+});
+
+// Site-owner request (current session): "remove that blank space right to the
+// site and back to the site" — the two step phases ("On site" and "Back on
+// site") rendered into a fixed three column grid, so the unused third cell let
+// the grid's own divider colour show through and read as a blank card beside
+// the real ones.
+//
+// Worth pinning because nothing else would catch a regression: the markup is
+// valid either way and only the rendered grid reveals the gap, so restoring a
+// hardcoded md:grid-cols-3 would look correct in review.
+describe("Platform page operating loop grid", () => {
+  it("gives every phase exactly as many columns as it has steps", () => {
+    const { container } = render(<ProductOperatingLoop />);
+
+    const rows = Array.from(container.querySelectorAll("ol"));
+    expect(rows.length).toBeGreaterThan(0);
+
+    for (const row of rows) {
+      const steps = row.querySelectorAll("[data-operating-step]").length;
+      expect(steps).toBeGreaterThan(0);
+      expect(row.className).toContain(`md:grid-cols-${steps}`);
+    }
+  });
+
+  it("covers every grid cell with a step, leaving no empty cell", () => {
+    const { container } = render(<ProductOperatingLoop />);
+
+    for (const row of Array.from(container.querySelectorAll("ol"))) {
+      // One <li> per column: the <li> carries bg-bg, which is what hides the
+      // <ol>'s bg-line. An uncovered column is exactly the blank space that was
+      // reported.
+      const cells = row.querySelectorAll(":scope > li").length;
+      const cols = Number(row.className.match(/md:grid-cols-(\d+)/)?.[1] ?? 0);
+      expect(cols).toBeGreaterThan(0);
+      expect(cells).toBe(cols);
+    }
   });
 });
 
