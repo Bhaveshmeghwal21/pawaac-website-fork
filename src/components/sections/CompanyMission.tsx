@@ -20,7 +20,25 @@ export default function CompanyMission() {
         <Reveal>
           <p className="label text-[#6b6b6b]">Mission</p>
           <h2 className="mt-3 text-heading font-display text-[#080808]">
-            Why we build autonomy, not remote control
+            {/* Site-owner request (current session), informed by a review of
+                how the category leaders actually write this line. Skydio
+                ("Our mission is to make the world more productive, creative,
+                and safe with autonomous flight"), Shield AI ("Our mission is
+                to protect service members and civilians with intelligent
+                systems") and Anduril ("Transforming US and allied military
+                capabilities with advanced technology") all use the same
+                deliberately plain "protect/enable [who] with [what]"
+                construction rather than a rhetorical headline. Two earlier
+                attempts here leaned literary ("Why we build autonomy, not
+                remote control", then "No one should have to choose what goes
+                unwatched") and read as less serious than the plain form, not
+                more. The conviction belongs in the founder story below this
+                line, which is where Shield AI and Skydio both put it.
+                Phrasing echoes HomeContactBand's closing line, "the places
+                that can least afford a gap in watch", so the two pages state
+                one mission rather than two. */}
+            Our mission is to protect the places that cannot afford a gap in
+            watch.
           </h2>
 
           {/* Technical_Data pull-quote styling (Pattern 2) — NOT gated by

@@ -71,6 +71,7 @@
 // nothing to trade off).
 "use client";
 
+import Link from "next/link";
 import AirframeGhost from "@/components/ui/AirframeGhost";
 import Reveal from "@/components/ui/Reveal";
 
@@ -122,12 +123,12 @@ export default function HomeCompanyStrip() {
             </div>
 
             <div className="md:text-right">
-              <a
+              <Link
                 href="/company"
                 className="inline-block border border-fg px-5 py-2.5 font-mono text-[11px] font-semibold uppercase tracking-[0.1em] text-fg transition-colors hover:bg-fg hover:text-bg"
               >
                 About the company
-              </a>
+              </Link>
             </div>
           </div>
         </Reveal>

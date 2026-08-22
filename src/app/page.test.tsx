@@ -30,7 +30,7 @@ describe("Home page composition", () => {
   // previously opened solution first (hero -> operating loop -> platforms) and
   // never stated the operational gap being closed, so the problem framing has
   // to land before the mechanics that resolve it.
-  it("renders the seven consolidated sections in order, followed by the compact footer", () => {
+  it("renders the seven consolidated sections in order, followed by the same full footer every other route uses", () => {
     const children = elementChildren(Home() as ElementWithChildren);
 
     expect(children.map((child) => child.type)).toEqual([
@@ -43,7 +43,12 @@ describe("Home page composition", () => {
       HomeContactBand,
       Footer,
     ]);
-    expect(children.at(-1)?.props).toMatchObject({ compact: true });
+    // Site-owner request (current session): the homepage used to pass
+    // `compact`, which dropped the oversized wordmark bar and the scroll
+    // linked reveal and made the homepage bottom the only inconsistent one
+    // on the site. It now renders the Footer exactly as the other 12 routes
+    // do, so `compact` must not be passed.
+    expect(children.at(-1)?.props).not.toMatchObject({ compact: true });
   });
 
   it("states the problem before the operating loop that resolves it", () => {

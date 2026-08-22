@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Footer from "@/components/layout/Footer";
 
 // Spec: pawaac-design-language-evolution — Task 66 (HawkAI Plus Sub-Page route)
 // Requirements: 1.1, 4.1, 4.3, 4.4, 5.1, 5.4, 9.6
@@ -27,6 +28,7 @@ export default function HawkAIPage() {
       <HawkAIHero />
       <HawkAISpecs />
       <HawkAIPayloadDetails />
+      <Footer />
     </>
   );
 }

@@ -1,7 +1,8 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { useMemo, useState } from "react";
 import type { Bounds, Dock } from "@/components/designer/MapCanvas";
 import ReticleFrame from "@/components/ui/ReticleFrame";
 
@@ -51,21 +52,24 @@ export default function SystemDesigner() {
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState("");
 
-  const [docks, setDocks] = useState<Dock[]>([]);
-
   const areaKm2 = useMemo(() => {
     if (!bounds) return 0;
     const { widthM, heightM } = dims(bounds);
     return (widthM * heightM) / 1e6;
   }, [bounds]);
 
-  // (re)generate a tiled grid of docks whenever the zone or radius changes;
-  // each dock owns a 2r x 2r footprint so the coverage circles tile the area
-  useEffect(() => {
-    if (!bounds) {
-      setDocks([]);
-      return;
-    }
+  // The dock grid is fully derived from the zone and the radius: each dock
+  // owns a 2r x 2r footprint so the coverage circles tile the area.
+  //
+  // This used to be `useState` written from inside a `useEffect`, which
+  // `react-hooks/set-state-in-effect` reports as an error — it renders once
+  // with a stale grid, then immediately re-renders with the real one, and the
+  // subtree being re-rendered here contains the Leaflet map. Deriving the grid
+  // during render removes that second pass. User drags are kept separately in
+  // `moved` and layered on top, which preserves the previous behaviour that
+  // re-generating the grid discards any hand placement.
+  const generated = useMemo<Dock[]>(() => {
+    if (!bounds) return [];
     const { widthM, heightM } = dims(bounds);
     const span = 2 * radiusM;
     const cols = Math.min(15, Math.max(1, Math.ceil(widthM / span)));
@@ -79,11 +83,27 @@ export default function SystemDesigner() {
           lat: bounds.sw[0] + ((r + 0.5) / rows) * (bounds.ne[0] - bounds.sw[0]),
           lng: bounds.sw[1] + ((c + 0.5) / cols) * (bounds.ne[1] - bounds.sw[1]),
         });
-    setDocks(out);
+    return out;
   }, [bounds, radiusM]);
 
+  const [moved, setMoved] = useState<Record<number, Dock>>({});
+  // Reset hand placements when a new grid is generated. Adjusting state during
+  // render (rather than in an effect) is the pattern React documents for
+  // "state derived from a changing input": it happens before the component's
+  // children render, so no extra pass reaches the map.
+  const [movedFor, setMovedFor] = useState(generated);
+  if (movedFor !== generated) {
+    setMovedFor(generated);
+    setMoved({});
+  }
+
+  const docks = useMemo(
+    () => generated.map((d) => moved[d.id] ?? d),
+    [generated, moved],
+  );
+
   const moveDock = (id: number, lat: number, lng: number) =>
-    setDocks((ds) => ds.map((d) => (d.id === id ? { id, lat, lng } : d)));
+    setMoved((m) => ({ ...m, [id]: { id, lat, lng } }));
 
   function requestLocation() {
     if (!navigator.geolocation) {
@@ -284,12 +304,12 @@ export default function SystemDesigner() {
             </p>
           </div>
 
-          <a
+          <Link
             href="/contact"
             className="mt-5 block bg-white px-5 py-3 text-center text-sm font-semibold text-black transition hover:bg-interactive"
           >
             Request this deployment
-          </a>
+          </Link>
         </div>
       </div>
 

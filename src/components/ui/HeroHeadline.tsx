@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { subscribeToPageReady } from "@/lib/motion/pageReady";
+import { hasCompletedIntroThisSession, subscribeToPageReady } from "@/lib/motion/pageReady";
 
 export default function HeroHeadline({
   text,
@@ -18,6 +18,16 @@ export default function HeroHeadline({
   useEffect(() => {
     const heading = containerRef.current;
     if (!heading || typeof window.matchMedia !== "function") return;
+
+    // Same-session reload fix (site-owner report, current session): "when
+    // I reload the page the content appears very slow" — skip this
+    // entrance timeline entirely after the first load of a browser
+    // session, same reasoning and same sessionStorage flag as
+    // Reveal.tsx's identical fix. The word/support elements have no
+    // inline hidden state of their own (only this timeline's `.from()`
+    // sets their initial opacity), so skipping the timeline is sufficient
+    // to leave them at their natural, fully-visible styling.
+    if (hasCompletedIntroThisSession()) return;
 
     let cleanupMotion: (() => void) | undefined;
     const unsubscribe = subscribeToPageReady(() => {

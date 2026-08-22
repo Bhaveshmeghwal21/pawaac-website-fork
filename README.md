@@ -14,6 +14,7 @@ Next.js App Router, TypeScript, Tailwind CSS v4.
 
 ```bash
 npm install
+cp .env.example .env.local   # then fill in the lead-delivery keys
 npm run dev
 ```
 
@@ -24,7 +25,7 @@ Then open <http://localhost:3000>.
 | `npm run dev` | Dev server (Turbopack) on port 3000 |
 | `npm run build` | Production build |
 | `npm start` | Serve the production build |
-| `npm test` | Vitest suite (31 files, 212 tests) |
+| `npm test` | Vitest suite (33 files, 231 tests) |
 | `npm run lint` | ESLint |
 
 > **Read this before writing code.** `AGENTS.md` at the repo root carries a
@@ -47,6 +48,39 @@ Then open <http://localhost:3000>.
 | `/designer` | Coverage planner — patrol radii and docking-station placement (react-leaflet) |
 | `/company` · `/careers` · `/commitments` · `/news` · `/contact` | Company pages |
 | `/api/contact` · `/api/careers` | Form handlers (react-hook-form + zod) |
+| `/sitemap.xml` · `/robots.txt` · `/opengraph-image` | Generated from `app/sitemap.ts`, `app/robots.ts`, `app/opengraph-image.tsx` |
+
+`Footer` is rendered per page rather than from the root layout. Every route
+renders it identically except `/designer`, which is a full-viewport map tool —
+see the comment in `app/designer/page.tsx`. The homepage previously passed a
+`<Footer compact />` variant that dropped the oversized wordmark bar and the
+scroll-linked reveal; it now renders the same full footer as every other route,
+and the `compact` prop is retained but unused. `app/not-found.tsx`,
+`app/error.tsx` and `app/global-error.tsx` cover the failure paths.
+
+---
+
+## Deployment
+
+**The forms only work if lead delivery is configured.** Copy `.env.example` and
+set `RESEND_API_KEY` and `LEAD_FROM_EMAIL` (a sender on a Resend-verified
+domain); `LEAD_TO_EMAIL` defaults to the address in `lib/leadDelivery.ts`.
+
+Without those, `/api/contact` and `/api/careers` return **503** and both forms
+tell the visitor to email directly. That is intentional and worth preserving:
+these routes previously validated a submission, `console.log`ed it, and returned
+`{ ok: true }` while the UI said "We'll contact you within 24 hours", so every
+demo request and job application was silently discarded. `leadDelivery.test.ts`
+pins the invariant that success is never reported unless the provider accepted
+the message.
+
+Both endpoints are public and unauthenticated, so they carry a fixed-window
+rate limit (`lib/rateLimit.ts`) and a `content-length` cap checked before the
+body is read. The limiter is per server instance — see its header comment for
+what that does and does not buy you.
+
+`NEXT_PUBLIC_SITE_URL` overrides the canonical origin in `lib/site.ts`, which
+feeds `metadataBase`, the sitemap and robots. Leave it unset for production.
 
 ---
 

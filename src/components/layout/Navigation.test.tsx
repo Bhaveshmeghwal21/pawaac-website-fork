@@ -22,17 +22,25 @@ vi.mock("next/navigation", () => ({
 // Requirements: 1.1, 1.5, 1.6
 // Design: design.md -> Shared Components -> Header / Navigation
 //
-// Product, Autonomy, and Company are real links. Resources has no own
+// Site-owner request (current session, in two steps):
+//   1. /autonomy hidden from navigation "for now" (Navigation.tsx's LINKS
+//      array), dropping the primary nav from 4 items to 3 — Product,
+//      Resources, Company.
+//   2. "Careers" promoted out of the Company dropdown into its own primary
+//      item, bringing the count back to 4 — Product, Resources, Careers,
+//      Company.
+// Product, Careers, and Company are real links; Resources has no own
 // route — it is a dropdown trigger only (rendered as a <button>) — so it
-// is asserted separately by role "button", not role "link".
+// is asserted separately by role "button", not role "link". Restore
+// Autonomy here (after Product) if /autonomy is unhidden.
 const EXPECTED_PRIMARY_LINK_ITEMS = [
   { label: "Product", href: "/product" },
-  { label: "Autonomy", href: "/autonomy" },
+  { label: "Careers", href: "/careers" },
   { label: "Company", href: "/company" },
 ];
 
 describe("Navigation", () => {
-  it("renders exactly 4 primary items, in order — Product, Autonomy, Resources, Company (Requirement 1.1)", () => {
+  it("renders exactly 4 primary items, in order — Product, Resources, Careers, Company (Requirement 1.1)", () => {
     render(<Navigation />);
 
     const items = EXPECTED_PRIMARY_LINK_ITEMS.map((item) =>
@@ -58,16 +66,16 @@ describe("Navigation", () => {
     expect(allPrimaryTriggers).toHaveLength(4);
   });
 
-  it("renders the 4 primary items in the exact visual/DOM order — Product, Autonomy, Resources, Company (Requirement 1.1)", () => {
+  it("renders the 4 primary items in the exact visual/DOM order — Product, Resources, Careers, Company (Requirement 1.1)", () => {
     // Spec: pawaac-design-language-evolution — Task 17.1
     // Requirements: 1.1, 1.7
     //
     // The two tests above assert hrefs and item count in isolation, but
-    // neither confirms Resources' *position* relative to Product, Autonomy,
+    // neither confirms Resources' *position* relative to Product, Careers
     // and Company (it's a <button>, not an <a>, so it's excluded from the
     // getAllByRole("link") DOM-order check further below in this file).
     // This test walks the actual desktop primary-nav <ul> directly and
-    // asserts the full 4-item label order in one place.
+    // asserts the full item order in one place.
     render(<Navigation />);
 
     const desktopList = document.querySelector("nav > ul");
@@ -75,7 +83,7 @@ describe("Navigation", () => {
     const itemLabels = Array.from(desktopList!.children).map(
       (li) => li.querySelector("a, button")?.textContent?.replace(/▾$/, "").trim(),
     );
-    expect(itemLabels).toEqual(["Product", "Autonomy", "Resources", "Company"]);
+    expect(itemLabels).toEqual(["Product", "Resources", "Careers", "Company"]);
   });
 
   it('activating "Contact Us" navigates to Contact_Page (/contact) (Requirement 1.7)', () => {
@@ -103,8 +111,12 @@ describe("Navigation", () => {
   it("renders the 3 linked primary items as <a> tags in DOM order matching their visual order (Requirement 10.4)", () => {
     render(<Navigation />);
 
-    // Spec: pawaac-design-language-evolution — Company dropdown follow-up
+    // Spec: pawaac-design-language-evolution — Company dropdown follow-up,
+    // Careers promotion follow-up (current session)
     // Requirements: 1.1, 1.5, 10.4
+    //
+    // "3 linked" = Product, Careers, Company (Resources is a <button>, no
+    // href, excluded below by the `el?.tagName === "A"` filter).
     //
     // Scoped to each primary <li>'s *own* trigger element (mirroring the
     // "exact visual/DOM order" test above), rather than a flat href filter
@@ -178,8 +190,9 @@ describe("Navigation Product dropdown", () => {
 // Requirements: 1.1, 1.3, 1.4
 // Design: design.md -> Testing Strategy
 //
-// Confirms Navigation's 3 linked primary hrefs (Product, Autonomy,
-// Company — Resources has no own route) exactly match real
+// Confirms Navigation's 3 linked primary hrefs (Product, Careers,
+// Company — Resources has no own route, and Autonomy is currently hidden
+// from navigation per a site-owner request) exactly match real
 // `src/app/**/page.tsx` routes, by checking each href resolves to an
 // actual `page.tsx` file on disk under `src/app`.
 describe("Navigation route wiring (Requirement 1.1)", () => {
@@ -249,16 +262,22 @@ describe("Navigation Resources dropdown", () => {
 // "Company" label itself still navigates, matching Product's
 // both-link-AND-trigger behavior. News and Our Commitments are grouped here
 // with the other company-facing pages.
+//
+// Site-owner request (current session): "Careers" is subsequently promoted
+// out of this dropdown into its own primary nav item — see the "Navigation
+// primary items include a standalone Careers link" describe block below.
+// The 5-sublink expectation here is reduced to 4 accordingly.
 describe("Navigation Company dropdown", () => {
   const EXPECTED_COMPANY_SUBLINKS = [
     { label: "About Us", href: "/company" },
-    { label: "Careers", href: "/careers" },
     { label: "Contact Us", href: "/contact" },
-    { label: "News", href: "/news" },
+    // Site-owner request (current session): visible label renamed from
+    // "News" to "Blogs" — same /news route, label only.
+    { label: "Blogs", href: "/news" },
     { label: "Our Commitments", href: "/commitments" },
   ];
 
-  it("renders all 5 Company sub-links with the correct hrefs, in order", () => {
+  it("renders all 4 Company sub-links with the correct hrefs, in order", () => {
     render(<Navigation />);
 
     // Scoped to the Company dropdown's own <ul> (found via the "Company"
@@ -276,6 +295,17 @@ describe("Navigation Company dropdown", () => {
     links.forEach((link, i) => {
       expect(link).toHaveAttribute("href", EXPECTED_COMPANY_SUBLINKS[i].href);
     });
+  });
+
+  it("does not render Careers inside the Company dropdown (promoted to a primary item)", () => {
+    render(<Navigation />);
+
+    const companyTrigger = screen.getByRole("link", { name: "Company" });
+    const companyDropdown =
+      companyTrigger.closest("li")!.querySelector("ul")!;
+    expect(
+      within(companyDropdown).queryByRole("link", { name: "Careers" }),
+    ).toBeNull();
   });
 
   it('"Company" itself still renders as a real <a href="/company"> trigger, not a dropdown-only button', () => {

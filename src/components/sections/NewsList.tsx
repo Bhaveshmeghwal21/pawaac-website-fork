@@ -17,6 +17,7 @@
 // been built and published on the live site (HawkAI Plus, Sentrivion) —
 // not fabricated/placeholder copy. OCP-19 is now RESOLVED; see design.md's
 // Resolved Change Proposals table.
+import Link from "next/link";
 import Reveal from "@/components/ui/Reveal";
 
 type NewsItem = {
@@ -59,7 +60,7 @@ export default function NewsList() {
                 {item.body}
               </p>
 
-              <a
+              <Link
                 href="/product"
                 className="group mt-4 inline-flex items-center gap-2 font-mono text-sm text-fg"
               >
@@ -67,7 +68,7 @@ export default function NewsList() {
                 <span className="transition-transform group-hover:translate-x-1">
                   →
                 </span>
-              </a>
+              </Link>
             </Reveal>
           </li>
         ))}

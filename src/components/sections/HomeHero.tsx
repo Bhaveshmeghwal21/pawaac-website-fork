@@ -76,7 +76,7 @@ export default function HomeHero() {
 
       <div className="relative z-10 mx-auto w-full max-w-7xl text-left">
         <HeroHeadline
-          text="Autonomous systems that protect what matters"
+          text="Autonomous drones that watch what matters"
           className="max-w-5xl font-display text-[clamp(2.25rem,4.8vw,4.75rem)] font-bold uppercase leading-[0.94] tracking-[-0.035em] text-fg [text-wrap:balance] [text-shadow:0_3px_18px_rgba(0,0,0,0.7)]"
         />
 

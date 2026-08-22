@@ -91,6 +91,7 @@ describe("HeroHeadline", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     document.documentElement.removeAttribute("data-page-ready");
+    window.sessionStorage.clear();
     conditions.desktop = true;
     conditions.mobile = false;
     conditions.reduce = false;
@@ -158,5 +159,20 @@ describe("HeroHeadline", () => {
 
     expect(timeline.kill).not.toHaveBeenCalled();
     expect(topLevelFromTo.mock.results[0].value.kill).not.toHaveBeenCalled();
+  });
+
+  // Site-owner report (current session): "when I reload the page the
+  // content appears very slow" — fixed by skipping this entrance timeline
+  // entirely once `sessionStorage["pawaac-loaded"]` shows this session
+  // already completed its first load (set by Preloader.tsx on first load,
+  // read here via hasCompletedIntroThisSession()).
+  it("skips the entrance timeline entirely on a same-session reload", () => {
+    window.sessionStorage.setItem("pawaac-loaded", "1");
+    renderHero();
+
+    act(() => signalPageReady());
+
+    expect(timelineFactory).not.toHaveBeenCalled();
+    expect(topLevelFromTo).not.toHaveBeenCalled();
   });
 });

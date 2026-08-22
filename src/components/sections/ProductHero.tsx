@@ -59,7 +59,7 @@ export default function ProductHero() {
               fill
               sizes="(min-width: 768px) 384px, 90vw"
               className="object-cover grayscale"
-              priority
+              preload
             />
             <ReticleFrame variant="dark" />
           </div>

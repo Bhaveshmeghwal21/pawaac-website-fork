@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Footer from "@/components/layout/Footer";
 
 // Spec: pawaac-design-language-evolution — Task 59 (News_Page route),
 // updated for News_Page real content (resolves OCP-19)
@@ -11,10 +12,15 @@ import type { Metadata } from "next";
 import NewsHero from "@/components/sections/NewsHero";
 
 export const metadata: Metadata = {
-  title: "News · PAWAAC Drones",
-  description: "Company and product news, as it happens.",
+  title: "Blogs · PAWAAC Drones",
+  description: "Company and product blogs, as it happens.",
 };
 
 export default function NewsPage() {
-  return <NewsHero />;
+  return (
+    <>
+      <NewsHero />
+      <Footer />
+    </>
+  );
 }

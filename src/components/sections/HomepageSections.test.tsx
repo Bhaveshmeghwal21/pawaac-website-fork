@@ -219,8 +219,8 @@ describe("condensed homepage sections", () => {
         /Pawaac exists to make continuous, pilotless coverage the default/i,
       ),
     ).toBeInTheDocument();
-    expect(within(closing).getByText("DGCA COMPLIANT")).toBeInTheDocument();
-    expect(within(closing).getByText("MeitY RECOGNIZED")).toBeInTheDocument();
+    expect(within(closing).getByText("DPIIT RECOGNIZED")).toBeInTheDocument();
+    expect(within(closing).queryByText("MeitY RECOGNIZED")).toBeNull();
     expect(
       within(closing).getByRole("link", { name: "About the company" }),
     ).toHaveAttribute("href", "/company");

@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { hasCompletedIntroThisSession } from "@/lib/motion/pageReady";
 
 type HomeMotionVariant =
   | "problem"
@@ -26,6 +27,18 @@ export default function HomeMotionSection({
   useEffect(() => {
     const section = sectionRef.current;
     if (!section || typeof window.matchMedia !== "function") return;
+
+    // Same-session reload fix (site-owner report, current session): "when
+    // I reload the page the content appears very slow" — skip this
+    // scroll-triggered entrance timeline entirely after the first load of
+    // a browser session, same reasoning and same sessionStorage flag as
+    // Reveal.tsx and HeroHeadline.tsx's identical fix, applied here for
+    // consistency across every homepage section that uses this wrapper.
+    // The [data-motion-group]/[data-motion-item] children have no inline
+    // hidden state of their own (only this timeline's `.from()` sets their
+    // initial opacity), so skipping the timeline is sufficient to leave
+    // them at their natural, fully-visible styling.
+    if (hasCompletedIntroThisSession()) return;
 
     gsap.registerPlugin(ScrollTrigger);
     let media: ReturnType<typeof gsap.matchMedia> | undefined;

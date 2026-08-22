@@ -42,6 +42,10 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+# ...except the template, which carries no values — only the variable names a
+# deployment must set. Lead delivery (src/lib/leadDelivery.ts) refuses to send
+# without these, so an operator needs to know they exist.
+!.env.example
 
 # vercel
 .vercel
@@ -52,14 +56,15 @@ yarn-error.log*
 # Private company context — MUST NOT be published.
 #
 # This repository is PUBLIC (github.com/Bhaveshmeghwal21/pawaac-website), and
-# PAWAAC_CONTEXT.md is an internal reference file, not site content. It records
-# investor identity and contact, current fundraising status and the fund
-# utilisation plan, cloud credit balances and a rejected application, the
-# internal judgement that full L5 autonomy is not achievable in the current
-# runway, named self-identified engineering weaknesses, an unresolved strategic
-# question framed as shaping the investor narrative, and the framing chosen for
-# a specific prospective police client. None of that should be readable by
-# competitors, prospects or the press.
+# PAWAAC_CONTEXT.md is an internal commercial reference file, not site content.
+# Treat it as confidential in full.
+#
+# This comment used to enumerate the specific categories the file contains, on
+# the reasoning that documenting the risk justified the rule. That was
+# self-defeating: the list itself was committed to a public repository, so it
+# disclosed the substance of what the ignore rule exists to protect. The
+# enumeration is removed deliberately — do not restore it. Anyone who needs to
+# know what is in the file has the file.
 #
 # It has never been committed, so ignoring it here is sufficient — no history
 # rewrite is needed. CLAUDE.md still references it with `@PAWAAC_CONTEXT.md`,

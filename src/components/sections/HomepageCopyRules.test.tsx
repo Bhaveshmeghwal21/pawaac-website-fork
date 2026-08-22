@@ -46,7 +46,19 @@ describe("homepage copy rules", () => {
     },
   );
 
-  it("the compact homepage footer publishes no hyphens or dashes either", () => {
+  // Site-owner request (current session): the homepage now renders the full
+  // Footer rather than the `compact` variant, so this scans the footer the
+  // homepage actually ships. The compact variant is still checked below,
+  // since the prop is retained and could be reinstated.
+  it("the homepage footer publishes no hyphens or dashes either", () => {
+    const { container } = render(<Footer />);
+
+    expect(scanForDashes(container.textContent ?? "").map((o) => o.token)).toEqual(
+      [],
+    );
+  });
+
+  it("the retained compact footer variant publishes no hyphens or dashes either", () => {
     const { container } = render(<Footer compact />);
 
     expect(scanForDashes(container.textContent ?? "").map((o) => o.token)).toEqual(

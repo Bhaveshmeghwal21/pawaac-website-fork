@@ -47,12 +47,58 @@ export default function CareersApplicationForm() {
       formData.append("coverLetter", data.coverLetter as unknown as File);
     }
 
-    const res = await fetch("/api/careers", {
-      method: "POST",
-      body: formData,
-    });
-    if (res.ok) setDone(true);
-    else setError("root", { message: "Something went wrong. Try again." });
+    // See ContactForm.tsx: the previous version had no try/catch, so a network
+    // failure surfaced as an unhandled rejection and the applicant saw nothing
+    // at all. An upload is more likely to fail mid-flight than a small JSON
+    // POST, which makes this path the more important of the two.
+    try {
+      const res = await fetch("/api/careers", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (res.ok) {
+        setDone(true);
+        return;
+      }
+
+      const payload = await res.json().catch(() => null);
+
+      const fieldErrors = payload?.errors as
+        | Record<string, string[] | undefined>
+        | undefined;
+      if (res.status === 400 && fieldErrors) {
+        let attached = false;
+        for (const [field, messages] of Object.entries(fieldErrors)) {
+          const message = messages?.[0];
+          if (!message) continue;
+          if (field === "name" || field === "email" || field === "resume") {
+            setError(field, { message });
+            attached = true;
+          }
+        }
+        if (attached) return;
+      }
+
+      if (res.status === 413) {
+        setError("resume", {
+          message: "That upload is too large. Each file must be 8 MB or smaller.",
+        });
+        return;
+      }
+
+      setError("root", {
+        message:
+          typeof payload?.message === "string"
+            ? payload.message
+            : "Something went wrong. Try again.",
+      });
+    } catch {
+      setError("root", {
+        message:
+          "We could not reach the server. Check your connection, or email your resume to kshitij@pawaac.com.",
+      });
+    }
   };
 
   if (done) {

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Footer from "@/components/layout/Footer";
 
 // Spec: pawaac-design-language-evolution — Task 11 (Autonomy_Page route)
 // Requirements: 1.1, 4.1, 4.3, 5.1, 5.4, 8.4
@@ -30,6 +31,7 @@ export default function AutonomyPage() {
       <AutonomyVisionAI />
       <AutonomyDispatch />
       <AutonomySafeguards />
+      <Footer />
     </>
   );
 }

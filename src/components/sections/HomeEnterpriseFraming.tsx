@@ -36,6 +36,7 @@
 // transition. Purely decorative/aria-hidden; does not change the
 // bg-white section background itself.
 import Image from "next/image";
+import Link from "next/link";
 import Reveal from "@/components/ui/Reveal";
 import ReticleFrame from "@/components/ui/ReticleFrame";
 
@@ -91,13 +92,13 @@ export default function HomeEnterpriseFraming() {
             The same platform secures industrial and infrastructure
             perimeters.
           </p>
-          <a
+          <Link
             href="/product"
             className="group mt-6 inline-flex items-center gap-2 font-mono text-sm text-[#080808]"
           >
             Explore the platform
             <span className="transition-transform group-hover:translate-x-1">→</span>
-          </a>
+          </Link>
         </Reveal>
 
         <Reveal delay={0.14} y={-20}>

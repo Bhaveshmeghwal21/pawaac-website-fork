@@ -10,6 +10,8 @@
 // Pinned_Spec_Sheet (that usage has been removed entirely); it is now a
 // brief lead-in with two clear CTAs linking to both sub-pages, per
 // design.md's updated Product_Page table.
+import Link from "next/link";
+
 export default function ProductSpecifications() {
   return (
     <section className="relative bg-bg px-6 py-24">
@@ -24,18 +26,18 @@ export default function ProductSpecifications() {
         </p>
 
         <div className="mt-8 flex flex-wrap gap-4">
-          <a
+          <Link
             href="/product/hawkai"
             className="inline-block border border-fg px-5 py-2.5 font-mono text-[11px] font-semibold uppercase tracking-[0.1em] text-fg transition-colors hover:bg-fg hover:text-bg"
           >
             HawkAI Plus specifications
-          </a>
-          <a
+          </Link>
+          <Link
             href="/product/sentrivion"
             className="inline-block border border-fg px-5 py-2.5 font-mono text-[11px] font-semibold uppercase tracking-[0.1em] text-fg transition-colors hover:bg-fg hover:text-bg"
           >
             Sentrivion specifications
-          </a>
+          </Link>
         </div>
       </div>
     </section>

@@ -32,7 +32,6 @@ const PLATFORMS = [
     name: "HawkAI Plus",
     type: "Tactical quadcopter",
     description: "Built for endurance and fast field deployment.",
-    href: "/product/hawkai",
     image: "/images/hawkai-plus-product.jpg",
     alt: "HawkAI Plus tactical quadcopter in its original color",
     specs: [
@@ -45,7 +44,6 @@ const PLATFORMS = [
     name: "Sentrivion",
     type: "VTOL platform",
     description: "Long range VTOL for rapid setup and wide coverage.",
-    href: "/product/sentrivion",
     image: "/images/sentri_main2.jpg",
     alt: "Sentrivion VTOL aircraft on a runway at sunset in its original color",
     specs: [
@@ -108,18 +106,27 @@ export default function HomeSpecSheet() {
                       </div>
                     ))}
                   </dl>
-
-                  <Link
-                    href={platform.href}
-                    className="group/link mt-6 inline-flex items-center gap-2 font-mono text-sm text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fg focus-visible:ring-offset-4 focus-visible:ring-offset-bg"
-                  >
-                    View platform
-                    <span className="transition-transform group-hover/link:translate-x-1">→</span>
-                  </Link>
                 </div>
               </article>
             </div>
           ))}
+        </div>
+
+        {/*
+          Site-owner request (current session): the per-card "View platform ->"
+          link (one per airframe, each to its own /product/hawkai or
+          /product/sentrivion sub-page) is replaced with a single shared CTA
+          below both cards, since the two links did the same job for both
+          platforms. Routes to /contact rather than either sub-page — the label
+          says "contact us", so the destination has to match what it promises.
+        */}
+        <div data-motion-group className="mt-10 text-center">
+          <Link
+            href="/contact"
+            className="inline-block border border-fg px-6 py-3 font-mono text-[11px] font-semibold uppercase tracking-[0.1em] text-fg transition-colors hover:bg-fg hover:text-bg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fg focus-visible:ring-offset-4 focus-visible:ring-offset-bg-2"
+          >
+            Contact us for full specs
+          </Link>
         </div>
       </div>
     </HomeMotionSection>

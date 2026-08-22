@@ -58,6 +58,7 @@ vi.stubGlobal("IntersectionObserver", MockIntersectionObserver);
 afterEach(() => {
   vi.unstubAllGlobals();
   vi.stubGlobal("IntersectionObserver", MockIntersectionObserver);
+  window.sessionStorage.clear();
 });
 
 describe("Reduced-Motion Fallback Matrix — Pinned_Spec_Sheet", () => {
@@ -159,6 +160,26 @@ describe("Reduced-Motion Fallback Matrix — Reveal_On_Scroll", () => {
       (el) => el.style.clipPath,
     );
     expect(clipPathed).toBe(true);
+  });
+
+  // Site-owner report (current session): "when I reload the page the
+  // content appears very slow" — fixed by skipping the clip-path entrance
+  // wrapper entirely once this browser session has already completed a
+  // load (the same sessionStorage flag Preloader.tsx sets on first load).
+  it("skips the clip-path wrapper and renders already-revealed on a same-session reload", () => {
+    mockMatchMedia(false);
+    window.sessionStorage.setItem("pawaac-loaded", "1");
+    const { container } = render(
+      <Reveal>
+        <p>Revealed content</p>
+      </Reveal>,
+    );
+
+    expect(screen.getByText("Revealed content")).toBeInTheDocument();
+    const clipPathed = Array.from(container.querySelectorAll<HTMLElement>("*")).some(
+      (el) => el.style.clipPath,
+    );
+    expect(clipPathed).toBe(false);
   });
 });
 

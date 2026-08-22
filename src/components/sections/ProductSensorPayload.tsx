@@ -21,7 +21,12 @@ const DroneScene = dynamic(() => import("@/components/3d/DroneScene"), {
 });
 
 export default function ProductSensorPayload() {
-  const isMobile = useMediaQuery("(max-width: 767px)");
+  // `true` = assume mobile for the server render and the hydration pass that
+  // has to match it, so the 3D branch below is only reached once matchMedia
+  // has positively confirmed a desktop viewport. With the old `false` default
+  // a phone rendered `<DroneScene />` once before correcting itself, which was
+  // enough to fire its dynamic import and download the whole WebGL bundle.
+  const isMobile = useMediaQuery("(max-width: 767px)", true);
 
   return (
     <section className="relative bg-bg px-6 py-24">

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Footer from "@/components/layout/Footer";
 
 // User-requested follow-up (Product header dropdown, item 1 of 4):
 // "Software Stack or how ever u wanna phrase it" — net-new placeholder
@@ -14,20 +15,23 @@ export const metadata: Metadata = {
 
 export default function SoftwareStackPage() {
   return (
-    <section className="relative bg-bg px-6 py-28 md:py-36">
-      <div className="mx-auto max-w-3xl">
-        <p className="label">Product / Software Stack</p>
-        <h1 className="mt-3 text-heading font-display text-fg">
-          The software stack
-        </h1>
-        <p className="mt-4 max-w-md text-body font-body text-muted">
-          Mission planning, sensor fusion, and decision-making, unified in one
-          autonomy stack that runs onboard and at the edge.
-        </p>
-        <p className="mt-10 font-mono text-[12px] uppercase tracking-[0.12em] text-muted">
-          Detailed specifications — pending confirmation
-        </p>
-      </div>
-    </section>
+    <>
+      <section className="relative bg-bg px-6 py-28 md:py-36">
+        <div className="mx-auto max-w-3xl">
+          <p className="label">Product / Software Stack</p>
+          <h1 className="mt-3 text-heading font-display text-fg">
+            The software stack
+          </h1>
+          <p className="mt-4 max-w-md text-body font-body text-muted">
+            Mission planning, sensor fusion, and decision-making, unified in one
+            autonomy stack that runs onboard and at the edge.
+          </p>
+          <p className="mt-10 font-mono text-[12px] uppercase tracking-[0.12em] text-muted">
+            Detailed specifications — pending confirmation
+          </p>
+        </div>
+      </section>
+      <Footer />
+    </>
   );
 }

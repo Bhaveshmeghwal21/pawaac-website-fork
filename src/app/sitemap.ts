@@ -1,0 +1,51 @@
+import type { MetadataRoute } from "next";
+import { absoluteUrl } from "@/lib/site";
+
+// Sitemap for the 13 public routes.
+//
+// Without this, /commitments and /news were effectively undiscoverable: the
+// footer does not link to them (Footer.tsx's link groups omit both), so nothing
+// on the site pointed a crawler at them.
+//
+// `priority` here is the sitemap's own relevance hint, unrelated to next/image's
+// deprecated `priority` prop. Values are relative within this site only —
+// entry points and the pages a prospect is sent to rank highest, the two
+// placeholder subsystem pages lowest, since they currently hold a single line
+// of copy each.
+//
+// One `lastModified` timestamp is taken per build rather than per route.
+// Claiming a specific edit date per page would be fabricated precision, and
+// this file is a static route (no request-time API), so the value is fixed at
+// build time.
+const ROUTES: Array<{
+  path: string;
+  changeFrequency: MetadataRoute.Sitemap[number]["changeFrequency"];
+  priority: number;
+}> = [
+  { path: "/", changeFrequency: "monthly", priority: 1 },
+  { path: "/product", changeFrequency: "monthly", priority: 0.9 },
+  { path: "/product/hawkai", changeFrequency: "monthly", priority: 0.8 },
+  { path: "/product/sentrivion", changeFrequency: "monthly", priority: 0.8 },
+  // /autonomy deliberately excluded — hidden from navigation (site-owner
+  // request, current session). Re-add `{ path: "/autonomy", changeFrequency:
+  // "monthly", priority: 0.8 }` here when it is unhidden.
+  { path: "/contact", changeFrequency: "yearly", priority: 0.7 },
+  { path: "/designer", changeFrequency: "yearly", priority: 0.7 },
+  { path: "/company", changeFrequency: "monthly", priority: 0.6 },
+  { path: "/product/docking-system", changeFrequency: "monthly", priority: 0.5 },
+  { path: "/product/software-stack", changeFrequency: "monthly", priority: 0.5 },
+  { path: "/careers", changeFrequency: "weekly", priority: 0.5 },
+  { path: "/news", changeFrequency: "weekly", priority: 0.5 },
+  { path: "/commitments", changeFrequency: "yearly", priority: 0.4 },
+];
+
+export default function sitemap(): MetadataRoute.Sitemap {
+  const lastModified = new Date();
+
+  return ROUTES.map(({ path, changeFrequency, priority }) => ({
+    url: absoluteUrl(path),
+    lastModified,
+    changeFrequency,
+    priority,
+  }));
+}

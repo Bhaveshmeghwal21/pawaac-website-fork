@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import Reveal from "@/components/ui/Reveal";
 import SectionMark from "@/components/ui/SectionMark";
 
@@ -54,13 +55,13 @@ export default function Simplicity() {
           </div>
 
           <Reveal delay={0.4}>
-            <a
+            <Link
               href="/autonomy"
               className="group mt-10 inline-flex items-center gap-2 font-mono text-sm text-fg"
             >
               See it live
               <span className="transition-transform group-hover:translate-x-1">→</span>
-            </a>
+            </Link>
           </Reveal>
         </div>
       </div>

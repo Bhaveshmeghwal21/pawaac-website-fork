@@ -15,6 +15,13 @@
 // (a Reticle_Frame-boxed "No news yet" panel) has been replaced with a
 // real listing — see NewsList.tsx, which currently renders exactly 1 real
 // news item. See design.md's Resolved Change Proposals table.
+// Site-owner request (current session): visible "News" copy renamed to
+// "Blogs" throughout — page label, decorative wordmark, and supporting
+// sentence. The route itself stays /news (see app/news/page.tsx) and
+// internal identifiers (NewsHero, NewsList, News_Page in spec comments)
+// are left as-is; this is a label change, not a route or component rename,
+// matching the same pattern already used for the header's "Contact Us"
+// rename (see Navigation.tsx).
 import Reveal from "@/components/ui/Reveal";
 import NewsList from "@/components/sections/NewsList";
 
@@ -27,17 +34,17 @@ export default function NewsHero() {
         aria-hidden="true"
         className="pointer-events-none absolute inset-x-0 top-6 select-none text-center font-display text-[20vw] font-bold uppercase leading-none text-fg/[0.04] md:top-10"
       >
-        NEWS
+        BLOGS
       </span>
 
       <div className="relative z-10 mx-auto max-w-7xl">
         <Reveal>
-          <p className="label">News</p>
+          <p className="label">Blogs</p>
           <h1 className="mt-3 text-heading font-display text-fg">
             Updates from the field
           </h1>
           <p className="mt-4 max-w-md text-body font-body text-muted">
-            Company and product news, as it happens.
+            Company and product blogs, as it happens.
           </p>
         </Reveal>
 

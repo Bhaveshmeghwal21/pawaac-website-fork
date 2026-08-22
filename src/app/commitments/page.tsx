@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Footer from "@/components/layout/Footer";
 
 // Spec: pawaac-design-language-evolution — Commitments_Page restructure
 // (resolves OCP-20, supersedes the original Task 60 single-section route)
@@ -39,6 +40,7 @@ export default function CommitmentsPage() {
       <VisionIntro />
       <VisionPillars />
       <CommitmentsPrinciples />
+      <Footer />
     </>
   );
 }

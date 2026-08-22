@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Footer from "@/components/layout/Footer";
 
 // Spec: pawaac-design-language-evolution — Task 14 (Contact_Page route)
 // Requirements: 1.1, 1.4, 4.1, 9.1
@@ -25,6 +26,7 @@ export default function ContactPage() {
     <>
       <ContactHero />
       <ContactForm />
+      <Footer />
     </>
   );
 }
