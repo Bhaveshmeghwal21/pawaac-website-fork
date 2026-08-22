@@ -48,11 +48,12 @@ export default function HomeContactBand() {
         <div data-motion-group>
           <div className="mt-10 flex flex-col gap-6 border-t border-line pt-6 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex flex-wrap gap-2">
+              {/* Site-owner request (current session): "DGCA COMPLIANT"
+                  replaced with "DPIIT RECOGNIZED" (Startup India recognition
+                  is the verifiable claim here), and "MeitY RECOGNIZED" was
+                  removed outright rather than replaced. */}
               <span className="border border-line px-3 py-2 font-mono text-[10px] text-fg">
-                DGCA COMPLIANT
-              </span>
-              <span className="border border-line px-3 py-2 font-mono text-[10px] text-fg">
-                MeitY RECOGNIZED
+                DPIIT RECOGNIZED
               </span>
               <span className="border border-line px-3 py-2 font-mono text-[10px] text-fg">
                 ENGINEERING &amp; OPERATIONS · INDIA

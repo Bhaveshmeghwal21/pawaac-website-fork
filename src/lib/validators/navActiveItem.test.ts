@@ -11,17 +11,19 @@ describe("resolveActiveNavItem", () => {
     expect(resolveActiveNavItem("/autonomy")).toBe("autonomy");
     expect(resolveActiveNavItem("/product")).toBe("product");
     expect(resolveActiveNavItem("/company")).toBe("company");
+    // Site-owner request (current session): Careers promoted out of
+    // Company_Menu into its own primary item.
+    expect(resolveActiveNavItem("/careers")).toBe("careers");
   });
 
   it("returns 'resources' for the Resources_Menu-linked Planner route", () => {
     expect(resolveActiveNavItem("/designer")).toBe("resources");
   });
 
-  it("returns 'company' for each Company_Menu-linked route", () => {
+  it("returns 'company' for each remaining Company_Menu-linked route (Careers excluded, now its own primary item)", () => {
     expect(resolveActiveNavItem("/company")).toBe("company");
-    expect(resolveActiveNavItem("/careers")).toBe("company");
     expect(resolveActiveNavItem("/contact")).toBe("company");
-    expect(resolveActiveNavItem("/news")).toBe("company");
+    expect(resolveActiveNavItem("/blogs")).toBe("company");
     expect(resolveActiveNavItem("/commitments")).toBe("company");
   });
 

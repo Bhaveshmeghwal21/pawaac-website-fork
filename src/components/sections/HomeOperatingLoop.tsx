@@ -177,10 +177,10 @@ export default function HomeOperatingLoop() {
                 One tap from alert to oversight
               </h3>
               <Link
-                href="/autonomy"
+                href="/product"
                 className="group mt-6 inline-flex items-center gap-2 font-mono text-sm text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fg focus-visible:ring-offset-4 focus-visible:ring-offset-bg"
               >
-                Explore the autonomy stack
+                Explore the platform
                 <span className="transition-transform group-hover:translate-x-1">→</span>
               </Link>
           </div>

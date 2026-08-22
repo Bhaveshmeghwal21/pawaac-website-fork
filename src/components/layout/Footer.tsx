@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef } from "react";
+import Link from "next/link";
 import { motion, useScroll, useTransform } from "framer-motion";
 import Logo from "@/components/ui/Logo";
 import usePrefersReducedMotion from "@/hooks/usePrefersReducedMotion";
@@ -36,9 +37,14 @@ function ExternalLinkMarker() {
 //
 // "Deployments" link removed — Deployments_Page has been removed entirely
 // (task 65), so this is no longer a valid internal route.
+// Site-owner request (current session): hide /autonomy from discoverable
+// navigation "for now" — removed here too, same reasoning as Navigation.tsx.
+// Re-add `{ label: "Autonomy", href: "/autonomy" }` to restore it.
 const INTERNAL_LINKS: { label: string; href: string }[] = [
-  { label: "Product", href: "/product" },
-  { label: "Autonomy", href: "/autonomy" },
+  // Site-owner request (current session): visible label renamed from
+  // "Product" to "Platform", matching the primary nav item rename. Same
+  // /product route.
+  { label: "Platform", href: "/product" },
   { label: "Company", href: "/company" },
   // Requirement 1.3: Careers link -> Careers_Page (task 15)
   { label: "Careers", href: "/careers" },
@@ -121,6 +127,14 @@ const EXTERNAL_LINKS: { label: string; href: string }[] = [
 // convention): when usePrefersReducedMotion() is true, the content
 // renders at its final y:0 position and the overlay is not rendered at
 // all, rather than being computed and just left at a static value.
+// Site-owner request (current session): the homepage used to pass
+// `compact` while all 12 other routes rendered the full Footer, so the
+// homepage bottom was the only one without the oversized wordmark bar and
+// the scroll linked reveal. Every route now renders the same full Footer.
+// `compact` is deliberately kept rather than deleted (this repo's "don't
+// delete, don't break things" convention) and stays covered by
+// Footer.test.tsx / HomepageCopyRules.test.tsx, so passing `compact` from
+// app/page.tsx again restores the old homepage only treatment.
 type FooterProps = {
   compact?: boolean;
 };
@@ -172,13 +186,13 @@ export default function Footer({ compact = false }: FooterProps) {
           <nav aria-label="Footer" className="grid content-start gap-3.5">
             <p className="label mb-1">Site</p>
             {INTERNAL_LINKS.map((l) => (
-              <a
+              <Link
                 key={l.href}
                 href={l.href}
                 className="text-[0.95rem] text-muted transition-colors duration-200 hover:text-fg"
               >
                 {l.label}
-              </a>
+              </Link>
             ))}
 
             {/*
@@ -204,15 +218,39 @@ export default function Footer({ compact = false }: FooterProps) {
 
           <div className="grid content-start gap-3.5">
             <p className="label mb-1">Contact</p>
+            {/*
+              The email and phone number were plain text inside a single <p>,
+              which on a phone means a prospect has to memorise or transcribe
+              them. They are now real mailto:/tel: links.
+
+              `tel:` uses the E.164 form (+917673943461) because dialers reject
+              spaces, while the visible text keeps the readable grouping. The
+              displayed copy is unchanged, which matters: dashFreeCopy.ts checks
+              the compact footer's rendered text for hyphens and dashes, and an
+              E.164 number in the *visible* copy would be fine but a
+              conventionally hyphenated one would not.
+            */}
             <p className="text-[0.95rem] leading-7 text-muted">
-              kshitij@pawaac.com
-              <br />
-              +91 76739 43461
-              <br />
+              <a
+                href="mailto:kshitij@pawaac.com"
+                className="transition-colors duration-200 hover:text-fg"
+              >
+                kshitij@pawaac.com
+              </a>
+            </p>
+            <p className="text-[0.95rem] leading-7 text-muted">
+              <a
+                href="tel:+917673943461"
+                className="transition-colors duration-200 hover:text-fg"
+              >
+                +91 76739 43461
+              </a>
+            </p>
+            <address className="text-[0.95rem] leading-7 text-muted not-italic">
               15, 9th Main Rd, Jayanagar 3rd Block,
               <br />
               Bengaluru 560011
-            </p>
+            </address>
           </div>
         </div>
 
@@ -242,10 +280,12 @@ export default function Footer({ compact = false }: FooterProps) {
         <div
           className={`${compact ? "mt-10" : "mt-6"} flex flex-col items-center justify-between gap-3 border-t border-line pt-6 text-xs text-muted sm:flex-row`}
         >
-          <p>© 2026 Bajrang Dronetech Pvt Ltd · Built in India</p>
+          <p>© 2025 Bajrang Dronetech Pvt Ltd · Built in India</p>
           <div className="flex gap-3">
-            <span className="border border-line px-2 py-1 font-mono text-[10px]">DGCA COMPLIANT</span>
-            <span className="border border-line px-2 py-1 font-mono text-[10px]">MeitY RECOGNIZED</span>
+            {/* Site-owner request (current session): "DGCA COMPLIANT"
+                replaced with "DPIIT RECOGNIZED", and "MeitY RECOGNIZED"
+                removed outright rather than replaced. */}
+            <span className="border border-line px-2 py-1 font-mono text-[10px]">DPIIT RECOGNIZED</span>
           </div>
         </div>
       </motion.div>

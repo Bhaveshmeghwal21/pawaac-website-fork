@@ -1,6 +1,7 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Space_Grotesk, Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
+import { SITE_URL } from "@/lib/site";
 import LenisProvider from "@/components/providers/LenisProvider";
 import FilmGrain from "@/components/ui/FilmGrain";
 import Preloader from "@/components/ui/Preloader";
@@ -35,7 +36,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://pawaac.com"),
+  metadataBase: new URL(SITE_URL),
   title: "PAWAAC Drones · Autonomous Aerial Surveillance for India",
   description:
     "Fully autonomous drones for defense and police. 24×7 surveillance without pilots. Vision AI and Decision OS. The data layer for physical security.",
@@ -53,7 +54,30 @@ export const metadata: Metadata = {
       "The aerial security layer for the physical world. Fully autonomous drones, Vision AI, and Decision OS.",
     type: "website",
     locale: "en_IN",
+    siteName: "PAWAAC",
+    url: SITE_URL,
   },
+  // og:image itself comes from src/app/opengraph-image.tsx via the file
+  // convention — Next injects the tags, so listing images here would duplicate
+  // them. This block only declares the card *shape*: without
+  // `summary_large_image`, X/Twitter renders a small thumbnail beside the text
+  // instead of the full 1200x630 card, and other clients that read Twitter tags
+  // in preference to Open Graph follow suit.
+  twitter: {
+    card: "summary_large_image",
+    title: "PAWAAC Drones · Autonomous Aerial Surveillance",
+    description:
+      "The aerial security layer for the physical world. Fully autonomous drones, Vision AI, and Decision OS.",
+  },
+};
+
+// A dark site should tell the browser so: on mobile Chrome and Safari this
+// colours the address bar to match the page instead of leaving a white band
+// above #080808 content. Split out from `metadata` because Next requires
+// themeColor and viewport settings in their own `viewport` export.
+export const viewport: Viewport = {
+  themeColor: "#080808",
+  colorScheme: "dark",
 };
 
 export default function RootLayout({

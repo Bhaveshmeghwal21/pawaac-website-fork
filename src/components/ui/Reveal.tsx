@@ -41,9 +41,49 @@
 // `usePrefersReducedMotion()` is true, this renders children directly in
 // their final, fully-revealed state with no clip-path keyframe and no
 // transform.
-import { useEffect, useRef, useState } from "react";
+//
+// Same-session reload fix (site-owner report, current session): "when I
+// reload the page the content appears very slow" — on every reload after
+// the first in a browser session, this now renders already-revealed
+// immediately, the same way the reduced-motion branch already does, rather
+// than re-running the ~0.7s clip-path wipe again. The very first load of a
+// session (or first load in a new tab/private window) is unaffected and
+// still plays the full entrance, matching Preloader.tsx's own splash,
+// which uses the identical `sessionStorage["pawaac-loaded"]` flag to make
+// the same "have we already shown this session's first-load moment"
+// decision. Applies on every page: Reveal is the shared entrance mechanism
+// used by all ~29 section components across the site, not homepage-only.
+//
+// The flag is read through `useSyncExternalStore` rather than a plain call
+// during render, because this component *branches its rendered output* on
+// the result. Reading sessionStorage directly during render made the server
+// (which has no sessionStorage, so always "play the animation") disagree
+// with the client's first render on any reload, which is a real hydration
+// mismatch — React reported it as "a tree hydrated but some attributes of
+// the server rendered HTML didn't match". `getServerSnapshot` pins the
+// server render *and the hydration pass that has to match it* to the
+// animated branch; React then reads the real value immediately after
+// hydration and re-renders straight to the revealed branch. Same primitive,
+// same reasoning as hooks/useMediaQuery.ts, which documents why an
+// effect-based correction is both wrong here and a
+// `react-hooks/set-state-in-effect` lint error in this config.
+//
+// HeroHeadline.tsx and HomeMotionSection.tsx call the plain
+// `hasCompletedIntroThisSession()` instead, which is correct for them: they
+// only consult it inside an effect and their JSX does not branch on it, so
+// they produce identical server and client markup and cannot mismatch.
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { motion, useInView } from "framer-motion";
 import usePrefersReducedMotion from "@/hooks/usePrefersReducedMotion";
+import { hasCompletedIntroThisSession } from "@/lib/motion/pageReady";
+
+// Preloader writes the session flag once, on first load, and nothing clears
+// it for the life of the page — so there is no store to subscribe to.
+const subscribeToNothing = () => () => {};
+
+// Server render + hydration pass: always "play the animation". Anything
+// else would have the server guess at client-only state.
+const getIntroSkipServerSnapshot = () => false;
 
 export default function Reveal({
   children,
@@ -57,6 +97,11 @@ export default function Reveal({
   y?: number;
 }) {
   const prefersReducedMotion = usePrefersReducedMotion();
+  const skipIntro = useSyncExternalStore(
+    subscribeToNothing,
+    hasCompletedIntroThisSession,
+    getIntroSkipServerSnapshot,
+  );
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, amount: 0.25 });
   const [forceRevealed, setForceRevealed] = useState(false);
@@ -66,12 +111,12 @@ export default function Reveal({
   // above-the-fold content), force the revealed state after a short delay
   // regardless of cause, so content can never be stuck invisible.
   useEffect(() => {
-    if (inView || prefersReducedMotion) return;
+    if (inView || prefersReducedMotion || skipIntro) return;
     const t = setTimeout(() => setForceRevealed(true), 1200);
     return () => clearTimeout(t);
-  }, [inView, prefersReducedMotion]);
+  }, [inView, prefersReducedMotion, skipIntro]);
 
-  if (prefersReducedMotion) {
+  if (prefersReducedMotion || skipIntro) {
     return <div className={className}>{children}</div>;
   }
 

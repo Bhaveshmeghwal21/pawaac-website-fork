@@ -36,7 +36,11 @@ export default function ProductHero() {
 
       <div className="relative z-10 mx-auto grid max-w-7xl gap-12 md:grid-cols-2 md:items-center">
         <Reveal>
-          <p className="label">Product</p>
+          {/* Site-owner request (current session): visible label renamed
+              from "Product" to "Platform", matching the primary nav item
+              rename and the decorative word-mark above, which already said
+              "PLATFORM". */}
+          <p className="label">Platform</p>
           <h1 className="mt-3 text-heading font-display text-fg">
             The Pawaac autonomous drone platform
           </h1>
@@ -59,7 +63,7 @@ export default function ProductHero() {
               fill
               sizes="(min-width: 768px) 384px, 90vw"
               className="object-cover grayscale"
-              priority
+              preload
             />
             <ReticleFrame variant="dark" />
           </div>

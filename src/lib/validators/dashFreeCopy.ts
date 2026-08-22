@@ -23,7 +23,7 @@
  * rather than printing an indistinguishable glyph.
  *
  * The middot (U+00B7), used deliberately in the footer's
- * "© 2026 Bajrang Dronetech Pvt Ltd · Built in India" and in the
+ * "© 2025 Bajrang Dronetech Pvt Ltd · Built in India" and in the
  * "ENGINEERING & OPERATIONS · INDIA" badge, is intentionally absent: it is a
  * separator, not a dash, and the site owner rule does not cover it.
  */

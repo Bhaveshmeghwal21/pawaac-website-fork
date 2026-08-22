@@ -43,9 +43,18 @@ describe("Footer", () => {
         name: "Bajrang Dronetech Pvt Ltd (opens external site)",
       }),
     ).toBeInTheDocument();
-    expect(screen.getByText(/kshitij@pawaac.com/i)).toBeInTheDocument();
-    expect(screen.getByText("DGCA COMPLIANT")).toBeInTheDocument();
-    expect(screen.getByText("MeitY RECOGNIZED")).toBeInTheDocument();
+    // The email was previously plain text asserted with getByText. It is now a
+    // mailto: link, so assert the stronger property: the address is present AND
+    // actionable. Same for the phone number, which on a phone is the difference
+    // between one tap and transcribing 10 digits.
+    expect(
+      screen.getByRole("link", { name: "kshitij@pawaac.com" }),
+    ).toHaveAttribute("href", "mailto:kshitij@pawaac.com");
+    expect(
+      screen.getByRole("link", { name: "+91 76739 43461" }),
+    ).toHaveAttribute("href", "tel:+917673943461");
+    expect(screen.getByText("DPIIT RECOGNIZED")).toBeInTheDocument();
+    expect(screen.queryByText("MeitY RECOGNIZED")).toBeNull();
     expect(footer.querySelector("[data-footer-static-content]")).not.toBeNull();
     expect(footer.querySelector("[data-footer-motion-content]")).toBeNull();
     expect(footer.querySelector("[data-footer-motion-overlay]")).toBeNull();

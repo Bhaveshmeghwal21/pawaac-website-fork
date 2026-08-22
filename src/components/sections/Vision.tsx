@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import Link from "next/link";
 
 export default function Vision() {
   return (
@@ -36,18 +37,18 @@ export default function Vision() {
         </p>
         <span className="mx-auto my-8 block h-px w-20 bg-fg/40" />
         <div className="flex flex-wrap justify-center gap-4">
-          <a
+          <Link
             href="/contact"
             className="bg-white px-6 py-3 text-sm font-semibold text-black transition hover:bg-interactive"
           >
             Request a Demo
-          </a>
-          <a
+          </Link>
+          <Link
             href="/contact"
             className="border border-fg px-6 py-3 text-sm font-semibold text-fg transition hover:bg-fg hover:text-bg"
           >
             Talk to Investors
-          </a>
+          </Link>
         </div>
       </motion.div>
     </section>

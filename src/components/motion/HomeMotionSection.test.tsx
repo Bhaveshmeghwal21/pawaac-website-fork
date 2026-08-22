@@ -82,6 +82,7 @@ function mockMatchMedia() {
 describe("HomeMotionSection", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    window.sessionStorage.clear();
     conditions.desktop = true;
     conditions.mobile = false;
     conditions.reduce = false;
@@ -167,5 +168,22 @@ describe("HomeMotionSection", () => {
     expect(timeline.from.mock.calls.some(([, vars]) => vars.scale === 1.015)).toBe(
       true,
     );
+  });
+
+  // Site-owner report (current session): "when I reload the page the
+  // content appears very slow" — fixed by skipping this scroll-triggered
+  // entrance timeline entirely once this browser session has already
+  // completed a load (the same sessionStorage flag Preloader.tsx sets on
+  // first load).
+  it("skips the entrance timeline entirely on a same-session reload", () => {
+    window.sessionStorage.setItem("pawaac-loaded", "1");
+
+    render(
+      <HomeMotionSection variant="operating">
+        <div data-motion-group>Intro</div>
+      </HomeMotionSection>,
+    );
+
+    expect(timelineFactory).not.toHaveBeenCalled();
   });
 });

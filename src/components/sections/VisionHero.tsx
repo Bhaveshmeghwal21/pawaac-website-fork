@@ -11,9 +11,14 @@
 // pattern (P1) already used by CareersHero/NewsHero, plus a real,
 // previously-UNUSED photo (`public/images/skyimage.jpg` — distinct from
 // `skyimage2.jpg`, which is already the Homepage's full-bleed SkyScenery
-// background) rendered as a large bounded hero-media banner, grayscale
-// filter + `Reticle_Frame` (P4), matching HomeHero.tsx's own
-// word-mark-texture-behind + large boxed-media-below structure.
+// background) rendered as a large bounded hero-media banner with
+// `Reticle_Frame` (P4), matching HomeHero.tsx's own word-mark-texture-behind
+// + large boxed-media-below structure.
+//
+// Site-owner request (current session): rendered in full color rather than
+// the original grayscale filter — a deliberate second exception to the
+// site's achromatic palette rule, alongside SkyScenery.tsx's sky photograph
+// (see that file and README.md's Design language section).
 //
 // Founder-authored copy (verbatim, resolves OCP-20's hero framing): the
 // eyebrow, headline, and supporting sentence below are reproduced exactly
@@ -50,18 +55,22 @@ export default function VisionHero() {
             className="relative mx-auto w-full max-w-5xl"
             style={{ aspectRatio: "16 / 7" }}
           >
-            {/* Real, previously-unused photo, grayscale resting-state
-                filter per the site's monochrome pattern (Requirement
-                3.1-3.2). Purely atmospheric/mood imagery for the Vision
-                section — no specific claim implied by the image itself. */}
+            {/* Site-owner request (current session): rendered in full
+                color rather than grayscale. This is a deliberate second
+                exception to the site's achromatic palette rule, alongside
+                the real sky photograph in SkyScenery.tsx (see that file's
+                header and README.md's Design language section, which
+                documents SkyScenery.tsx as "the one deliberate exception").
+                Purely atmospheric/mood imagery for the Vision section — no
+                specific claim implied by the image itself. */}
             <Image
               src="/images/skyimage.jpg"
               alt=""
               fill
               sizes="(min-width: 768px) 1024px, 100vw"
-              className="object-cover grayscale"
+              className="object-cover"
               style={{ objectPosition: "center 35%" }}
-              priority
+              preload
             />
             <ReticleFrame variant="dark" />
           </div>

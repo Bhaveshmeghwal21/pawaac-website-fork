@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 
 // headline as deliberately mis-aligned lines that break the grid
@@ -146,18 +147,18 @@ export default function Hero() {
           style={{ marginLeft: "2.5vw" }}
           className="mt-8 flex w-fit flex-wrap gap-px bg-line"
         >
-          <a
+          <Link
             href="/contact"
             className="bg-white px-7 py-3.5 text-sm font-semibold text-black transition hover:bg-interactive"
           >
             Schedule Demo →
-          </a>
-          <a
+          </Link>
+          <Link
             href="/autonomy"
             className="bg-bg px-7 py-3.5 text-sm font-semibold text-fg transition hover:bg-surface"
           >
             Watch in Action ▶
-          </a>
+          </Link>
         </motion.div>
       </div>
 

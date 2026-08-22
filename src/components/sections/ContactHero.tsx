@@ -31,10 +31,27 @@ export default function ContactHero() {
           Tell us about your deployment and we&apos;ll follow up.
         </p>
 
+        {/* Actionable rather than plain text — see Footer.tsx. This is the
+            contact page: a visitor who does not want to fill in a form still
+            needs a way to reach someone in one tap. */}
         <div className="mt-8 space-y-2 technical-data text-muted">
-          <p>kshitij@pawaac.com</p>
-          <p>+91 76739 43461</p>
-          <p>Jayanagar, Bengaluru 560011</p>
+          <p>
+            <a
+              href="mailto:kshitij@pawaac.com"
+              className="transition-colors duration-200 hover:text-fg"
+            >
+              kshitij@pawaac.com
+            </a>
+          </p>
+          <p>
+            <a
+              href="tel:+917673943461"
+              className="transition-colors duration-200 hover:text-fg"
+            >
+              +91 76739 43461
+            </a>
+          </p>
+          <address className="not-italic">Jayanagar, Bengaluru 560011</address>
         </div>
       </div>
     </section>

@@ -31,13 +31,59 @@ export default function ContactForm() {
   const [done, setDone] = useState(false);
 
   const onSubmit = async (data: ContactInput) => {
-    const res = await fetch("/api/contact", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    });
-    if (res.ok) setDone(true);
-    else setError("root", { message: "Something went wrong. Try again." });
+    // Every failure path has to end in a visible message. The previous version
+    // was `if (res.ok) setDone(true); else setError(...)` with no try/catch, so
+    // a dropped connection or a DNS failure rejected the promise before either
+    // branch ran: react-hook-form cleared `isSubmitting`, nothing was
+    // displayed, and the visitor was left looking at a button that appeared to
+    // do nothing.
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+
+      if (res.ok) {
+        setDone(true);
+        return;
+      }
+
+      const payload = await res.json().catch(() => null);
+
+      // 400: the server re-validated and disagreed. Attach messages to the
+      // fields they belong to so the visitor can see what to change.
+      const fieldErrors = payload?.errors as
+        | Record<string, string[] | undefined>
+        | undefined;
+      if (res.status === 400 && fieldErrors) {
+        let attached = false;
+        for (const [field, messages] of Object.entries(fieldErrors)) {
+          const message = messages?.[0];
+          if (!message) continue;
+          if (field in data) {
+            setError(field as keyof ContactInput, { message });
+            attached = true;
+          }
+        }
+        if (attached) return;
+      }
+
+      // 503 (delivery not configured) and 502 (provider refused) both carry a
+      // message that names the direct email address, so show the server's
+      // wording rather than a generic retry prompt.
+      setError("root", {
+        message:
+          typeof payload?.message === "string"
+            ? payload.message
+            : "Something went wrong. Try again.",
+      });
+    } catch {
+      setError("root", {
+        message:
+          "We could not reach the server. Check your connection, or email kshitij@pawaac.com.",
+      });
+    }
   };
 
   if (done) {

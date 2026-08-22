@@ -14,6 +14,7 @@ Next.js App Router, TypeScript, Tailwind CSS v4.
 
 ```bash
 npm install
+cp .env.example .env.local   # then fill in the lead-delivery keys
 npm run dev
 ```
 
@@ -24,7 +25,7 @@ Then open <http://localhost:3000>.
 | `npm run dev` | Dev server (Turbopack) on port 3000 |
 | `npm run build` | Production build |
 | `npm start` | Serve the production build |
-| `npm test` | Vitest suite (31 files, 212 tests) |
+| `npm test` | Vitest suite (36 files, 263 tests) |
 | `npm run lint` | ESLint |
 
 > **Read this before writing code.** `AGENTS.md` at the repo root carries a
@@ -40,13 +41,58 @@ Then open <http://localhost:3000>.
 | Path | Contents |
 | --- | --- |
 | `/` | Homepage — the curated section set (see below) |
-| `/product` | Platform overview |
+| `/product` | **Platform** — how the proposed solution works end to end: the seven step mission cycle (dock, dispatch, patrol, detect, escalate, return, swap), the human oversight branch, GPS denied navigation, then the hardware that runs it |
 | `/product/hawkai` · `/product/sentrivion` | Per-airframe spec pages |
 | `/product/docking-system` · `/product/software-stack` | Supporting subsystems |
 | `/autonomy` | Autonomy stack: sense, decide, act |
 | `/designer` | Coverage planner — patrol radii and docking-station placement (react-leaflet) |
-| `/company` · `/careers` · `/commitments` · `/news` · `/contact` | Company pages |
+| `/company` · `/careers` · `/commitments` · `/blogs` · `/contact` | Company pages |
+| `/blogs/[slug]` | Individual blog post, prerendered per post from `lib/blogPosts.ts` |
 | `/api/contact` · `/api/careers` | Form handlers (react-hook-form + zod) |
+| `/sitemap.xml` · `/robots.txt` · `/opengraph-image` | Generated from `app/sitemap.ts`, `app/robots.ts`, `app/opengraph-image.tsx` |
+
+**Five routes are currently hidden from navigation** at the site owner's
+request: `/autonomy` and all four `/product/*` sub-pages. They are hidden, not
+deleted — each still resolves if visited directly, and every section component
+is untouched on disk. Only the discovery links were removed (from
+`Navigation.tsx` and `app/sitemap.ts`), each with a comment naming the exact
+snippet to re-add. Because the last `/product/*` child was hidden, the primary
+nav item — renamed from "Product" to **"Platform"** — is now a plain link
+rather than a dropdown. The `/product` URL itself is unchanged; only the label
+moved, so `ProductHero`, `Product_Page` in spec comments and the route all keep
+their existing names.
+
+`Footer` is rendered per page rather than from the root layout. Every route
+renders it identically except `/designer`, which is a full-viewport map tool —
+see the comment in `app/designer/page.tsx`. The homepage previously passed a
+`<Footer compact />` variant that dropped the oversized wordmark bar and the
+scroll-linked reveal; it now renders the same full footer as every other route,
+and the `compact` prop is retained but unused. `app/not-found.tsx`,
+`app/error.tsx` and `app/global-error.tsx` cover the failure paths.
+
+---
+
+## Deployment
+
+**The forms only work if lead delivery is configured.** Copy `.env.example` and
+set `RESEND_API_KEY` and `LEAD_FROM_EMAIL` (a sender on a Resend-verified
+domain); `LEAD_TO_EMAIL` defaults to the address in `lib/leadDelivery.ts`.
+
+Without those, `/api/contact` and `/api/careers` return **503** and both forms
+tell the visitor to email directly. That is intentional and worth preserving:
+these routes previously validated a submission, `console.log`ed it, and returned
+`{ ok: true }` while the UI said "We'll contact you within 24 hours", so every
+demo request and job application was silently discarded. `leadDelivery.test.ts`
+pins the invariant that success is never reported unless the provider accepted
+the message.
+
+Both endpoints are public and unauthenticated, so they carry a fixed-window
+rate limit (`lib/rateLimit.ts`) and a `content-length` cap checked before the
+body is read. The limiter is per server instance — see its header comment for
+what that does and does not buy you.
+
+`NEXT_PUBLIC_SITE_URL` overrides the canonical origin in `lib/site.ts`, which
+feeds `metadataBase`, the sitemap and robots. Leave it unset for production.
 
 ---
 
@@ -92,9 +138,13 @@ current.** Where they disagree with the code, the code is right.
 | `--color-muted` | `#8a8a8a` |
 | `--color-line` | `#1f1f1f` |
 
-Every value satisfies R=G=B, and `colorToken.ts` tests that invariant. There is
-one deliberate exception, documented in the component itself: the real sky
-photograph in `SkyScenery.tsx`.
+Every value satisfies R=G=B, and `colorToken.ts` tests that invariant. Three
+photographs are deliberate exceptions, each documented in the component itself:
+the real sky photograph in `SkyScenery.tsx`, the Vision banner in
+`VisionHero.tsx` (`/commitments`), and the lead editorial image on the Blogs
+page in `NewsList.tsx`. Colour in editorial/blog imagery is expected; the
+achromatic rule governs the interface, not photography that is explicitly
+illustrative.
 
 **Type:** Space Grotesk (display/headings), Inter (body), JetBrains Mono
 (labels and technical data), all loaded as variable fonts via `next/font`.

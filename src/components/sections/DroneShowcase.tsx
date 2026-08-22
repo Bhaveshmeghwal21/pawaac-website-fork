@@ -24,7 +24,9 @@ const SPECS = [
 ];
 
 export default function DroneShowcase() {
-  const isMobile = useMediaQuery("(max-width: 767px)");
+  // See ProductSensorPayload: assume mobile until matchMedia confirms
+  // otherwise, so the WebGL branch is never mounted speculatively.
+  const isMobile = useMediaQuery("(max-width: 767px)", true);
 
   return (
     <section id="technology" className="relative bg-bg">

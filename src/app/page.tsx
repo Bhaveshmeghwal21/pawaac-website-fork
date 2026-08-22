@@ -30,9 +30,18 @@
 //                           coverage area in /designer.
 //   7. HomeContactBand      Company, mission, credentials and the next step,
 //                           consolidated into one close.
-//   Footer, compact         Homepage only variant: keeps nav, contact and
-//                           credentials, drops the oversized wordmark bar and
-//                           the scroll linked reveal used on inner pages.
+//   Footer                  Site-owner request (current session): the homepage
+//                           now renders the same full Footer as every other
+//                           route, rather than the `compact` variant it used
+//                           to pass. The homepage was the only page missing
+//                           the oversized wordmark bar and the scroll linked
+//                           reveal, which read as an inconsistency between the
+//                           homepage bottom and every inner page bottom. The
+//                           `compact` prop itself is left in place on Footer
+//                           (unused for now, still covered by Footer.test.tsx)
+//                           per this repo's "don't delete, don't break things"
+//                           convention — pass `compact` here again to restore
+//                           the old homepage only treatment.
 //
 // Sections 2 and 3 (Defense_Police_Persona framing) render before the
 // enterprise framing now folded into section 5, which keeps the persona
@@ -71,7 +80,7 @@ export default function Home() {
       <HomeDeploymentsPreview />
       <HomePlannerCTA />
       <HomeContactBand />
-      <Footer compact />
+      <Footer />
     </>
   );
 }

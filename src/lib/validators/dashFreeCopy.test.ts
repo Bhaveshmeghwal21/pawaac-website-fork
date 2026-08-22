@@ -40,7 +40,7 @@ describe("scanForDashes", () => {
   it("does not treat the middot separator as a dash", () => {
     // Used deliberately in the footer copyright line and the credentials badge.
     expect(
-      isDashFree("\u00A9 2026 Bajrang Dronetech Pvt Ltd \u00B7 Built in India"),
+      isDashFree("\u00A9 2025 Bajrang Dronetech Pvt Ltd \u00B7 Built in India"),
     ).toBe(true);
     expect(isDashFree("ENGINEERING & OPERATIONS \u00B7 INDIA")).toBe(true);
   });

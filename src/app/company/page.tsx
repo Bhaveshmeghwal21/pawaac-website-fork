@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Footer from "@/components/layout/Footer";
 
 // Spec: pawaac-design-language-evolution — Task 13 (Company_Page route)
 // Requirements: 1.1, 4.1, 4.3, 5.1, 5.4
@@ -30,6 +31,7 @@ export default function CompanyPage() {
       <CompanyHero />
       <CompanyMission />
       <CompanyTeam />
+      <Footer />
     </>
   );
 }
