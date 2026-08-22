@@ -1,11 +1,21 @@
-// Platform page (/product), Section 3 — the two airframes that fly the loop.
+// Platform page (/product), Section 2 — the two airframes that fly the loop.
 //
 // Site-owner request (current session): "use product images how are they
 // gonna work how do we plan to do surveillance ... by images i meant images
 // of sentrivion, hawkai, and dock system". The dock is the third element and
-// gets its own light band immediately after this one
-// (ProductDockCharging.tsx), which already existed as a white section and is
-// the natural home for the dock photograph's white background.
+// gets its own light band (ProductDockCharging.tsx), which already existed as
+// a white section and is the natural home for the dock photograph's white
+// background.
+//
+// Position (site-owner request, current session): "before explaining how the
+// platform works, add the airframes photos first". This section used to sit
+// after ProductOperatingLoop and now leads the page body, directly under the
+// hero. Two consequences worth knowing if this moves again:
+//   * The intro copy no longer says "the cycle above", because the cycle is
+//     now below. It reads "the cycle is the same whichever aircraft flies it",
+//     which is true at any position.
+//   * ProductDockCharging is no longer the next section, so the two are no
+//     longer read as one pair. See the ordering note in app/product/page.tsx.
 //
 // Both photographs are real in-repo brochure/build assets, rendered with the
 // site's standard grayscale resting-state filter (Requirement 3.1-3.2), the
@@ -77,7 +87,7 @@ export default function ProductHardware() {
             Two airframes, one loop
           </h2>
           <p className="mt-4 max-w-2xl text-body font-body text-muted">
-            The cycle above does not change with the aircraft. What changes is
+            The cycle is the same whichever aircraft flies it. What changes is
             reach: one holds a site, the other covers ground. Both launch
             vertically, so both work from a dock.
           </p>

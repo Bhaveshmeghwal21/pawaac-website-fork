@@ -25,7 +25,7 @@ Then open <http://localhost:3000>.
 | `npm run dev` | Dev server (Turbopack) on port 3000 |
 | `npm run build` | Production build |
 | `npm start` | Serve the production build |
-| `npm test` | Vitest suite (39 files, 316 tests) |
+| `npm test` | Vitest suite (39 files, 318 tests) |
 | `npm run lint` | ESLint |
 
 > **Read this before writing code.** `AGENTS.md` at the repo root carries a

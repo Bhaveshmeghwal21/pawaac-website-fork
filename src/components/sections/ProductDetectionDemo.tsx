@@ -1,4 +1,11 @@
-// Platform page (/product) — the Detect step, shown rather than described.
+// Platform page (/product), Section 3 — the Detect step, shown rather than
+// described.
+//
+// Position (site-owner request, current session): "then use drone vision model
+// output second then explaination of whole platform". This sits between the
+// airframes and the operating loop, so the reader sees what the onboard vision
+// produces before reading the cycle that "Detect" is step four of. The eyebrow
+// label is therefore a topic, not a back reference.
 //
 // Site-owner request (current session): "for demo do one thing generate
 // annotations from gemini flash 3.7 api key itself ... based on your judgement

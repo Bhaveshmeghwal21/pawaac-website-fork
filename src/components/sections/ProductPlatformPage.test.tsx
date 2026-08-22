@@ -1,10 +1,17 @@
 // @vitest-environment jsdom
+import { Children, isValidElement, type ReactElement, type ReactNode } from "react";
 import { describe, expect, it } from "vitest";
 import { render } from "@testing-library/react";
+import ProductPage from "@/app/product/page";
+import Footer from "@/components/layout/Footer";
 import HomeOperatingLoop from "@/components/sections/HomeOperatingLoop";
 import ProductOperatingLoop from "@/components/sections/ProductOperatingLoop";
+import ProductHero from "@/components/sections/ProductHero";
 import ProductHardware from "@/components/sections/ProductHardware";
+import ProductDetectionDemo from "@/components/sections/ProductDetectionDemo";
 import ProductDockCharging from "@/components/sections/ProductDockCharging";
+import ProductSensorPayload from "@/components/sections/ProductSensorPayload";
+import ProductSpecifications from "@/components/sections/ProductSpecifications";
 
 // Site-owner request (current session): the Platform page (/product) was
 // rebuilt to explain the proposed solution end to end — the seven step
@@ -166,6 +173,44 @@ describe("Platform page hardware sections", () => {
     expect(heading.length).toBeGreaterThan(0);
     // Covers hyphen, en dash, em dash and minus sign.
     expect(heading).not.toMatch(/[-\u2010-\u2015\u2212]/);
+  });
+});
+
+// Site-owner request (current session): "in platform before explaining how the
+// platform works, add the airframes photos first, then use drone vision model
+// output second then explaination of whole platform".
+//
+// This is pinned because it is a reading-order argument, not a layout detail,
+// and reordering a page is a one line change that no other test would notice.
+// The requested sequence is: the aircraft, then what its vision produces, then
+// the cycle both serve.
+describe("Platform page section order", () => {
+  const order = () =>
+    Children.toArray((ProductPage() as ReactElement<{ children?: ReactNode }>).props.children)
+      .filter(isValidElement)
+      .map((child) => (child as ReactElement).type);
+
+  it("shows the airframes and the detection output before explaining the loop", () => {
+    const seq = order();
+
+    expect(seq.indexOf(ProductHardware)).toBeLessThan(seq.indexOf(ProductDetectionDemo));
+    expect(seq.indexOf(ProductDetectionDemo)).toBeLessThan(
+      seq.indexOf(ProductOperatingLoop),
+    );
+    expect(seq.indexOf(ProductHardware)).toBeGreaterThan(seq.indexOf(ProductHero));
+  });
+
+  it("renders the seven sections in the requested order, closing with the footer", () => {
+    expect(order()).toEqual([
+      ProductHero,
+      ProductHardware,
+      ProductDetectionDemo,
+      ProductOperatingLoop,
+      ProductDockCharging,
+      ProductSensorPayload,
+      ProductSpecifications,
+      Footer,
+    ]);
   });
 });
 

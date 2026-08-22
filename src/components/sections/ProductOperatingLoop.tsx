@@ -1,4 +1,11 @@
-// Platform page (/product), Section 2 — the proposed solution, end to end.
+// Platform page (/product), Section 4 — the proposed solution, end to end.
+//
+// Position (site-owner request, current session): "before explaining how the
+// platform works, add the airframes photos first, then use drone vision model
+// output second then explaination of whole platform". This section led the
+// page body before that request and now follows ProductHardware and
+// ProductDetectionDemo, so the reader meets the aircraft and its output before
+// the cycle that ties them together.
 //
 // Site-owner request (current session): "fill the platform page exactly how
 // does the proposed solution by pawaac platform, in short ... how are they
