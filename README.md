@@ -25,7 +25,7 @@ Then open <http://localhost:3000>.
 | `npm run dev` | Dev server (Turbopack) on port 3000 |
 | `npm run build` | Production build |
 | `npm start` | Serve the production build |
-| `npm test` | Vitest suite (39 files, 303 tests) |
+| `npm test` | Vitest suite (39 files, 318 tests) |
 | `npm run lint` | ESLint |
 
 > **Read this before writing code.** `AGENTS.md` at the repo root carries a
@@ -41,7 +41,7 @@ Then open <http://localhost:3000>.
 | Path | Contents |
 | --- | --- |
 | `/` | Homepage — the curated section set (see below) |
-| `/product` | **Platform** — how the proposed solution works end to end: the seven step mission cycle (dock, dispatch, patrol, detect, escalate, return, swap), the human oversight branch, GPS denied navigation, then the hardware that runs it |
+| `/product` | **Platform** — how the proposed solution works end to end: the two airframes, an illustrative detection overlay on real footage, then the seven step mission cycle (dock, dispatch, patrol, detect, escalate, return, swap), the human oversight branch and GPS denied navigation, closing on the dock and payload |
 | `/product/hawkai` · `/product/sentrivion` | Per-airframe spec pages |
 | `/product/docking-system` · `/product/software-stack` | Supporting subsystems |
 | `/autonomy` | Autonomy stack: sense, decide, act |

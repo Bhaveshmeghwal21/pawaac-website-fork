@@ -27,16 +27,17 @@ vi.mock("@/components/designer/MapCanvas", () => ({
 }));
 
 import SystemDesigner, {
-  DEFAULT_PATROL_RADIUS_M,
+  DEFAULT_DRONE_COUNT,
   DEFAULT_SITE_RADIUS_M,
+  DRONE_COUNT_MAX,
 } from "./SystemDesigner";
 
-// Site-owner request (current session): the outer perimeter became a circle and
-// its radius moved onto its own slider, beside the existing per-dock patrol
-// radius slider. Two sliders that both feed the same derived station layout is
-// exactly the kind of wiring that breaks silently — the map would still draw a
-// plausible set of circles while one control did nothing — so both are pinned to
-// the values they hand to MapCanvas.
+// Site-owner request (current session): "give the user ability to select number
+// of drones instead of surveillance through each drone". The second slider was
+// the per drone patrol radius, with the station count derived from it. That
+// direction is now reversed, so what these tests pin is that the count is what
+// the visitor controls and the radius is what falls out — a regression that
+// swapped them back would still render a plausible looking panel.
 
 function selectSite() {
   Object.defineProperty(globalThis.navigator, "geolocation", {
@@ -51,50 +52,91 @@ function selectSite() {
   fireEvent.click(screen.getByRole("button", { name: "Use my current location" }));
 }
 
+function map() {
+  return screen.getByTestId("map");
+}
+
+function patrolRadius() {
+  return Number(map().getAttribute("data-patrol-radius"));
+}
+
+// The label wraps two spans, its name and its live value, so its accessible text
+// is "Drones7" rather than "Drones". Anchored at the start to avoid matching the
+// singular "Patrol radius / drone" readout below it.
+function droneSlider() {
+  return screen.getByLabelText(/^drones/i);
+}
+
 describe("SystemDesigner control panel", () => {
   beforeEach(() => {
     render(<SystemDesigner />);
     selectSite();
   });
 
-  it("renders a slider for the coverage circle and one for the patrol radius", () => {
+  it("renders a slider for the coverage circle and one for the number of drones", () => {
     const siteRadius = screen.getByLabelText(/coverage radius/i) as HTMLInputElement;
-    const patrolRadius = screen.getByLabelText(/patrol radius/i) as HTMLInputElement;
+    const drones = droneSlider() as HTMLInputElement;
 
     expect(siteRadius.type).toBe("range");
-    expect(patrolRadius.type).toBe("range");
+    expect(drones.type).toBe("range");
     expect(siteRadius.value).toBe(String(DEFAULT_SITE_RADIUS_M));
-    expect(patrolRadius.value).toBe(String(DEFAULT_PATROL_RADIUS_M));
+    expect(drones.value).toBe(String(DEFAULT_DRONE_COUNT));
+    expect(drones.max).toBe(String(DRONE_COUNT_MAX));
+    expect(drones.step).toBe("1");
   });
 
-  it("passes the coverage radius through to the map when its slider moves", () => {
+  it("no longer offers a patrol radius slider, since that figure is now derived", () => {
+    const ranges = screen.getAllByRole("slider");
+    expect(ranges).toHaveLength(2);
+    expect(
+      ranges.some((r) => (r as HTMLInputElement).id === "patrol-radius"),
+    ).toBe(false);
+  });
+
+  it("places exactly the requested number of stations", () => {
+    fireEvent.change(droneSlider(), { target: { value: "13" } });
+
+    expect(map()).toHaveAttribute("data-dock-count", "13");
+    expect(droneSlider()).toHaveValue("13");
+  });
+
+  it("derives a smaller required patrol radius as drones are added", () => {
+    fireEvent.change(droneSlider(), { target: { value: "2" } });
+    const few = patrolRadius();
+
+    fireEvent.change(droneSlider(), { target: { value: "20" } });
+    const many = patrolRadius();
+
+    expect(few).toBeGreaterThan(many);
+    // The derived figure is what the map draws its coverage circles at.
+    expect(many).toBeGreaterThan(0);
+  });
+
+  it("asks a single drone to cover the whole coverage radius", () => {
+    fireEvent.change(droneSlider(), { target: { value: "1" } });
+
+    expect(map()).toHaveAttribute("data-dock-count", "1");
+    expect(patrolRadius()).toBe(DEFAULT_SITE_RADIUS_M);
+  });
+
+  it("passes the coverage radius through to the map and re-derives the patrol radius", () => {
+    const before = patrolRadius();
+
     fireEvent.change(screen.getByLabelText(/coverage radius/i), {
       target: { value: "900" },
     });
-    expect(screen.getByTestId("map")).toHaveAttribute("data-site-radius", "900");
+
+    expect(map()).toHaveAttribute("data-site-radius", "900");
+    // A bigger zone patrolled by the same number of drones asks more of each.
+    expect(patrolRadius()).toBeGreaterThan(before);
+    // Growing the zone must not change how many drones the visitor asked for.
+    expect(map()).toHaveAttribute("data-dock-count", String(DEFAULT_DRONE_COUNT));
   });
 
-  it("re-plans the stations when either slider moves", () => {
-    const before = Number(
-      screen.getByTestId("map").getAttribute("data-dock-count"),
-    );
-
-    // A larger zone at the same patrol radius needs more stations.
-    fireEvent.change(screen.getByLabelText(/coverage radius/i), {
-      target: { value: "1200" },
-    });
-    const wider = Number(
-      screen.getByTestId("map").getAttribute("data-dock-count"),
-    );
-    expect(wider).toBeGreaterThan(before);
-
-    // A longer patrol radius over that same zone needs fewer.
-    fireEvent.change(screen.getByLabelText(/patrol radius/i), {
-      target: { value: "400" },
-    });
-    expect(
-      Number(screen.getByTestId("map").getAttribute("data-dock-count")),
-    ).toBeLessThan(wider);
+  it("shows the required radius as the panel's headline readout", () => {
+    expect(screen.getByText(/patrol radius \/ drone/i)).toBeInTheDocument();
+    expect(screen.getByText("m required")).toBeInTheDocument();
+    expect(screen.getByText(String(patrolRadius()))).toBeInTheDocument();
   });
 
   it("shows the coverage circle's area rather than a bounding box area", () => {

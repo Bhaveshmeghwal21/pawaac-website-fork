@@ -61,19 +61,42 @@ export const SITE_RADIUS_MIN_M = 100;
 export const SITE_RADIUS_MAX_M = 1500;
 export const SITE_RADIUS_STEP_M = 50;
 
-export const DEFAULT_PATROL_RADIUS_M = 150;
-export const PATROL_RADIUS_MIN_M = 50;
-export const PATROL_RADIUS_MAX_M = 400;
-export const PATROL_RADIUS_STEP_M = 25;
-
-// Hard ceiling on how many stations are placed, so an extreme slider
-// combination (a 1500 m zone at a 50 m patrol radius asks for several hundred)
-// cannot bury the map under markers. The previous lattice model had the same
-// guard as `Math.min(15, …)` on its row and column counts, which capped it at
-// 225 silently. This cap is surfaced instead: `planDocks` reports `capped`, and
-// the readout renders "120+" rather than a flat 120, so the number on screen is
-// never a smaller figure than the model actually asked for.
-export const MAX_DOCKS = 120;
+// Site-owner request (current session): "give the user ability to select number
+// of drones instead of surveillance through each drone". The second slider used
+// to set the patrol radius of each drone, and the station count fell out of it.
+// That is now inverted: the visitor sets how many drones they want, and the
+// patrol radius each one has to cover is the derived readout.
+//
+// Inverting the old ring model in place did not work, and the reason is worth
+// recording. Its station count was a step function of the patrol radius — for a
+// 300 m zone the reachable totals were 1, then 7, then 20 — so most positions on
+// a "number of drones" slider had no radius that produced them. Dragging it
+// would have jumped between a handful of layouts and sat dead in between.
+//
+// The first replacement attempted was Vogel's phyllotaxis spiral, which places
+// any count with one formula. It was rejected after measuring it: the golden
+// angle distributes points well in the large but leaves wide angular gaps at
+// small counts, so four drones in a 600 m zone still needed the full 600 m of
+// range — the same as one drone, which makes the slider look broken at exactly
+// the counts a visitor is most likely to try first.
+//
+// What ships instead is a small search. Candidate layouts come from one family:
+// an optional station at the centre plus one to three evenly spaced rings, with
+// station counts split across rings in proportion to ring radius so density
+// stays even. Each candidate is scored by the patrol radius it would require and
+// the best is kept. The search is what makes the result good rather than the
+// family being clever — it lands on the known optimal arrangements for three
+// stations (0.866 R) and seven (0.5 R) on its own.
+//
+// This is explicitly a planning estimate, not a proof of optimality. Genuinely
+// optimal circle coverings of a disc are known only for small counts and do not
+// follow any ring pattern; at four stations this search returns about 0.707 R
+// against a known best of 0.610 R. Presenting it as "the range this placement
+// requires" is therefore accurate, while presenting it as the minimum possible
+// would not be.
+export const DEFAULT_DRONE_COUNT = 7;
+export const DRONE_COUNT_MIN = 1;
+export const DRONE_COUNT_MAX = 24;
 
 export function siteAt(
   lat: number,
@@ -112,71 +135,410 @@ export function destinationPoint(
   return { lat: lat + dLatDeg, lng: lng + dLngDeg };
 }
 
-export type DockPlan = { docks: Dock[]; capped: boolean };
+/** A station's position relative to the site centre, in polar form. */
+export type DronePlacement = { radiusM: number; bearingRad: number };
 
-// Concentric-ring fill of the site circle.
-//
-// One station at the centre, then rings at radial pitch 2r out to the point
-// where the outermost ring's own coverage reaches the perimeter. Each ring
-// holds as many stations as fit at the same 2r pitch along its circumference,
-// and even-numbered rings are rotated by half a step so stations do not line up
-// into radial spokes.
-//
-// The outermost ring is clamped to the perimeter itself. Without that clamp the
-// last ring can land outside the zone (a 1500 m site at a 400 m patrol radius
-// wants rings at 800 m and 1600 m), which is defensible as coverage maths but
-// reads as a planner suggesting stations on someone else's land. Clamping is
-// safe because only the last ring can ever exceed the radius — ring n-1 sits at
-// (n-1)·2r, which is strictly inside R by the definition of the ring count — so
-// no two rings collapse onto the same radius, and the radial coverage stays
-// continuous either way.
-export function planDocks(site: Site, patrolRadiusM: number): DockPlan {
-  const r = Math.max(1, patrolRadiusM);
-  const pitch = 2 * r;
+export function clampDroneCount(droneCount: number): number {
+  return Math.min(
+    DRONE_COUNT_MAX,
+    Math.max(DRONE_COUNT_MIN, Math.round(droneCount)),
+  );
+}
 
-  // A patrol radius at or above the site radius is covered by one station, so
-  // the ring count floors at 0 rather than going negative.
-  const ringCount = Math.max(0, Math.ceil((site.radiusM - r) / pitch));
+// Sample resolution across the bounding square of the site circle. The search
+// scores dozens of candidates, so it uses the coarse grid; the figure actually
+// published is remeasured on the fine one.
+const SEARCH_SAMPLES = 34;
+const PUBLISH_SAMPLES = 96;
 
-  const docks: Dock[] = [{ id: 0, lat: site.lat, lng: site.lng }];
-  let id = 1;
+// Radial scale candidates: how far out the outermost ring sits, as a fraction of
+// the site radius. Coverage is surprisingly sensitive to this — a ring of six
+// around a centre station needs 0.5 R at a scale of 0.866 and appreciably more
+// either side of it — so it is searched rather than guessed.
+const SCALE_CANDIDATES = [
+  0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1,
+];
 
-  for (let ring = 1; ring <= ringCount; ring++) {
-    const ringRadius = Math.min(ring * pitch, site.radiusM);
-    const count = Math.max(1, Math.round((2 * Math.PI * ringRadius) / pitch));
-    const offset = ring % 2 === 0 ? Math.PI / count : 0;
+type RingStructure = { centre: boolean; ringCounts: number[] };
 
-    for (let k = 0; k < count; k++) {
-      if (docks.length >= MAX_DOCKS) return { docks, capped: true };
-      const bearing = offset + (k / count) * 2 * Math.PI;
-      const p = destinationPoint(site.lat, site.lng, ringRadius, bearing);
-      docks.push({ id: id++, lat: p.lat, lng: p.lng });
+/**
+ * Splits `count` stations across `ringCount` rings in proportion to ring radius,
+ * so the number of stations per unit of ring length is the same on every ring.
+ * Returns null when there are not enough stations to give every ring at least
+ * one.
+ */
+function splitAcrossRings(count: number, ringCount: number): number[] | null {
+  if (count < ringCount) return null;
+
+  const weightTotal = (ringCount * (ringCount + 1)) / 2;
+  const counts: number[] = [];
+  let assigned = 0;
+
+  for (let j = 1; j <= ringCount; j++) {
+    const share = Math.max(1, Math.floor((count * j) / weightTotal));
+    counts.push(share);
+    assigned += share;
+  }
+
+  // Hand any rounding remainder to the outermost rings, which have the most
+  // circumference to cover and therefore gain the most from an extra station.
+  let remainder = count - assigned;
+  for (let j = counts.length - 1; remainder > 0; j = j === 0 ? counts.length - 1 : j - 1) {
+    counts[j] += 1;
+    remainder -= 1;
+  }
+  // And take any overshoot back off the innermost rings, never below one.
+  for (let j = 0; remainder < 0; j = (j + 1) % counts.length) {
+    if (counts[j] > 1) {
+      counts[j] -= 1;
+      remainder += 1;
+    } else if (counts.every((c) => c <= 1)) {
+      return null;
     }
   }
 
-  return { docks, capped: false };
+  return counts;
+}
+
+function buildPlacements(
+  siteRadiusM: number,
+  structure: RingStructure,
+  scale: number,
+): DronePlacement[] {
+  const placements: DronePlacement[] = [];
+  if (structure.centre) placements.push({ radiusM: 0, bearingRad: 0 });
+
+  const rings = structure.ringCounts.length;
+  structure.ringCounts.forEach((count, index) => {
+    const j = index + 1;
+    const radiusM = (siteRadiusM * scale * j) / rings;
+    // Stagger every other ring by half a step so adjacent rings interleave
+    // instead of lining up into spokes, which leaves smaller gaps between them.
+    const offset = j % 2 === 0 ? Math.PI / count : 0;
+
+    for (let k = 0; k < count; k++) {
+      placements.push({
+        radiusM,
+        bearingRad: offset + (k / count) * 2 * Math.PI,
+      });
+    }
+  });
+
+  return placements;
+}
+
+/**
+ * Split variants around the proportional one, produced by shifting a single
+ * station between the innermost and outermost ring. Widens the family cheaply so
+ * the search has more than one shape per ring count to compare.
+ */
+function splitVariants(count: number, ringCount: number): number[][] {
+  const base = splitAcrossRings(count, ringCount);
+  if (!base) return [];
+  if (ringCount === 1) return [base];
+
+  const variants = [base];
+  const last = base.length - 1;
+
+  if (base[0] > 1) {
+    const outward = [...base];
+    outward[0] -= 1;
+    outward[last] += 1;
+    variants.push(outward);
+  }
+  if (base[last] > 1) {
+    const inward = [...base];
+    inward[last] -= 1;
+    inward[0] += 1;
+    variants.push(inward);
+  }
+
+  return variants;
+}
+
+/**
+ * Worst-covered point in the unit disc for a unit-radius layout, and how far it
+ * sits from its nearest station.
+ *
+ * Everything below works on a unit disc because the geometry is scale invariant:
+ * scaling a layout by R scales every distance by R, so the best arrangement for a
+ * 300 m zone is the best arrangement for a 1500 m zone. That is what makes it
+ * affordable to search properly — the answer depends only on the drone count, so
+ * it is computed once per count and then reused at any site radius.
+ */
+function worstCoverage(
+  layout: DronePlacement[],
+  samples: number,
+): { radius: number; x: number; y: number } {
+  const stations = layout.map((p) => ({
+    x: p.radiusM * Math.sin(p.bearingRad),
+    y: p.radiusM * Math.cos(p.bearingRad),
+  }));
+
+  const step = 2 / samples;
+  let worstSq = -1;
+  let worstX = 1;
+  let worstY = 0;
+
+  for (let i = 0; i <= samples; i++) {
+    const x = -1 + i * step;
+    for (let j = 0; j <= samples; j++) {
+      const y = -1 + j * step;
+      if (x * x + y * y > 1) continue;
+
+      let nearestSq = Infinity;
+      for (const s of stations) {
+        const d = (x - s.x) ** 2 + (y - s.y) ** 2;
+        if (d < nearestSq) nearestSq = d;
+      }
+      if (nearestSq > worstSq) {
+        worstSq = nearestSq;
+        worstX = x;
+        worstY = y;
+      }
+    }
+  }
+
+  // A grid can miss the true worst point by up to half a diagonal step, and the
+  // perimeter is where that point almost always sits, so add that back. Sampling
+  // converges from below and this keeps the result on the safe side.
+  //
+  // Deliberately NOT clamped to 1. Clamping would make every candidate needing at
+  // least the full radius score identically, and the search would then pick
+  // whichever it evaluated first rather than the best. That is a real case: with
+  // two stations, two placed off centre need more than the full radius while one
+  // at the centre plus one anywhere needs exactly it, and a clamped score cannot
+  // tell those apart. The clamp belongs on the published figure instead.
+  const margin = (step * Math.SQRT2) / 2;
+  return { radius: Math.sqrt(Math.max(0, worstSq)) + margin, x: worstX, y: worstY };
+}
+
+type NormalizedLayout = { placements: DronePlacement[]; coveringRadius: number };
+
+// Best known arrangement per drone count on the unit disc. Populated lazily and
+// kept for the lifetime of the module: the search is affordable precisely because
+// scale invariance means it never has to run again for a different site radius.
+const NORMALIZED_CACHE = new Map<number, NormalizedLayout>();
+
+// Precision used when comparing a count against its predecessor. Finer than the
+// search grid so the monotonicity check is not decided by sampling noise, coarser
+// than the published measurement so it stays cheap.
+const COMPARE_SAMPLES = 56;
+
+function searchNormalized(n: number): NormalizedLayout {
+  let best: DronePlacement[] | null = null;
+  let bestRadius = Infinity;
+
+  for (const centre of [false, true]) {
+    const ringBudget = n - (centre ? 1 : 0);
+    if (ringBudget < 1) continue;
+
+    for (let rings = 1; rings <= 4; rings++) {
+      for (const ringCounts of splitVariants(ringBudget, rings)) {
+        for (const scale of SCALE_CANDIDATES) {
+          const placements = buildPlacements(1, { centre, ringCounts }, scale);
+          const { radius } = worstCoverage(placements, SEARCH_SAMPLES);
+          if (radius < bestRadius) {
+            bestRadius = radius;
+            best = placements;
+          }
+        }
+      }
+    }
+  }
+
+  const placements = best ?? [{ radiusM: 0, bearingRad: 0 }];
+  return {
+    placements,
+    coveringRadius: worstCoverage(placements, COMPARE_SAMPLES).radius,
+  };
+}
+
+/**
+ * The best arrangement of `n` stations on the unit disc, guaranteed never to need
+ * more range than `n - 1` stations do.
+ *
+ * That guarantee is not cosmetic and not a clamp on the number. Widening the
+ * candidate family removed most of the artefacts but not all of them: at fourteen
+ * drones the family's best arrangement genuinely needs slightly more range than
+ * its best at thirteen, which would show the visitor a radius going up as they
+ * add a drone, contradicting the panel's own explanation. The true optimum cannot
+ * behave that way, because n stations can always reproduce the best n - 1
+ * arrangement and leave one station redundant. So when the search comes back
+ * worse, that is exactly what happens here: the previous arrangement is reused and
+ * the spare station is placed at its worst-covered point, which is both the
+ * honest place to add capacity and where it does the most good.
+ */
+function normalizedLayout(n: number): NormalizedLayout {
+  const cached = NORMALIZED_CACHE.get(n);
+  if (cached) return cached;
+
+  let result: NormalizedLayout;
+
+  if (n <= 1) {
+    const placements: DronePlacement[] = [{ radiusM: 0, bearingRad: 0 }];
+    result = {
+      placements,
+      coveringRadius: worstCoverage(placements, COMPARE_SAMPLES).radius,
+    };
+  } else {
+    const searched = searchNormalized(n);
+    const previous = normalizedLayout(n - 1);
+
+    if (searched.coveringRadius <= previous.coveringRadius) {
+      result = searched;
+    } else {
+      const gap = worstCoverage(previous.placements, COMPARE_SAMPLES);
+      const placements: DronePlacement[] = [
+        ...previous.placements,
+        {
+          radiusM: Math.hypot(gap.x, gap.y),
+          bearingRad: Math.atan2(gap.x, gap.y),
+        },
+      ];
+      result = {
+        placements,
+        coveringRadius: worstCoverage(placements, COMPARE_SAMPLES).radius,
+      };
+    }
+  }
+
+  NORMALIZED_CACHE.set(n, result);
+  return result;
+}
+
+/**
+ * Places exactly `droneCount` stations across the site circle, choosing the
+ * arrangement that needs the least range per drone.
+ *
+ * Returned in local polar coordinates and free of any lat/lng so the geometry can
+ * be reasoned about and tested as plane geometry.
+ */
+export function droneLayout(
+  siteRadiusM: number,
+  droneCount: number,
+): DronePlacement[] {
+  const n = clampDroneCount(droneCount);
+  return normalizedLayout(n).placements.map((p) => ({
+    radiusM: p.radiusM * siteRadiusM,
+    bearingRad: p.bearingRad,
+  }));
+}
+
+/**
+ * The greatest distance from any point inside the site circle to its nearest
+ * station, measured by sampling a grid over the circle.
+ *
+ * Measured rather than solved in closed form: the exact quantity is the largest
+ * empty circle within a bounded region, which for an arbitrary point set means a
+ * Voronoi diagram clipped to the disc — far more machinery than a planning
+ * estimate needs.
+ */
+function coveringRadiusM(
+  siteRadiusM: number,
+  layout: DronePlacement[],
+  samples: number,
+): number {
+  if (layout.length === 0) return siteRadiusM;
+  if (siteRadiusM <= 0) return 0;
+
+  // Normalise, measure on the unit disc, scale the answer back. Scale invariance
+  // means this is exact, not an approximation, and it keeps one sampling loop in
+  // the module instead of two that could drift apart.
+  const unit = layout.map((p) => ({
+    radiusM: p.radiusM / siteRadiusM,
+    bearingRad: p.bearingRad,
+  }));
+
+  return worstCoverage(unit, samples).radius * siteRadiusM;
+}
+
+/**
+ * The patrol radius each drone has to be able to fly, given where the stations
+ * sit. Below this figure some part of the zone is unwatched; at it, the stations'
+ * coverage circles union to the whole zone.
+ *
+ * Rounded up to a whole 5 m so the published figure reads as a spec rather than a
+ * raw measurement. Held at the site radius as a ceiling, which is sound because
+ * the search always has a centre station candidate available and a station at the
+ * centre reaches every point in the zone from a radius of R: the cap therefore
+ * only trims the sampling margin's overshoot past a value already known to be
+ * achievable, never a genuine requirement.
+ */
+export function requiredPatrolRadiusM(
+  siteRadiusM: number,
+  layout: DronePlacement[],
+): number {
+  const radius = coveringRadiusM(siteRadiusM, layout, PUBLISH_SAMPLES);
+  return Math.min(siteRadiusM, Math.ceil(radius / 5) * 5);
+}
+
+/** Converts an already-computed layout into map markers. */
+export function placementsToDocks(
+  site: Site,
+  layout: DronePlacement[],
+): Dock[] {
+  return layout.map((p, k) => {
+    const { lat, lng } = destinationPoint(
+      site.lat,
+      site.lng,
+      p.radiusM,
+      p.bearingRad,
+    );
+    return { id: k, lat, lng };
+  });
+}
+
+/**
+ * Layout plus conversion in one call. The component deliberately does not use
+ * this: it holds the layout itself so the search behind `droneLayout` runs once
+ * per change rather than once for the markers and again for the radius.
+ */
+export function planDocks(site: Site, droneCount: number): Dock[] {
+  return placementsToDocks(site, droneLayout(site.radiusM, droneCount));
 }
 
 export default function SystemDesigner() {
   const [site, setSite] = useState<Site | null>(null);
-  const [patrolRadiusM, setPatrolRadiusM] = useState(DEFAULT_PATROL_RADIUS_M);
+  const [droneCount, setDroneCount] = useState(DEFAULT_DRONE_COUNT);
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState("");
 
   const areaKm2 = site ? siteAreaM2(site) / 1e6 : 0;
 
-  // The station layout is fully derived from the site and the patrol radius.
+  // The station layout is fully derived from the site and the drone count, and
+  // the patrol radius each drone needs is in turn derived from that layout. The
+  // direction of derivation is the whole change here: the count used to be the
+  // output and the radius the input.
   //
-  // This used to be `useState` written from inside a `useEffect`, which
+  // The layout is memoised on its own, above the two things that read it, because
+  // `droneLayout` runs a search over candidate arrangements. Deriving the markers
+  // and the radius from one layout runs that search once per change instead of
+  // once each.
+  //
+  // These used to be `useState` written from inside a `useEffect`, which
   // `react-hooks/set-state-in-effect` reports as an error — it renders once
   // with a stale layout, then immediately re-renders with the real one, and the
-  // subtree being re-rendered here contains the Leaflet map. Deriving it during
+  // subtree being re-rendered here contains the Leaflet map. Deriving during
   // render removes that second pass. User drags are kept separately in `moved`
   // and layered on top, which preserves the previous behaviour that
   // re-generating the layout discards any hand placement.
-  const plan = useMemo<DockPlan>(
-    () => (site ? planDocks(site, patrolRadiusM) : { docks: [], capped: false }),
-    [site, patrolRadiusM],
+  const layout = useMemo(
+    () => (site ? droneLayout(site.radiusM, droneCount) : []),
+    [site, droneCount],
+  );
+
+  const generated = useMemo<Dock[]>(
+    () => (site ? placementsToDocks(site, layout) : []),
+    [site, layout],
+  );
+
+  // Measured against the generated layout, not against hand-dragged positions:
+  // this is the radius the suggested placement requires, and remeasuring it on
+  // every frame of a marker drag would run the sampling loop continuously.
+  const patrolRadiusM = useMemo(
+    () => (site ? requiredPatrolRadiusM(site.radiusM, layout) : 0),
+    [site, layout],
   );
 
   const [moved, setMoved] = useState<Record<number, Dock>>({});
@@ -184,15 +546,15 @@ export default function SystemDesigner() {
   // render (rather than in an effect) is the pattern React documents for
   // "state derived from a changing input": it happens before the component's
   // children render, so no extra pass reaches the map.
-  const [movedFor, setMovedFor] = useState(plan);
-  if (movedFor !== plan) {
-    setMovedFor(plan);
+  const [movedFor, setMovedFor] = useState(generated);
+  if (movedFor !== generated) {
+    setMovedFor(generated);
     setMoved({});
   }
 
   const docks = useMemo(
-    () => plan.docks.map((d) => moved[d.id] ?? d),
-    [plan, moved],
+    () => generated.map((d) => moved[d.id] ?? d),
+    [generated, moved],
   );
 
   const moveDock = (id: number, lat: number, lng: number) =>
@@ -403,45 +765,47 @@ export default function SystemDesigner() {
             </p>
           </div>
 
-          {/* Slider 2 — the per-station patrol radius. */}
+          {/* Slider 2 — how many drones. The count is now the input; the radius
+              each one has to cover is the readout below. */}
           <div className="mt-4">
             <label
-              htmlFor="patrol-radius"
+              htmlFor="drone-count"
               className="flex items-center justify-between font-mono text-[11px] uppercase tracking-widest"
             >
-              <span className="text-muted">Patrol radius / dock</span>
-              <span className="text-fg">{patrolRadiusM} m</span>
+              <span className="text-muted">Drones</span>
+              <span className="text-fg">{droneCount}</span>
             </label>
             <input
-              id="patrol-radius"
+              id="drone-count"
               type="range"
-              min={PATROL_RADIUS_MIN_M}
-              max={PATROL_RADIUS_MAX_M}
-              step={PATROL_RADIUS_STEP_M}
-              value={patrolRadiusM}
-              onChange={(e) => setPatrolRadiusM(parseInt(e.target.value))}
+              min={DRONE_COUNT_MIN}
+              max={DRONE_COUNT_MAX}
+              step={1}
+              value={droneCount}
+              onChange={(e) => setDroneCount(clampDroneCount(parseInt(e.target.value)))}
               className="mt-2 w-full accent-white"
             />
             <p className="mt-2 font-mono text-[9px] leading-relaxed text-muted">
-              Longer drone range means each station covers more ground, so fewer stations
-              are needed.
+              Stations are spread evenly across the zone, so more drones means each
+              one covers less ground.
             </p>
           </div>
 
           <div className="mt-5 border-t border-line pt-4">
             <span className="font-mono text-[11px] uppercase tracking-widest text-muted">
-              Docking stations
+              Patrol radius / drone
             </span>
             <div className="mt-1 flex items-baseline gap-2">
               <span className="font-display text-5xl font-bold text-white">
-                {docks.length}
-                {plan.capped ? "+" : ""}
+                {patrolRadiusM}
               </span>
-              <span className="font-mono text-[11px] text-muted">suggested</span>
+              <span className="font-mono text-[11px] text-muted">m required</span>
             </div>
             <p className="mt-2 font-mono text-[10px] leading-relaxed text-muted">
-              Each station autonomously charges and swaps drone batteries to sustain 24x7
-              coverage within its radius.
+              The farthest any point in the zone sits from its nearest station, so
+              the range each drone needs to leave no gap. Each station
+              autonomously swaps drone batteries to sustain 24x7 coverage within
+              that radius.
             </p>
           </div>
 
