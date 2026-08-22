@@ -57,9 +57,31 @@ export default function HeroFlightVideo({ active }: { active: boolean }) {
   }, [active, prefersReducedMotion]);
 
   return (
-    <div className="absolute inset-0 overflow-hidden">
-      {/* Overscanned to match SkyScenery's `-inset-10` wrapper, so both slides
-          crop identically and neither shows an edge gap. */}
+    <div className="absolute inset-0 overflow-hidden bg-bg">
+      {/*
+        Sizing bugfix (site-owner report: "this extra black side in carousel in
+        video appearing"). This was `absolute -inset-10` together with an
+        explicit `h-[calc(100%+5rem)] w-[calc(100%+5rem)]`, which sets all four
+        insets AND a width and a height. For a <div> that over-constraint is
+        resolved by ignoring `right`, which is why the same pattern is fine in
+        SkyScenery. A <video> is a replaced element, and replaced elements
+        resolve an over-constrained absolute box against their own intrinsic
+        size, so the video laid itself out at the source clip's intrinsic 848px
+        instead of filling the hero, leaving the rest of the slide black to the
+        right of it.
+        `inset-0` with `h-full w-full` states the same box three ways that all
+        agree, so there is nothing left to resolve. It is what next/image's
+        `fill` emits, which is why SkyScenery's photograph always filled
+        correctly.
+        The previous 40px overscan is dropped rather than reproduced: it existed
+        in SkyScenery to give its parallax somewhere to travel, and this video
+        has no parallax. Removing it also stops throwing away 80px of a clip
+        that is only 848px wide to begin with, so the footage is scaled up
+        slightly less.
+        `bg-bg` backs the layer with the site background rather than leaving
+        transparency to composite down to true black, so any future gap reads as
+        the page instead of as a hole.
+      */}
       <video
         ref={videoRef}
         poster="/images/hero-flight-poster.jpg"
@@ -68,7 +90,7 @@ export default function HeroFlightVideo({ active }: { active: boolean }) {
         playsInline
         preload="none"
         tabIndex={-1}
-        className="absolute -inset-10 h-[calc(100%+5rem)] w-[calc(100%+5rem)] object-cover"
+        className="absolute inset-0 h-full w-full object-cover"
       >
         <source src="/videos/hero-flight.webm" type="video/webm" />
         <source src="/videos/hero-flight.mp4" type="video/mp4" />

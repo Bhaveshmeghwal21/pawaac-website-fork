@@ -166,6 +166,27 @@ describe("hero carousel", () => {
   // Mobile: the content column overlays the swipe surface, and on a narrow
   // viewport it covers most of the hero. If it captured touches, the swipeable
   // area would collapse to a thin band above the headline.
+  // Regression: site-owner report "this extra black side in carousel in video
+  // appearing". The video was positioned with all four insets plus an explicit
+  // width and height. A <video> is a replaced element, so that over-constraint
+  // resolved against the clip's intrinsic 848px rather than filling the hero,
+  // leaving the rest of the slide black. The box must be stated in a way that
+  // cannot conflict.
+  it("sizes the footage to fill its slide with no conflicting box values", () => {
+    render(<HomeHero />);
+    const video = document.querySelector("video") as HTMLElement;
+
+    expect(video.className).toContain("inset-0");
+    expect(video.className).toContain("h-full");
+    expect(video.className).toContain("w-full");
+    expect(video.className).toContain("object-cover");
+
+    // No negative inset paired with an explicit size, which is the combination
+    // that caused the gap.
+    expect(video.className).not.toMatch(/-inset-/);
+    expect(video.className).not.toMatch(/calc\(/);
+  });
+
   it("lets a swipe start on the headline while keeping the controls tappable", () => {
     const { container } = render(<HomeHero />);
 
