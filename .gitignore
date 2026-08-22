@@ -93,3 +93,19 @@ next-env.d.ts
 /.claude/settings.local.json
 /.claude/*.local.json
 
+# Scratch working files from the detection-demo annotation pipeline.
+#
+# These were never meant to ship: 190 MB of extracted PNG frames under
+# tmp-samples/ and tmp-work/, plus the one-off Node scripts that drove the
+# frame extraction, the model calls and the ByteTrack smoothing. The finished
+# artefacts they produced are the committed files in public/videos/ and
+# public/images/, so nothing here is needed to build or run the site.
+#
+# Ignored rather than deleted: the scripts document how the annotated clip was
+# produced, which is worth keeping locally given the provenance rules this repo
+# holds itself to. But this repository is PUBLIC, and one of them calls a
+# third-party model API, so none of it belongs in history.
+/tmp-samples/
+/tmp-work/
+/tmp-*.mjs
+
